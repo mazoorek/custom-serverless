@@ -1,0 +1,12 @@
+#intellij
+.idea/
+
+#terraform
+**/.terraform/*
+**/*.tfstate
+**/*.tfstate.*
+**/.terraformrc
+**/terraform.rc
+**/terraform.tfvars
+
+

@@ -1,0 +1,7 @@
+vpc_cidr_block=FILL_ME
+subnet_1_cidr_block=FILL_ME
+region=FILL_ME
+avail_zone=FILL_ME
+instance_type=FILL_ME
+public_key_location=FILL_ME
+my_ip=FILL_ME
