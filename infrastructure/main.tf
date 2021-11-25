@@ -182,7 +182,7 @@ resource "aws_key_pair" "ssh-key" {
   public_key = file(var.public_key_location)
 }
 
-resource "aws_instance" "k8s-control-plane" {
+resource "aws_instance" "control-plane" {
   ami                         = data.aws_ami.amazon-linux-image.id
   instance_type               = var.instance_type
   key_name                    = aws_key_pair.ssh-key.key_name
@@ -192,7 +192,7 @@ resource "aws_instance" "k8s-control-plane" {
   availability_zone			  = var.avail_zone
 
   tags = {
-    Name = "k8s-server"
+    Name = "control-plane"
   }
 
   connection {
@@ -209,11 +209,11 @@ resource "aws_instance" "k8s-control-plane" {
   }
 
   provisioner "local-exec" {
-    command = "ssh ubuntu@${self.public_ip} -oStrictHostKeyChecking=no hostname >> temp.txt"
+    command = "ssh ubuntu@${self.public_ip} -oStrictHostKeyChecking=no hostname"
   }
 }
 
-resource "aws_instance" "k8s-worker-node" {
+resource "aws_instance" "worker-node" {
   count = 2
   ami                         = data.aws_ami.amazon-linux-image.id
   instance_type               = var.instance_type
@@ -229,11 +229,11 @@ resource "aws_instance" "k8s-worker-node" {
 }
 
 output "control-plane-ip" {
-  value = aws_instance.k8s-control-plane.public_ip
+  value = aws_instance.control-plane.public_ip
 }
 
 output "worker-nodes-ips" {
-  value = [for worker in flatten(aws_instance.k8s-worker-node):
+  value = [for worker in flatten(aws_instance.worker-node):
   worker.public_ip
   ]
 }
