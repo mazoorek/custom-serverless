@@ -10,8 +10,7 @@ variable avail_zone {}
 variable region {}
 variable instance_type {}
 variable public_key_location {}
-variable my_ip {}
-
+variable private_key_location {}
 
 data "aws_ami" "amazon-linux-image" {
   most_recent = true
@@ -48,8 +47,8 @@ resource "aws_subnet" "k8s-subnet-1" {
   }
 }
 
-resource "aws_security_group" "k8s-sg" {
-  name   = "k8s-sg"
+resource "aws_security_group" "k8s-control-plane-sg" {
+  name   = "k8s-control-plane-sg"
   vpc_id = aws_vpc.k8s-vpc.id
 
   ingress {
@@ -57,6 +56,47 @@ resource "aws_security_group" "k8s-sg" {
     to_port     = 22
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
+    description = "ssh - open to anyone"
+  }
+
+  ingress {
+    from_port   = 6443
+    to_port     = 6443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+    description = "API server - open to anyone"
+  }
+
+  ingress {
+    from_port   = 2379
+    to_port     = 2380
+    protocol    = "tcp"
+    cidr_blocks = [var.vpc_cidr_block]
+    description = "etcd server client API. Used by kube-apiserver, etcd"
+  }
+
+  ingress {
+    from_port   = 10250
+    to_port     = 10250
+    protocol    = "tcp"
+    cidr_blocks = [var.vpc_cidr_block]
+    description = "kubelet api, used by self, Control plane"
+  }
+
+  ingress {
+    from_port   = 10251
+    to_port     = 10251
+    protocol    = "tcp"
+    cidr_blocks = [var.vpc_cidr_block]
+    description = "kube-scheduler, used by self"
+  }
+
+  ingress {
+    from_port   = 10252
+    to_port     = 10252
+    protocol    = "tcp"
+    cidr_blocks = [var.vpc_cidr_block]
+    description = "kube-controller-manager, used by self"
   }
 
   egress {
@@ -68,7 +108,47 @@ resource "aws_security_group" "k8s-sg" {
   }
 
   tags = {
-    Name = "k8s-security-group"
+    Name = "k8s-control-plane-sg"
+  }
+}
+
+resource "aws_security_group" "k8s-worker-node-sg" {
+  name   = "k8s-worker-node-sg"
+  vpc_id = aws_vpc.k8s-vpc.id
+
+  ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    from_port   = 10250
+    to_port     = 10250
+    protocol    = "tcp"
+    cidr_blocks = [var.vpc_cidr_block]
+    description = "kubelet api, used by self, Control plane"
+  }
+
+  ingress {
+    from_port   = 30000
+    to_port     = 32767
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+    description = "NodePort Services. Used by all"
+  }
+
+  egress {
+    from_port       = 0
+    to_port         = 0
+    protocol        = "-1"
+    cidr_blocks     = ["0.0.0.0/0"]
+    prefix_list_ids = []
+  }
+
+  tags = {
+    Name = "k8s-worker-node-sg"
   }
 }
 
@@ -110,11 +190,40 @@ resource "aws_instance" "k8s-server" {
   key_name                    = aws_key_pair.ssh-key.key_name
   associate_public_ip_address = true
   subnet_id                   = aws_subnet.k8s-subnet-1.id
-  vpc_security_group_ids      = [aws_security_group.k8s-sg.id]
+  vpc_security_group_ids      = [aws_security_group.k8s-control-plane-sg.id]
   availability_zone			  = var.avail_zone
 
   tags = {
     Name = "k8s-server"
+  }
+
+#  provisioner "file" {
+#    source      = "control-plane.sh"
+#    destination = "/tmp/control-plane.sh"
+#  }
+#
+#  provisioner "remote-exec" {
+#    inline = [
+#      "chmod +x /tmp/control-plane.sh",
+#      "/tmp/control-plane.sh args",
+#    ]
+#  }
+
+  connection {
+    type = "ssh"
+    host = self.public_ip
+    user = "ubuntu"
+    private_key = file(var.private_key_location)
+  }
+
+  provisioner "remote-exec" {
+    inline = [
+      "touch a.txt",
+    ]
+  }
+
+  provisioner "local-exec" {
+    command = "ssh ubuntu@${self.public_ip} -oStrictHostKeyChecking=no hostname >> temp.txt"
   }
 }
 

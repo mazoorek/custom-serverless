@@ -4,4 +4,4 @@ region=FILL_ME
 avail_zone=FILL_ME
 instance_type=FILL_ME
 public_key_location=FILL_ME
-my_ip=FILL_ME
+private_key_location=FILL_ME
