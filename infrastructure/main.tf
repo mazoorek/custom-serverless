@@ -1,5 +1,3 @@
-
-
 provider "aws" {
   region  = var.region
 }
@@ -11,6 +9,10 @@ variable region {}
 variable instance_type {}
 variable public_key_location {}
 variable private_key_location {}
+variable worker_names {
+  type = list(string)
+  default = ["worker-node-0", "worker-node-1"]
+}
 
 data "aws_ami" "amazon-linux-image" {
   most_recent = true
@@ -25,10 +27,6 @@ data "aws_ami" "amazon-linux-image" {
     name   = "virtualization-type"
     values = ["hvm"]
   }
-}
-
-output "ami_id" {
-  value = data.aws_ami.amazon-linux-image.id
 }
 
 resource "aws_vpc" "k8s-vpc" {
@@ -184,7 +182,7 @@ resource "aws_key_pair" "ssh-key" {
   public_key = file(var.public_key_location)
 }
 
-resource "aws_instance" "k8s-server" {
+resource "aws_instance" "k8s-control-plane" {
   ami                         = data.aws_ami.amazon-linux-image.id
   instance_type               = var.instance_type
   key_name                    = aws_key_pair.ssh-key.key_name
@@ -196,18 +194,6 @@ resource "aws_instance" "k8s-server" {
   tags = {
     Name = "k8s-server"
   }
-
-#  provisioner "file" {
-#    source      = "control-plane.sh"
-#    destination = "/tmp/control-plane.sh"
-#  }
-#
-#  provisioner "remote-exec" {
-#    inline = [
-#      "chmod +x /tmp/control-plane.sh",
-#      "/tmp/control-plane.sh args",
-#    ]
-#  }
 
   connection {
     type = "ssh"
@@ -227,8 +213,29 @@ resource "aws_instance" "k8s-server" {
   }
 }
 
-output "server-ip" {
-  value = aws_instance.k8s-server.public_ip
+resource "aws_instance" "k8s-worker-node" {
+  count = 2
+  ami                         = data.aws_ami.amazon-linux-image.id
+  instance_type               = var.instance_type
+  key_name                    = aws_key_pair.ssh-key.key_name
+  associate_public_ip_address = true
+  subnet_id                   = aws_subnet.k8s-subnet-1.id
+  vpc_security_group_ids      = [aws_security_group.k8s-worker-node-sg.id]
+  availability_zone			  = var.avail_zone
+
+  tags = {
+    Name = "worker-node-${count.index}"
+  }
+}
+
+output "control-plane-ip" {
+  value = aws_instance.k8s-control-plane.public_ip
+}
+
+output "worker-nodes-ips" {
+  value = [for worker in flatten(aws_instance.k8s-worker-node):
+  worker.public_ip
+  ]
 }
 
 
