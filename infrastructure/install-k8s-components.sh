@@ -14,6 +14,6 @@ sudo apt-get update
 apt-cache madison kubeadm
 sudo apt-get install -y
 # Install version 1.21.0 for all components:
-# sudo apt-get install -y kubelet=1.21.0-00 kubeadm=1.21.0-00 kubectl=1.21.0-00
+sudo apt-get install -y kubelet=1.21.0-00 kubeadm=1.21.0-00 kubectl=1.21.0-00
 sudo apt-mark hold kubelet kubeadm kubectl
-## apt-mark hold prevents package from being automatically upgraded or removed
+# apt-mark hold prevents package from being automatically upgraded or removed
