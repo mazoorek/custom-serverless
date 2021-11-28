@@ -10,8 +10,7 @@ echo "deb [signed-by=/usr/share/keyrings/kubernetes-archive-keyring.gpg] https:/
 
 # Install kubelet, kubeadm & kubectl, and pin their versions
 sudo apt-get update
-# check available kubeadm versions (when manually executing)
-apt-cache madison kubeadm
+# apt-cache madison kubeadm - manual command to check available kubeadm versions
 sudo apt-get install -y
 # Install version 1.21.0 for all components:
 sudo apt-get install -y kubelet=1.21.0-00 kubeadm=1.21.0-00 kubectl=1.21.0-00

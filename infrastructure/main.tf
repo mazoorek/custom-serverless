@@ -8,10 +8,9 @@ variable avail_zone {}
 variable region {}
 variable instance_type {}
 variable public_key_location {}
-variable private_key_location {}
-variable worker_names {
-  type = list(string)
-  default = ["worker-node-0", "worker-node-1"]
+variable number_of_worker_nodes {
+  type = number
+  default = 2
 }
 
 data "aws_ami" "amazon-linux-image" {
@@ -97,6 +96,14 @@ resource "aws_security_group" "k8s-control-plane-sg" {
     description = "kube-controller-manager, used by self"
   }
 
+  ingress {
+    from_port   = 6783
+    to_port     = 6783
+    protocol    = "tcp"
+    cidr_blocks = [var.vpc_cidr_block]
+    description = "Weave Net port. Used within VPC"
+  }
+
   egress {
     from_port       = 0
     to_port         = 0
@@ -135,6 +142,14 @@ resource "aws_security_group" "k8s-worker-node-sg" {
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
     description = "NodePort Services. Used by all"
+  }
+
+  ingress {
+    from_port   = 6783
+    to_port     = 6783
+    protocol    = "tcp"
+    cidr_blocks = [var.vpc_cidr_block]
+    description = "Weave Net port. Used within VPC"
   }
 
   egress {
@@ -194,27 +209,10 @@ resource "aws_instance" "control-plane" {
   tags = {
     Name = "control-plane"
   }
-
-  connection {
-    type = "ssh"
-    host = self.public_ip
-    user = "ubuntu"
-    private_key = file(var.private_key_location)
-  }
-
-  provisioner "remote-exec" {
-    inline = [
-      "touch a.txt",
-    ]
-  }
-
-  provisioner "local-exec" {
-    command = "ssh ubuntu@${self.public_ip} -oStrictHostKeyChecking=no hostname"
-  }
 }
 
 resource "aws_instance" "worker-node" {
-  count = 2
+  count = var.number_of_worker_nodes
   ami                         = data.aws_ami.amazon-linux-image.id
   instance_type               = var.instance_type
   key_name                    = aws_key_pair.ssh-key.key_name
