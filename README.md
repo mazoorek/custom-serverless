@@ -41,3 +41,7 @@ provision infrastructure and start cluster:
 
 After you are done run:
 terraform destroy --auto-approve
+
+
+terraform-example-alb-352318663.eu-central-1.elb.amazonaws.com
+terraform-example-alb-352318663.eu-central-1.elb.amazonaws.com
