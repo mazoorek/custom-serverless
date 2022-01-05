@@ -26,3 +26,7 @@ do
    ssh ubuntu@"$workerNodeIp" -i "$PRIVATE_KEY_LOCATION" -o StrictHostKeyChecking=no sudo $JOIN_CLUSTER_COMMAND
    index=$((index + 1))
 done
+echo "---------------------------------control-plane: copy app manifest files------------------------------------------"
+ssh ubuntu@"$CONTROL_PLANE_IP" -i /home/piotr/.ssh/id_rsa -o StrictHostKeyChecking=no mkdir -p /tmp/custom-serverless/
+scp -r -i /home/piotr/.ssh/id_rsa -o StrictHostKeyChecking=no ../manifests ubuntu@"$CONTROL_PLANE_IP":/tmp/custom-serverless/manifests
+

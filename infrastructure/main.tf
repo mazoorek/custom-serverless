@@ -230,8 +230,8 @@ resource "aws_instance" "worker-node" {
 }
 
 resource "aws_security_group" "alb" {
-  name        = "terraform_alb_security_group"
-  description = "Terraform load balancer security group"
+  name        = "k8s_alb_security_group"
+  description = "k8s ALB security group"
   vpc_id      = aws_vpc.k8s-vpc.id
 
   ingress {
@@ -256,21 +256,21 @@ resource "aws_security_group" "alb" {
   }
 
   tags = {
-    Name = "terraform-example-alb-security-group"
+    Name = "k8s ALB security group"
   }
 }
 
 resource "aws_alb" "alb" {
-  name            = "terraform-example-alb"
+  name            = "k8s-alb"
   security_groups = [aws_security_group.alb.id]
   subnets         = [aws_subnet.k8s-subnet-1.id, aws_subnet.k8s-subnet-2.id]
   tags = {
-    Name = "terraform-example-alb"
+    Name = "k8s ALB"
   }
 }
 
 resource "aws_alb_target_group" "group" {
-  name     = "terraform-example-alb-target"
+  name     = "k8s-alb-target-group"
   port     = 30000
   protocol = "HTTP"
   target_type = "instance"
@@ -288,7 +288,7 @@ resource "aws_alb_listener" "listener_http" {
   }
 }
 
-resource "aws_alb_target_group_attachment" "test_attachment" {
+resource "aws_alb_target_group_attachment" "target_group_attachment" {
   count = var.number_of_worker_nodes
   target_group_arn = aws_alb_target_group.group.arn
   target_id = aws_instance.worker-node[count.index].id
@@ -298,7 +298,7 @@ data "aws_route53_zone" "hosted_zone" {
   name =  var.route53_hosted_zone_name
 }
 
-resource "aws_route53_record" "terraform" {
+resource "aws_route53_record" "route53_record" {
   zone_id = data.aws_route53_zone.hosted_zone.zone_id
   name    = var.route53_hosted_zone_url
   type    = "A"
