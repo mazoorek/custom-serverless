@@ -2,19 +2,6 @@ provider "aws" {
   region  = var.region
 }
 
-variable vpc_cidr_block {}
-variable subnet_1_cidr_block {}
-variable subnet_2_cidr_block {}
-variable avail_zone {}
-variable avail_zone_subnet_2 {}
-variable region {}
-variable instance_type {}
-variable public_key_location {}
-variable number_of_worker_nodes {
-  type = number
-  default = 2
-}
-
 data "aws_ami" "amazon-linux-image" {
   most_recent = true
   owners      = ["099720109477"]
@@ -305,6 +292,21 @@ resource "aws_alb_target_group_attachment" "test_attachment" {
   count = var.number_of_worker_nodes
   target_group_arn = aws_alb_target_group.group.arn
   target_id = aws_instance.worker-node[count.index].id
+}
+
+data "aws_route53_zone" "hosted_zone" {
+  name =  var.route53_hosted_zone_name
+}
+
+resource "aws_route53_record" "terraform" {
+  zone_id = data.aws_route53_zone.hosted_zone.zone_id
+  name    = var.route53_hosted_zone_url
+  type    = "A"
+  alias {
+    name                   = aws_alb.alb.dns_name
+    zone_id                = aws_alb.alb.zone_id
+    evaluate_target_health = false
+  }
 }
 
 

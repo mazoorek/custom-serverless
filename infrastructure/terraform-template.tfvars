@@ -15,3 +15,7 @@ instance_type=FILL_ME
 public_key_location=FILL_ME
 # number of worker nodes, default is 2
 number_of_worker_nodes=FILL_ME
+# for example custom-serverless.com
+route53_hosted_zone_name=FILL_ME
+# for example www.custom-serverless.com
+route53_hosted_zone_url=FILL_ME
