@@ -2,17 +2,6 @@ provider "aws" {
   region  = var.region
 }
 
-variable vpc_cidr_block {}
-variable subnet_1_cidr_block {}
-variable avail_zone {}
-variable region {}
-variable instance_type {}
-variable public_key_location {}
-variable number_of_worker_nodes {
-  type = number
-  default = 2
-}
-
 data "aws_ami" "amazon-linux-image" {
   most_recent = true
   owners      = ["099720109477"]
@@ -41,6 +30,15 @@ resource "aws_subnet" "k8s-subnet-1" {
   availability_zone = var.avail_zone
   tags = {
     Name = "k8s-subnet-1"
+  }
+}
+
+resource "aws_subnet" "k8s-subnet-2" {
+  vpc_id = aws_vpc.k8s-vpc.id
+  cidr_block = var.subnet_2_cidr_block
+  availability_zone = var.avail_zone_subnet_2
+  tags = {
+    Name = "k8s-subnet-2"
   }
 }
 
@@ -187,8 +185,13 @@ resource "aws_route_table" "k8s-route-table" {
   }
 }
 
-resource "aws_route_table_association" "a-rtb-subnet" {
+resource "aws_route_table_association" "rtb-subnet-1" {
   subnet_id      = aws_subnet.k8s-subnet-1.id
+  route_table_id = aws_route_table.k8s-route-table.id
+}
+
+resource "aws_route_table_association" "rtb-subnet-2" {
+  subnet_id      = aws_subnet.k8s-subnet-2.id
   route_table_id = aws_route_table.k8s-route-table.id
 }
 
@@ -226,14 +229,84 @@ resource "aws_instance" "worker-node" {
   }
 }
 
-output "control-plane-ip" {
-  value = aws_instance.control-plane.public_ip
+resource "aws_security_group" "alb" {
+  name        = "terraform_alb_security_group"
+  description = "Terraform load balancer security group"
+  vpc_id      = aws_vpc.k8s-vpc.id
+
+  ingress {
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "terraform-example-alb-security-group"
+  }
 }
 
-output "worker-nodes-ips" {
-  value = [for worker in flatten(aws_instance.worker-node):
-  worker.public_ip
-  ]
+resource "aws_alb" "alb" {
+  name            = "terraform-example-alb"
+  security_groups = [aws_security_group.alb.id]
+  subnets         = [aws_subnet.k8s-subnet-1.id, aws_subnet.k8s-subnet-2.id]
+  tags = {
+    Name = "terraform-example-alb"
+  }
+}
+
+resource "aws_alb_target_group" "group" {
+  name     = "terraform-example-alb-target"
+  port     = 30000
+  protocol = "HTTP"
+  target_type = "instance"
+  vpc_id   = aws_vpc.k8s-vpc.id
+}
+
+resource "aws_alb_listener" "listener_http" {
+  load_balancer_arn = aws_alb.alb.arn
+  port              = "80"
+  protocol          = "HTTP"
+
+  default_action {
+    target_group_arn = aws_alb_target_group.group.arn
+    type             = "forward"
+  }
+}
+
+resource "aws_alb_target_group_attachment" "test_attachment" {
+  count = var.number_of_worker_nodes
+  target_group_arn = aws_alb_target_group.group.arn
+  target_id = aws_instance.worker-node[count.index].id
+}
+
+data "aws_route53_zone" "hosted_zone" {
+  name =  var.route53_hosted_zone_name
+}
+
+resource "aws_route53_record" "terraform" {
+  zone_id = data.aws_route53_zone.hosted_zone.zone_id
+  name    = var.route53_hosted_zone_url
+  type    = "A"
+  alias {
+    name                   = aws_alb.alb.dns_name
+    zone_id                = aws_alb.alb.zone_id
+    evaluate_target_health = false
+  }
 }
 
 
