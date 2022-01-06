@@ -13,6 +13,7 @@ provision infrastructure and start cluster:
    ./provision-cluster.sh <path-to-your-aws-instances-private-key>
       
 6) you can verify that cluster is running correctly:
+   CONTROL_PLANE_IP=$(terraform output control-plane-ip | cut -d "=" -f2 | tr -d "\"")
    ssh ubuntu@<CONTROL_PLANE_IP> -i <PRIVATE_KEY_LOCATION> -o StrictHostKeyChecking=no
    kubectl get nodes
    should return output similar to:
@@ -45,3 +46,9 @@ terraform destroy --auto-approve
 
 terraform-example-alb-352318663.eu-central-1.elb.amazonaws.com
 terraform-example-alb-352318663.eu-central-1.elb.amazonaws.com
+
+-----------------
+run locally:
+1) copy file backend/template.env to a new file: backend/.env and fill the values
+2) run:
+app /backend/app.js
