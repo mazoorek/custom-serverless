@@ -14,5 +14,6 @@ manifests/ecr-secret.yaml
 
 #backend
 backend/node_modules/
+backend/.env
 
 
