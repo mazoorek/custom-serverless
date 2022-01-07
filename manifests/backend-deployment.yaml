@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+  namespace: custom-serverless
+  labels:
+    app: backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      containers:
+        - name: backend
+          image: custom-serverless-backend:latest
+          imagePullPolicy: Always
+          env:
+            - name: TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: backend-secret
+                  key: token
