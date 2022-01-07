@@ -31,15 +31,11 @@ app.get('/pods', async (req, res) => {
     res.json(pods);
 });
 
-app.get('/pods-default', async (req, res) => {
-    let pods = await k8sCoreV1Api.listNamespacedPod('default').catch(e => console.log(e));
+app.get('/pods-runtime', async (req, res) => {
+    let pods = await k8sCoreV1Api.listNamespacedPod('custom-serverless-runtime').catch(e => console.log(e));
     res.json(pods);
 });
 
-app.get('/pods-dev', async (req, res) => {
-    let pods = await k8sCoreV1Api.listNamespacedPod('dev').catch(e => console.log(e));
-    res.json(pods);
-});
 
 app.get('/ingresses', async (req, res) => {
     let ingresses = await k8sNetworkingV1Api.listNamespacedIngress('custom-serverless-apps', true).catch(e => console.log(e));

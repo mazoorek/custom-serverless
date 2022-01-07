@@ -1,6 +1,7 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
+  namespace: custom-serverless-apps
   name: backend-role
 rules:
   - apiGroups: [""]
@@ -11,4 +12,4 @@ rules:
     verbs: ["get", "list", "delete"]
   - apiGroups: ["networking.k8s.io"]
     resources: [ "ingresses" ]
-    verbs: [ "get", "list", "delete" ]
+    verbs: ["get", "list", "delete"]

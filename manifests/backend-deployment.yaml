@@ -20,6 +20,8 @@ spec:
           image: custom-serverless-backend:latest
           imagePullPolicy: Always
           env:
+            - name: API_SERVER_URL
+              value: kubernetes.default
             - name: TOKEN
               valueFrom:
                 secretKeyRef:
