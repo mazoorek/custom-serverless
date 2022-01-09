@@ -12,7 +12,6 @@
   "dependencies": {
     "@kubernetes/client-node": "^0.16.1",
     "dotenv": "^10.0.0",
-    "express": "^4.17.2",
-    "k8s": "^0.4.15"
+    "express": "^4.17.2"
   }
 }

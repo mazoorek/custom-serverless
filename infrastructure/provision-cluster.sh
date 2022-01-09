@@ -26,6 +26,16 @@ do
    ssh ubuntu@"$workerNodeIp" -i "$PRIVATE_KEY_LOCATION" -o StrictHostKeyChecking=no sudo $JOIN_CLUSTER_COMMAND
    index=$((index + 1))
 done
+echo "---------------------------------creating secret for pulling images from AWS ECR---------------------------------"
+export AWS_DOCKER_LOGIN_COMMAND=$(aws ecr get-login)
+export AWS_DOCKER_LOGIN_USER=$(echo $AWS_DOCKER_LOGIN_COMMAND | cut -d " " -f 4)
+export AWS_DOCKER_LOGIN_PASSWORD=$(echo $AWS_DOCKER_LOGIN_COMMAND | cut -d " " -f 6)
+kubectl create secret docker-registry ecr-secret \
+--docker-server=444773651763.dkr.ecr.eu-central-1.amazonaws.com/custom-serverless-backend \
+--docker-username=$AWS_DOCKER_LOGIN_USER \
+--docker-password=$AWS_DOCKER_LOGIN_PASSWORD \
+--dry-run=client -o yaml > ../manifests/ecr-secret.yaml \
+-n=custom-serverless
 echo "---------------------------------control-plane: copy app manifest files------------------------------------------"
 ssh ubuntu@"$CONTROL_PLANE_IP" -i /home/piotr/.ssh/id_rsa -o StrictHostKeyChecking=no mkdir -p /tmp/custom-serverless/
 scp -r -i /home/piotr/.ssh/id_rsa -o StrictHostKeyChecking=no ../manifests ubuntu@"$CONTROL_PLANE_IP":/tmp/custom-serverless/manifests

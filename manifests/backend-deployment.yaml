@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+  namespace: custom-serverless
+  labels:
+    app: backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      imagePullSecrets:
+        - name: ecr-secret
+      containers:
+        - name: backend
+          image: 444773651763.dkr.ecr.eu-central-1.amazonaws.com/custom-serverless-backend:latest
+          imagePullPolicy: Always
+          env:
+            - name: API_SERVER_URL
+              value: kubernetes.default
+            - name: ENVIRONMENT
+              value: cloud
+            - name: TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: backend-secret
+                  key: token

@@ -1,0 +1,15 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  namespace: custom-serverless-apps
+  name: custom-serverless-apps-role
+rules:
+  - apiGroups: [""]
+    resources: ["pods", "services"]
+    verbs: ["get", "list", "delete", "create"]
+  - apiGroups: ["apps"]
+    resources: ["deployments"]
+    verbs: ["get", "list", "delete", "create"]
+  - apiGroups: ["networking.k8s.io"]
+    resources: [ "ingresses" ]
+    verbs: ["get", "list", "delete", "create"]
