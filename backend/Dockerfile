@@ -2,8 +2,8 @@ FROM node:16
 
 WORKDIR /usr/src/app
 
-COPY app/package*.json ./
-COPY app/app.js ./
+COPY package*.json ./
+COPY app.js ./
 
 RUN npm install
 

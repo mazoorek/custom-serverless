@@ -15,13 +15,17 @@ spec:
       labels:
         app: backend
     spec:
+      imagePullSecrets:
+        - name: ecr-secret
       containers:
         - name: backend
-          image: custom-serverless-backend:latest
+          image: 444773651763.dkr.ecr.eu-central-1.amazonaws.com/custom-serverless-backend:latest
           imagePullPolicy: Always
           env:
             - name: API_SERVER_URL
               value: kubernetes.default
+            - name: ENVIRONMENT
+              value: cloud
             - name: TOKEN
               valueFrom:
                 secretKeyRef:

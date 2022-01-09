@@ -1,18 +1,22 @@
 provision infrastructure and start cluster:
-1) run:
+1) install kubectl on your local machine
+2) run:
    aws configure
    and on input prompts fill in your AWS Access Key ID, AWS Secret Access Key and your region
-2) create terraform.tfvars in infrastructure/ copy here content of terraform-template.tfvars and fill missing input
+3) create terraform.tfvars in infrastructure/ copy here content of terraform-template.tfvars and fill missing input
    variables
-3) in infrastructure/ run: 
+4) in images/ run to push your images to your AWS ECR:
+   chmod +x push-images.sh
+   ./push-images.sh
+5) in infrastructure/ run: 
    terraform init
-4) in infrastructure/ run: 
+6) in infrastructure/ run: 
    terraform apply --auto-approve
    5) in infrastructure/ run:
    chmod +x provision-cluster.sh
    ./provision-cluster.sh <path-to-your-aws-instances-private-key>
       
-6) you can verify that cluster is running correctly:
+7) you can verify that cluster is running correctly:
    CONTROL_PLANE_IP=$(terraform output control-plane-ip | cut -d "=" -f2 | tr -d "\"")
    ssh ubuntu@<CONTROL_PLANE_IP> -i <PRIVATE_KEY_LOCATION> -o StrictHostKeyChecking=no
    kubectl get nodes
