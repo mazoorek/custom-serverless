@@ -11,6 +11,7 @@
 
 #kubernetes
 manifests/ecr-secret.yaml
+manifests/ingress-issue/ecr-frontend-secret.yaml
 
 #backend
 backend/node_modules/

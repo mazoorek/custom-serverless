@@ -37,8 +37,11 @@ metadata:
   name: ingress-nginx-controller
   namespace: ingress-nginx
 data:
-  use-forwarded-headers: 'true'
-  allow-snippet-annotations: 'true'
+  proxy-protocol: "True"
+  real-ip-header: "proxy_protocol"
+  set-real-ip-from: "0.0.0.0/0"
+#  use-forwarded-headers: 'true'
+#  allow-snippet-annotations: 'true'
 #  http-snippet: |
 #    server { tutaj mozna definiowac custom snippety np block server
 #    }
