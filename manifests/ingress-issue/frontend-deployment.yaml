@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend-deployment
+  labels:
+    app: frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend
+    spec:
+      imagePullSecrets:
+        - name: ecr-frontend-secret
+      containers:
+        - name: frontend
+          image: 444773651763.dkr.ecr.eu-central-1.amazonaws.com/custom-serverless-frontend:latest
+          imagePullPolicy: Always
