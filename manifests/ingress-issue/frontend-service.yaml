@@ -4,10 +4,10 @@ metadata:
   name: frontend-service
   labels:
     app: frontend
-  annotations:
+#  annotations:
 #    service.beta.kubernetes.io/aws-load-balancer-backend-protocol: "tcp"
-    service.beta.kubernetes.io/aws-load-balancer-backend-protocol: (https|http|ssl|tcp)
-    service.beta.kubernetes.io/aws-load-balancer-proxy-protocol: "*"
+#    service.beta.kubernetes.io/aws-load-balancer-backend-protocol: (https|http|ssl|tcp)
+#    service.beta.kubernetes.io/aws-load-balancer-proxy-protocol: "*"
 spec:
   selector:
     app: frontend

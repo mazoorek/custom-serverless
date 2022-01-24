@@ -2,8 +2,9 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: ingress-svc-custom-serverless
+  annotations:
+    kubernetes.io/ingress.class: traefik
 spec:
-  ingressClassName: nginx
   rules:
     - host: custom-serverless.com
       http:
