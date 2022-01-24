@@ -1,5 +1,5 @@
 provider "aws" {
-  region  = var.region
+  region = var.region
 }
 
 data "aws_ami" "amazon-linux-image" {
@@ -19,25 +19,25 @@ data "aws_ami" "amazon-linux-image" {
 
 resource "aws_vpc" "k8s-vpc" {
   cidr_block = var.vpc_cidr_block
-  tags = {
+  tags       = {
     Name = "k8s-vpc"
   }
 }
 
 resource "aws_subnet" "k8s-subnet-1" {
-  vpc_id = aws_vpc.k8s-vpc.id
-  cidr_block = var.subnet_1_cidr_block
+  vpc_id            = aws_vpc.k8s-vpc.id
+  cidr_block        = var.subnet_1_cidr_block
   availability_zone = var.avail_zone
-  tags = {
+  tags              = {
     Name = "k8s-subnet-1"
   }
 }
 
 resource "aws_subnet" "k8s-subnet-2" {
-  vpc_id = aws_vpc.k8s-vpc.id
-  cidr_block = var.subnet_2_cidr_block
+  vpc_id            = aws_vpc.k8s-vpc.id
+  cidr_block        = var.subnet_2_cidr_block
   availability_zone = var.avail_zone_subnet_2
-  tags = {
+  tags              = {
     Name = "k8s-subnet-2"
   }
 }
@@ -207,7 +207,7 @@ resource "aws_instance" "control-plane" {
   associate_public_ip_address = true
   subnet_id                   = aws_subnet.k8s-subnet-1.id
   vpc_security_group_ids      = [aws_security_group.k8s-control-plane-sg.id]
-  availability_zone			  = var.avail_zone
+  availability_zone           = var.avail_zone
 
   tags = {
     Name = "control-plane"
@@ -215,14 +215,14 @@ resource "aws_instance" "control-plane" {
 }
 
 resource "aws_instance" "worker-node" {
-  count = var.number_of_worker_nodes
+  count                       = var.number_of_worker_nodes
   ami                         = data.aws_ami.amazon-linux-image.id
   instance_type               = var.instance_type
   key_name                    = aws_key_pair.ssh-key.key_name
   associate_public_ip_address = true
   subnet_id                   = aws_subnet.k8s-subnet-1.id
   vpc_security_group_ids      = [aws_security_group.k8s-worker-node-sg.id]
-  availability_zone			  = var.avail_zone
+  availability_zone           = var.avail_zone
 
   tags = {
     Name = "worker-node-${count.index}"
@@ -264,17 +264,26 @@ resource "aws_alb" "alb" {
   name            = "k8s-alb"
   security_groups = [aws_security_group.alb.id]
   subnets         = [aws_subnet.k8s-subnet-1.id, aws_subnet.k8s-subnet-2.id]
-  tags = {
+  tags            = {
     Name = "k8s ALB"
   }
 }
 
 resource "aws_alb_target_group" "group" {
-  name     = "k8s-alb-target-group"
-  port     = 30000
-  protocol = "HTTP"
+  name        = "k8s-alb-target-group"
+  port        = 30000
+  protocol    = "HTTP"
   target_type = "instance"
-  vpc_id   = aws_vpc.k8s-vpc.id
+  vpc_id      = aws_vpc.k8s-vpc.id
+
+  health_check {
+    path                = "/"
+    protocol            = "HTTP"
+    healthy_threshold   = 3
+    unhealthy_threshold = 3
+    interval            = 10
+    matcher             = "200-499"
+  }
 }
 
 resource "aws_alb_listener" "listener_http" {
@@ -289,18 +298,29 @@ resource "aws_alb_listener" "listener_http" {
 }
 
 resource "aws_alb_target_group_attachment" "target_group_attachment" {
-  count = var.number_of_worker_nodes
+  count            = var.number_of_worker_nodes
   target_group_arn = aws_alb_target_group.group.arn
-  target_id = aws_instance.worker-node[count.index].id
+  target_id        = aws_instance.worker-node[count.index].id
 }
 
 data "aws_route53_zone" "hosted_zone" {
-  name =  var.route53_hosted_zone_name
+  name = var.route53_hosted_zone_name
 }
 
 resource "aws_route53_record" "route53_record" {
   zone_id = data.aws_route53_zone.hosted_zone.zone_id
   name    = var.route53_hosted_zone_url
+  type    = "A"
+  alias {
+    name                   = aws_alb.alb.dns_name
+    zone_id                = aws_alb.alb.zone_id
+    evaluate_target_health = false
+  }
+}
+
+resource "aws_route53_record" "route53_record_subdomains" {
+  zone_id = data.aws_route53_zone.hosted_zone.zone_id
+  name    = var.route53_hosted_zone_subdomains_url
   type    = "A"
   alias {
     name                   = aws_alb.alb.dns_name

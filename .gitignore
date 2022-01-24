@@ -10,8 +10,8 @@
 **/terraform.tfvars
 
 #kubernetes
-manifests/ecr-secret.yaml
-manifests/ingress-issue/ecr-frontend-secret.yaml
+manifests/secrets/backend-ecr-secret.yaml
+manifests/secrets/frontend-ecr-secret.yaml
 
 #backend
 backend/node_modules/

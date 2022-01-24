@@ -16,7 +16,7 @@ spec:
         app: backend
     spec:
       imagePullSecrets:
-        - name: ecr-secret
+        - name: backend-ecr-secret
       containers:
         - name: backend
           image: 444773651763.dkr.ecr.eu-central-1.amazonaws.com/custom-serverless-backend:latest
@@ -29,5 +29,5 @@ spec:
             - name: TOKEN
               valueFrom:
                 secretKeyRef:
-                  name: backend-secret
+                  name: backend-sa-secret
                   key: token

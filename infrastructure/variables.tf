@@ -12,3 +12,4 @@ variable number_of_worker_nodes {
 }
 variable route53_hosted_zone_name {}
 variable route53_hosted_zone_url {}
+variable route53_hosted_zone_subdomains_url {}
