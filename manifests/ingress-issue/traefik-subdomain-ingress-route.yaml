@@ -1,13 +1,13 @@
 apiVersion: traefik.containo.us/v1alpha1
 kind: IngressRoute
 metadata:
-  name: main-ingress-route
+  name: simpleingressroute
   namespace: default
 spec:
   entryPoints:
     - web
   routes:
-    - match: Host(`custom-serverless.com`)
+    - match: Host(`abc.custom-serverless.com`)
       kind: Rule
       services:
         - name: frontend-service
