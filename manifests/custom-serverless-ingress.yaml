@@ -1,7 +1,8 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: ingress-svc-custom-serverless
+  name: custom-serverless-main-domain-ingress
+  namespace: custom-serverless
 spec:
   ingressClassName: nginx
   rules:
@@ -19,7 +20,8 @@ spec:
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: ingress-svc-custom-serverless-2
+  name: custom-serverless-main-domain-www-ingress
+  namespace: custom-serverless
 spec:
   ingressClassName: nginx
   rules:

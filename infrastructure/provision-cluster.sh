@@ -30,19 +30,25 @@ echo "---------------------------------creating secret for pulling images from A
 export AWS_DOCKER_LOGIN_COMMAND=$(aws ecr get-login)
 export AWS_DOCKER_LOGIN_USER=$(echo $AWS_DOCKER_LOGIN_COMMAND | cut -d " " -f 4)
 export AWS_DOCKER_LOGIN_PASSWORD=$(echo $AWS_DOCKER_LOGIN_COMMAND | cut -d " " -f 6)
-kubectl create secret docker-registry ecr-secret \
+kubectl create secret docker-registry backend-ecr-secret \
 --docker-server=444773651763.dkr.ecr.eu-central-1.amazonaws.com/custom-serverless-backend \
 --docker-username=$AWS_DOCKER_LOGIN_USER \
 --docker-password=$AWS_DOCKER_LOGIN_PASSWORD \
---dry-run=client -o yaml > ../manifests/ecr-secret.yaml \
+--dry-run=client -o yaml > ../manifests/secrets/backend-ecr-secret.yaml \
 -n=custom-serverless
 
-kubectl create secret docker-registry ecr-frontend-secret \
+kubectl create secret docker-registry frontend-ecr-secret \
 --docker-server=444773651763.dkr.ecr.eu-central-1.amazonaws.com/custom-serverless-frontend \
 --docker-username=$AWS_DOCKER_LOGIN_USER \
 --docker-password=$AWS_DOCKER_LOGIN_PASSWORD \
---dry-run=client -o yaml > ../manifests/ingress-issue/ecr-frontend-secret.yaml
+--dry-run=client -o yaml > ../manifests/secrets/frontend-ecr-secret.yaml \
+-n=custom-serverless
 echo "---------------------------------control-plane: copy app manifest files------------------------------------------"
 ssh ubuntu@"$CONTROL_PLANE_IP" -i /home/piotr/.ssh/id_rsa -o StrictHostKeyChecking=no mkdir -p /tmp/custom-serverless/
 scp -r -i /home/piotr/.ssh/id_rsa -o StrictHostKeyChecking=no ../manifests ubuntu@"$CONTROL_PLANE_IP":/tmp/custom-serverless/manifests
-
+echo "---------------------------------control-plane: deploy manifest files--------------------------------------------"
+ssh ubuntu@"$CONTROL_PLANE_IP" -i /home/piotr/.ssh/id_rsa -o StrictHostKeyChecking=no kubectl apply -f /tmp/custom-serverless/manifests/namespaces/
+ssh ubuntu@"$CONTROL_PLANE_IP" -i /home/piotr/.ssh/id_rsa -o StrictHostKeyChecking=no kubectl apply -f /tmp/custom-serverless/manifests/controllers/
+ssh ubuntu@"$CONTROL_PLANE_IP" -i /home/piotr/.ssh/id_rsa -o StrictHostKeyChecking=no kubectl apply -f /tmp/custom-serverless/manifests/service-accounts/
+ssh ubuntu@"$CONTROL_PLANE_IP" -i /home/piotr/.ssh/id_rsa -o StrictHostKeyChecking=no kubectl apply -f /tmp/custom-serverless/manifests/secrets/
+ssh ubuntu@"$CONTROL_PLANE_IP" -i /home/piotr/.ssh/id_rsa -o StrictHostKeyChecking=no kubectl apply -f /tmp/custom-serverless/manifests/
