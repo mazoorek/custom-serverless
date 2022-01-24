@@ -1717,8 +1717,8 @@ spec:
             - --accesslog
             - --entrypoints.web.Address=:8000
             - --entrypoints.websecure.Address=:4443
-            - --providers.kubernetescrd
-#            - --providers.kubernetesingress=true
+#            - --providers.kubernetescrd
+            - --providers.kubernetesingress=true
             - --certificatesresolvers.myresolver.acme.tlschallenge
             - --certificatesresolvers.myresolver.acme.email=foo@you.com
             - --certificatesresolvers.myresolver.acme.storage=acme.json

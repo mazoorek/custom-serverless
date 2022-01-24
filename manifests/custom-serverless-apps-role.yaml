@@ -13,3 +13,6 @@ rules:
   - apiGroups: ["networking.k8s.io"]
     resources: [ "ingresses" ]
     verbs: ["get", "list", "delete", "create"]
+#  - apiGroups: [ "traefik.containo.us" ]
+#    resources: [ "ingressroutes" ]
+#    verbs: [ "get", "list", "delete", "create" ]
