@@ -37,8 +37,8 @@ export class MainComponent {
 
   createApp(): void {
     let appName = this.appNameInput.nativeElement.value;
-    this.mainService.createApps(appName).subscribe(response => {
-      console.log(response);
+    this.mainService.createApps(appName).subscribe(_ => {
+      this.mainService.getApps().subscribe(apps => this.dataSource = apps);
     });
   }
 }
