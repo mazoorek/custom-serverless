@@ -1,0 +1,7 @@
+{
+  "/api/*":{
+    "target": "api.custom-serverless.com",
+    "secure": false,
+    "changeOrigin": true
+  }
+}

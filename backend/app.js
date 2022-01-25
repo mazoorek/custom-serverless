@@ -28,27 +28,26 @@ app.get('/pods-runtime', async (req, res) => {
 });
 
 
-app.get('/ingresses', async (req, res) => {
+app.get('/api/ingress', async (req, res) => {
     let ingresses = await k8sNetworkingV1Api.listNamespacedIngress('custom-serverless-apps').catch(e => console.log(e));
-    res.json(ingresses);
+    let response = ingresses.body.items.map(item => item.metadata.name);
+    res.json(response);
 });
 
-app.post('/create', async (req, res) => {
+app.post('/api/ingress', async (req, res) => {
+    let appName = req.body.clientAppName;
     let ingressRequest = {
         "apiVersion": "networking.k8s.io/v1",
         "kind": "Ingress",
         "metadata": {
-            "annotations": {
-                "kubernetes.io/ingress.class": "nginx",
-                "nginx.ingress.kubernetes.io/rewrite-target": "/"
-            },
-            "name": "lb-ingress",
+            "name": appName,
             "namespace": "custom-serverless-apps"
         },
         "spec": {
+            "ingressClassName": "nginx",
             "rules": [
                 {
-                    "host": "terraform-example-alb-352318663.eu-central-1.elb.amazonaws.com",
+                    "host": `${appName}.custom-serverless.com`,
                     "http": {
                         "paths": [
                             {
@@ -61,7 +60,7 @@ app.post('/create', async (req, res) => {
                                     }
                                 },
                                 "path": "/",
-                                "pathType": "Exact"
+                                "pathType": "Prefix"
                             }
                         ]
                     }
