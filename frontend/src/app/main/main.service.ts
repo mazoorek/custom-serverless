@@ -8,11 +8,11 @@ export class MainService {
   constructor(private http: HttpClient) {
   }
 
-  getApps(): Observable<String[]> {
-    return this.http.get<String[]>("/api/ingress");
+  getApps(): Observable<string[]> {
+    return this.http.get<string[]>("/api/ingress");
   }
 
-  createApps(clientAppName: String): Observable<void> {
+  createApps(clientAppName: string): Observable<void> {
     return this.http.post<void>("/api/ingress", {clientAppName: clientAppName});
   }
 }
