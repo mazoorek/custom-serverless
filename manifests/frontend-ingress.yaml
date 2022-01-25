@@ -28,6 +28,13 @@ spec:
     - host: www.custom-serverless.com
       http:
         paths:
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: backend-service
+                port:
+                  number: 8080
           - path: /
             pathType: Prefix
             backend:
