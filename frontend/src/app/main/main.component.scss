@@ -8,6 +8,11 @@
 }
 
 .input-container {
-  border: rgba(127,127,127,.4) 1px solid;
   margin: 20px 0;
+}
+
+.my-code-editor {
+  .editor-container {
+    height: 500px;
+  }
 }

@@ -2,6 +2,7 @@ const k8s = require('@kubernetes/client-node');
 const express = require('express');
 const dotenv = require('dotenv');
 const dns = require('dns');
+const PJV = require('package-json-validator').PJV;
 
 dotenv.config({path: './.env'});
 const kc = new k8s.KubeConfig();
@@ -31,6 +32,11 @@ app.get('/pods-runtime', async (req, res) => {
 app.get('/api/ingress', async (req, res) => {
     let ingresses = await k8sNetworkingV1Api.listNamespacedIngress('custom-serverless-apps').catch(e => console.log(e));
     let response = ingresses.body.items.map(item => item.metadata.name);
+    res.json(response);
+});
+
+app.post('/api/validate', async (req, res) => {
+    let response = PJV.validate(req.body.code);
     res.json(response);
 });
 
