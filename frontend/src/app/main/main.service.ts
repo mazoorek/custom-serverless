@@ -15,4 +15,8 @@ export class MainService {
   createApps(clientAppName: string): Observable<void> {
     return this.http.post<void>("/api/ingress", {clientAppName: clientAppName});
   }
+
+  validatePackageJson(code: string): Observable<void> {
+    return this.http.post<void>("/api/validate", {code: code});
+  }
 }
