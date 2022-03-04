@@ -43,6 +43,13 @@ kubectl create secret docker-registry frontend-ecr-secret \
 --docker-password=$AWS_DOCKER_LOGIN_PASSWORD \
 --dry-run=client -o yaml > ../manifests/secrets/frontend-ecr-secret.yaml \
 -n=custom-serverless
+
+kubectl create secret docker-registry runtime-ecr-secret \
+--docker-server=444773651763.dkr.ecr.eu-central-1.amazonaws.com/custom-serverless-runtime \
+--docker-username=$AWS_DOCKER_LOGIN_USER \
+--docker-password=$AWS_DOCKER_LOGIN_PASSWORD \
+--dry-run=client -o yaml > ../manifests/secrets/runtime-ecr-secret.yaml \
+-n=custom-serverless-runtime
 echo "---------------------------------control-plane: copy app manifest files------------------------------------------"
 ssh ubuntu@"$CONTROL_PLANE_IP" -i /home/piotr/.ssh/id_rsa -o StrictHostKeyChecking=no mkdir -p /tmp/custom-serverless/
 scp -r -i /home/piotr/.ssh/id_rsa -o StrictHostKeyChecking=no ../manifests ubuntu@"$CONTROL_PLANE_IP":/tmp/custom-serverless/manifests

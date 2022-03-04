@@ -19,4 +19,8 @@ export class MainService {
   validatePackageJson(code: string): Observable<void> {
     return this.http.post<void>("/api/validate", {code: code});
   }
+
+  testFunction(code: string): Observable<void> {
+    return this.http.post<void>("/api/test", {code: code});
+  }
 }
