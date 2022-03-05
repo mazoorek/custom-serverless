@@ -1,16 +1,27 @@
 import {Component, ElementRef, ViewChild} from '@angular/core';
 import {MainService} from './main.service';
 import {EditorComponent} from 'ngx-monaco-editor/lib/editor.component';
+import {editor, MarkerSeverity} from 'monaco-editor';
+import IStandaloneCodeEditor = editor.IStandaloneCodeEditor;
 
 @Component({
   selector: 'app-main',
   template: `
-    <ngx-monaco-editor class="my-code-editor" [options]="validateEditorOptions" [ngModel]="packageJsonCode"
-                       (ngModelChange)="onPackageJsonCodeChange($event)"></ngx-monaco-editor>
-    <button mat-raised-button color="primary" (click)="validatePackageJson()">validate package.json</button>
-    <ngx-monaco-editor #testEditor class="my-code-editor" [options]="testEditorOptions" [ngModel]="testCode"
-                       (ngModelChange)="onTestCodeChange($event)"></ngx-monaco-editor>
-    <button mat-raised-button color="primary" (click)="testFunction()">test function</button>
+    <ngx-monaco-editor class="my-code-editor"
+                       [options]="validateEditorOptions"
+                       (onInit)="onPackageJsonEditorInit($event)"
+                       [ngModel]="packageJsonCode"
+                       (ngModelChange)="onPackageJsonCodeChange($event)">
+    </ngx-monaco-editor>
+    <button mat-raised-button color="primary" (click)="validatePackageJson()" [disabled]="!validJsonSyntax">validate package.json</button>
+    <ngx-monaco-editor #testEditor
+                       class="my-code-editor"
+                       [options]="testEditorOptions"
+                       [ngModel]="testCode"
+                       (onInit)="onTestFunctionEditorInit($event)"
+                       (ngModelChange)="onTestCodeChange($event)">
+    </ngx-monaco-editor>
+    <button mat-raised-button color="primary" (click)="testFunction()" [disabled]="!validJavascriptSyntax">test function</button>
     <div class="center">
       <div style="height: 500px">
       </div>
@@ -42,6 +53,9 @@ export class MainComponent {
 
   displayedColumns: string[] = ['applicationName'];
   dataSource: string[] = [];
+
+  validJsonSyntax: boolean = true;
+  validJavascriptSyntax: boolean = true;
 
   testEditorOptions = {theme: 'vs-dark', language: 'javascript'};
   validateEditorOptions = {theme: 'vs-dark', language: 'json'};
@@ -87,6 +101,9 @@ let response = PJV.validate(data);
   `;
 
 
+  packageJsonEditor!: IStandaloneCodeEditor;
+  testFunctionEditor!: IStandaloneCodeEditor;
+
   constructor(private mainService: MainService) {
     this.mainService.getApps().subscribe(apps => this.dataSource = apps);
   }
@@ -95,8 +112,25 @@ let response = PJV.validate(data);
     this.packageJsonCode = updatedCode;
   }
 
+  onPackageJsonEditorInit(packageJsonEditor: IStandaloneCodeEditor): void {
+    this.packageJsonEditor = packageJsonEditor;
+    (<any>window).monaco.editor.onDidChangeMarkers(() => {
+      let markers = (<any>window).monaco.editor.getModelMarkers({owner: "json"})
+        .filter((marker: editor.IMarker) => marker.severity === MarkerSeverity.Error);
+      this.validJsonSyntax = markers.length === 0;
+    });
+  }
+
+  onTestFunctionEditorInit(testFunctionEditor: IStandaloneCodeEditor): void {
+    this.testFunctionEditor = testFunctionEditor;
+    (<any>window).monaco.editor.onDidChangeMarkers(() => {
+      let markers = (<any>window).monaco.editor.getModelMarkers({owner: "javascript"})
+        .filter((marker: editor.IMarker) => marker.severity === MarkerSeverity.Error);
+      this.validJavascriptSyntax = markers.length === 0;
+    });
+  }
+
   onTestCodeChange(updatedCode: string): void {
-    this.testEditor.model;
     this.testCode = updatedCode;
   }
 
