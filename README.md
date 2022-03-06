@@ -54,5 +54,8 @@ terraform-example-alb-352318663.eu-central-1.elb.amazonaws.com
 -----------------
 run locally:
 1) copy file backend/template.env to a new file: backend/.env and fill the values
-2) run:
+2) fill /runtime/package.json with dependencies
+for instance: if serverless function you define will use some third party module like package-json-validator, 
+then if you want to run such function locally you have to add package-json-validato dependency to package.json in runtime/ directory
+3) run:
 app /backend/app.js
