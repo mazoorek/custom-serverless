@@ -3,9 +3,9 @@ const app = express();
 const port = 3000;
 app.use(express.json({limit: '10kb'}));
 
-app.get('/test', (req, res) => {
-    let response = eval(`res.body.code`);
-    res.json(response);
+app.post('/test', (req, res) => {
+    let testedFunction = eval(req.body.code);
+    res.json(testedFunction());
 });
 
 app.listen(port, () => {

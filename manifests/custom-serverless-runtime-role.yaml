@@ -4,6 +4,9 @@ metadata:
   namespace: custom-serverless-runtime
   name: custom-serverless-runtime-role
 rules:
-  - apiGroups: [""]
-    resources: ["pods"]
-    verbs: ["get", "list", "delete", "create"]
+  - apiGroups: [ "" ]
+    resources: [ "pods", "services" ]
+    verbs: [ "get", "list", "delete", "create","update" ]
+  - apiGroups: [ "apps" ]
+    resources: [ "deployments" ]
+    verbs: [ "get", "list", "delete", "create","update" ]

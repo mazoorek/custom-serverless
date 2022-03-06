@@ -14,6 +14,7 @@ const HOST = '0.0.0.0';
 let cluster;
 let user;
 let k8sCoreV1Api;
+let k8sAppsV1Api;
 let k8sNetworkingV1Api;
 
 const app = express();
@@ -44,109 +45,134 @@ app.post('/api/validate', async (req, res) => {
 
 app.post('/api/test', async (req, res) => {
     let appName = req.body.clientAppName;
-    let appRuntimes = await k8sCoreV1Api.listNamespacedService(
-        'custom-serverless-runtime',
-        undefined,
-        false,
-        undefined,
-        `metadata.name=${appName}`
-    ).catch(e => console.log(e));
-    if(appRuntimes.length === 0) {
+    let appRuntimes = (await k8sCoreV1Api.listNamespacedService(
+            'custom-serverless-runtime',
+            undefined,
+            false,
+            undefined,
+            `metadata.name=${appName}`
+        ).catch(e => console.log(e))
+    ).body.items;
 
-        let expirationDate = moment(new Date()).add(5, 'm').toDate();
-        let serviceRequest = {
-            "apiVersion": "v1",
-            "kind": "Service",
-            "metadata": {
-                "labels": {
-                    "app": "runtime",
-                    "expire": `${expirationDate.toString()}`
-                },
-                "name": `${appName}`,
-                "namespace": "custom-serverless-runtime"
-            },
-            "spec": {
-                "ports": [
-                    {
-                        "port": 8080,
-                        "protocol": "TCP",
-                        "targetPort": 8080
-                    }
-                ],
-                "selector": {
-                    "app": "backend"
-                }
-            }
-        };
-
-        let deploymentRequest = {
-            "apiVersion": "apps/v1",
-            "kind": "Deployment",
-            "metadata": {
-                "labels": {
-                    "app": "runtime",
-                    "expire": `${expirationDate.toString()}`,
-                },
-                "name": `${appName}-runtime`,
-                "namespace": "custom-serverless-runtime"
-            },
-            "spec": {
-                "replicas": 1,
-                "selector": {
-                    "matchLabels": {
-                        "app": "backend"
-                    }
-                },
-                "template": {
-                    "metadata": {
-                        "labels": {
-                            "app": "backend"
-                        }
-                    },
-                    "spec": {
-                        "containers": [
-                            {
-                                "env": [
-                                    {
-                                        "name": "API_SERVER_URL",
-                                        "value": "kubernetes.default"
-                                    },
-                                    {
-                                        "name": "ENVIRONMENT",
-                                        "value": "cloud"
-                                    },
-                                    {
-                                        "name": "TOKEN",
-                                        "valueFrom": {
-                                            "secretKeyRef": {
-                                                "key": "token",
-                                                "name": "backend-sa-secret"
-                                            }
-                                        }
-                                    }
-                                ],
-                                "image": "444773651763.dkr.ecr.eu-central-1.amazonaws.com/custom-serverless-runtime:latest",
-                                "imagePullPolicy": "Always",
-                                "name": "runtime"
-                            }
-                        ],
-                        "imagePullSecrets": [
-                            {
-                                "name": "runtime-ecr-secret"
-                            }
-                        ]
-                    }
-                }
-            }
-        };
-        await k8sCoreV1Api.createNamespacedService('custom-serverless-runtime', serviceRequest).catch(e => console.log(e));
-        await k8sCoreV1Api.createNamespacedDeployment('custom-serverless-runtime', deploymentRequest).catch(e => console.log(e));
-
+    let exampleValidPackageJson = `
+   {
+    "name": "sandbox",
+    "version": "1.0.0",
+    "description": "",
+    "main": "index.js",
+    "scripts": {
+      "test": "echo \\"Error: no test specified\\" && exit 1"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "dependencies": {
+      "express": "^4.17.3",
+      "package-json-validator": "^0.6.3"
     }
-    let response = await axios.post(`http://${appName}.custom-serverless-runtime:8080/test`, {
-        code: req.body.code
-    });
-    res.status(200).json(response);
+  }
+  `;
+
+    let expirationDate = moment(new Date()).add(5, 'm').toDate();
+    let serviceRequest = {
+        "apiVersion": "v1",
+        "kind": "Service",
+        "metadata": {
+            "labels": {
+                "app": "runtime",
+                "expire": `${expirationDate.getTime()}`
+            },
+            "name": `${appName}`,
+            "namespace": "custom-serverless-runtime"
+        },
+        "spec": {
+            "ports": [
+                {
+                    "port": 3000,
+                    "protocol": "TCP",
+                    "targetPort": 3000
+                }
+            ],
+            "selector": {
+                "app": `${appName}-runtime`
+            }
+        }
+    };
+
+    let deploymentRequest = {
+        "apiVersion": "apps/v1",
+        "kind": "Deployment",
+        "metadata": {
+            "labels": {
+                "app": "runtime"
+            },
+            "name": `${appName}-runtime`,
+            "namespace": "custom-serverless-runtime"
+        },
+        "spec": {
+            "replicas": 1,
+            "selector": {
+                "matchLabels": {
+                    "app": `${appName}-runtime`
+                }
+            },
+            "template": {
+                "metadata": {
+                    "labels": {
+                        "app": `${appName}-runtime`
+                    }
+                },
+                "spec": {
+                    "containers": [
+                        {
+                            "env": [
+                                {
+                                    "name": "PACKAGE_JSON",
+                                    "value": exampleValidPackageJson
+                                }
+                            ],
+                            "image": "444773651763.dkr.ecr.eu-central-1.amazonaws.com/custom-serverless-runtime:latest",
+                            "imagePullPolicy": "Always",
+                            "name": "runtime"
+                        }
+                    ],
+                    "imagePullSecrets": [
+                        {
+                            "name": "runtime-ecr-secret"
+                        }
+                    ]
+                }
+            }
+        }
+    };
+
+    if (appRuntimes.length === 0) {
+        await k8sCoreV1Api.createNamespacedService('custom-serverless-runtime', serviceRequest).catch(e => console.log(e));
+        await k8sAppsV1Api.createNamespacedDeployment('custom-serverless-runtime', deploymentRequest).catch(e => console.log(e));
+    } else {
+        await k8sCoreV1Api.patchNamespacedService(
+            appName,
+            'custom-serverless-runtime',
+            serviceRequest,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            {
+                headers: {
+                    "Content-Type": "application/strategic-merge-patch+json"
+                }
+            }
+        ).catch(e => console.log(e));
+    }
+    let runtimeUrl = process.env.ENVIRONMENT === 'production'
+        ? `http://${appName}.custom-serverless-runtime:3000`
+        : process.env.RUNTIME_URL;
+    let response = await axios.post(`${runtimeUrl}/test`, {
+        code: req.body.code,
+        args: req.body.args
+    }).catch(e => console.log(e));
+    res.status(200).json(response.data);
 });
 
 app.post('/api/ingress', async (req, res) => {
@@ -190,7 +216,7 @@ app.post('/api/ingress', async (req, res) => {
 app.listen(PORT, HOST, async () => {
     console.log(`Running on port ${PORT}`);
     await dns.lookup(process.env.API_SERVER_URL, (err, address, family) => {
-            let API_SERVER_URL = process.env.ENVIRONMENT === 'dev' ? process.env.API_SERVER_URL : `https://${address}`;
+            let API_SERVER_URL = process.env.ENVIRONMENT === 'production' ? `https://${address}` : process.env.API_SERVER_URL;
 
             cluster = {
                 name: 'k8s-server',
@@ -205,6 +231,7 @@ app.listen(PORT, HOST, async () => {
             kc.loadFromClusterAndUser(cluster, user);
 
             k8sCoreV1Api = kc.makeApiClient(k8s.CoreV1Api);
+            k8sAppsV1Api = kc.makeApiClient(k8s.AppsV1Api);
             k8sNetworkingV1Api = kc.makeApiClient(k8s.NetworkingV1Api);
         }
     );

@@ -17,4 +17,7 @@ manifests/secrets/frontend-ecr-secret.yaml
 backend/node_modules/
 backend/.env
 
+#runtime
+runtime/node_modules/
+
 

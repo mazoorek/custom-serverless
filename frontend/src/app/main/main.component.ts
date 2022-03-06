@@ -1,5 +1,5 @@
 import {Component, ElementRef, ViewChild} from '@angular/core';
-import {MainService} from './main.service';
+import {MainService, TestFunctionRequest} from './main.service';
 import {EditorComponent} from 'ngx-monaco-editor/lib/editor.component';
 import {editor, MarkerSeverity} from 'monaco-editor';
 import IStandaloneCodeEditor = editor.IStandaloneCodeEditor;
@@ -13,7 +13,9 @@ import IStandaloneCodeEditor = editor.IStandaloneCodeEditor;
                        [ngModel]="packageJsonCode"
                        (ngModelChange)="onPackageJsonCodeChange($event)">
     </ngx-monaco-editor>
-    <button mat-raised-button color="primary" (click)="validatePackageJson()" [disabled]="!validJsonSyntax">validate package.json</button>
+    <button mat-raised-button color="primary" (click)="validatePackageJson()" [disabled]="!validJsonSyntax">validate
+      package.json
+    </button>
     <ngx-monaco-editor #testEditor
                        class="my-code-editor"
                        [options]="testEditorOptions"
@@ -21,7 +23,9 @@ import IStandaloneCodeEditor = editor.IStandaloneCodeEditor;
                        (onInit)="onTestFunctionEditorInit($event)"
                        (ngModelChange)="onTestCodeChange($event)">
     </ngx-monaco-editor>
-    <button mat-raised-button color="primary" (click)="testFunction()" [disabled]="!validJavascriptSyntax">test function</button>
+    <button mat-raised-button color="primary" (click)="testFunction()" [disabled]="!validJavascriptSyntax">test
+      function
+    </button>
     <div class="center">
       <div style="height: 500px">
       </div>
@@ -78,26 +82,29 @@ export class MainComponent {
   }
   `;
   testCode: string = `
-  let data = \`
-{
-  "name": "sandbox",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \\\\"Error: no test specified\\\\" && exit 1"
-  },
-  "keywords": [],
-  "author": "name",
-  "license": "ISC",
-  "dependencies": {
-    "package-json-validator": "^0.6.3"
-  }
-}
-\`;
+    (args) => {
+      let data = \`
+        {
+        "name": "sandbox",
+        "version": "1.0.0",
+        "description": "",
+        "main": "index.js",
+        "scripts": {
+            "test": "echo \\\\"Error: no test specified\\\\" && exit 1"
+        },
+        "keywords": [],
+        "author": "name",
+        "license": "ISC",
+        "dependencies": {
+            "package-json-validator": "^0.6.3"
+        }
+        }
+    \`;
 
-let PJV=require('package-json-validator').PJV;
-let response = PJV.validate(data);
+    let PJV=require('package-json-validator').PJV;
+    let response = PJV.validate(data);
+    return response;
+    }
   `;
 
 
@@ -135,7 +142,12 @@ let response = PJV.validate(data);
   }
 
   testFunction() {
-    this.mainService.testFunction(this.testCode).subscribe(response => {
+    let request: TestFunctionRequest = {
+      code: this.testCode,
+      args: {},
+      clientAppName: 'test'
+    };
+    this.mainService.testFunction(request).subscribe(response => {
       console.log(response);
     });
   }
