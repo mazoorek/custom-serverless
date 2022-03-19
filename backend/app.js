@@ -3,6 +3,7 @@ const express = require('express');
 const axios = require('axios');
 const dotenv = require('dotenv');
 const dns = require('dns');
+const ws = require('ws');
 const moment = require("moment");
 const PJV = require('package-json-validator').PJV;
 
@@ -16,21 +17,11 @@ let user;
 let k8sCoreV1Api;
 let k8sAppsV1Api;
 let k8sNetworkingV1Api;
+const watch = new k8s.Watch(kc);
 
 const app = express();
 
 app.use(express.json({limit: '10kb'}));
-
-app.get('/pods', async (req, res) => {
-    let pods = await k8sCoreV1Api.listNamespacedPod('custom-serverless-apps', true).catch(e => console.log(e));
-    res.json(pods);
-});
-
-app.get('/pods-runtime', async (req, res) => {
-    let pods = await k8sCoreV1Api.listNamespacedPod('custom-serverless-runtime').catch(e => console.log(e));
-    res.json(pods);
-});
-
 
 app.get('/api/ingress', async (req, res) => {
     let ingresses = await k8sNetworkingV1Api.listNamespacedIngress('custom-serverless-apps').catch(e => console.log(e));
@@ -43,38 +34,9 @@ app.post('/api/validate', async (req, res) => {
     res.json(response);
 });
 
-app.post('/api/test', async (req, res) => {
-    let appName = req.body.clientAppName;
-    let appRuntimes = (await k8sCoreV1Api.listNamespacedService(
-            'custom-serverless-runtime',
-            undefined,
-            false,
-            undefined,
-            `metadata.name=${appName}`
-        ).catch(e => console.log(e))
-    ).body.items;
-
-    let exampleValidPackageJson = `
-   {
-    "name": "sandbox",
-    "version": "1.0.0",
-    "description": "",
-    "main": "index.js",
-    "scripts": {
-      "test": "echo \\"Error: no test specified\\" && exit 1"
-    },
-    "keywords": [],
-    "author": "",
-    "license": "ISC",
-    "dependencies": {
-      "express": "^4.17.3",
-      "package-json-validator": "^0.6.3"
-    }
-  }
-  `;
-
+let createRuntimeServiceRequest = (appName) => {
     let expirationDate = moment(new Date()).add(5, 'm').toDate();
-    let serviceRequest = {
+    return {
         "apiVersion": "v1",
         "kind": "Service",
         "metadata": {
@@ -98,8 +60,29 @@ app.post('/api/test', async (req, res) => {
             }
         }
     };
+}
 
-    let deploymentRequest = {
+let createRuntimeDeploymentRequest = (appName) => {
+    let exampleValidPackageJson = `
+   {
+    "name": "sandbox",
+    "version": "1.0.0",
+    "description": "",
+    "main": "index.js",
+    "scripts": {
+      "test": "echo \\"Error: no test specified\\" && exit 1"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "dependencies": {
+      "express": "^4.17.3",
+      "package-json-validator": "^0.6.3"
+    }
+  }
+  `;
+
+    return {
         "apiVersion": "apps/v1",
         "kind": "Deployment",
         "metadata": {
@@ -145,11 +128,91 @@ app.post('/api/test', async (req, res) => {
             }
         }
     };
+}
 
+async function getAppRuntimes(appName) {
+    return (await k8sCoreV1Api.listNamespacedService(
+            'custom-serverless-runtime',
+            undefined,
+            false,
+            undefined,
+            `metadata.name=${appName}`
+        ).catch(e => console.log(e))
+    ).body.items;
+}
+
+app.get('/api/runtime/:clientAppName', async (req, res) => {
+    // TODO validation if clientAppName belongs to client
+    let appName = req.params.clientAppName;
+    let appRuntimes = await getAppRuntimes(appName);
+    let runtimeReady = true;
     if (appRuntimes.length === 0) {
+        runtimeReady = false;
+        let serviceRequest = createRuntimeServiceRequest(appName);
+        let deploymentRequest = createRuntimeDeploymentRequest(appName);
         await k8sCoreV1Api.createNamespacedService('custom-serverless-runtime', serviceRequest).catch(e => console.log(e));
         await k8sAppsV1Api.createNamespacedDeployment('custom-serverless-runtime', deploymentRequest).catch(e => console.log(e));
+        // watch.watch(
+        //     '/api/v1/namespaces/custom-serverless-runtime/pods',
+        //     {
+        //         labelSelector: encodeURI(`app=${appName}-runtime`)
+        //     },
+        //     (phase, apiObj, watchObj) => {
+        //         console.log(`faza: ${phase}`);
+        //         console.log(watchObj.object.status.phase);
+        //         if (phase === 'MODIFIED') {
+        //             if(watchObj.object.status.phase === 'Running') {
+        //                 console.log('faza running');
+        //                 this._stop();
+        //             }
+        //
+        //         }
+        //     },
+        //     (err) => {
+        //         console.log(`done with watching ${err}`);
+        //     }
+        // ).then(value => {
+        //     console.log(`koniec: ${value}`);
+        // });
+
+        const listFn = () => k8sCoreV1Api.listNamespacedPod('custom-serverless-runtime');
+        const informer = k8s.makeInformer(kc, '/api/v1/namespaces/custom-serverless-runtime/pods', listFn, `app=${appName}-runtime`);
+        informer.on('update', (obj) => {
+            console.log(`Updated: ${obj}`);
+            if(obj.status.phase === 'Running') {
+                console.log('faza running');
+                informer.stop().then(result => {
+                    console.log(`koniec: ${result}`);
+                });
+            }
+        });
+        await informer.start();
+
+
     } else {
+        let numberOfRunningPods = (await k8sCoreV1Api.listNamespacedPod(
+            'custom-serverless-runtime',
+            undefined,
+            undefined,
+            undefined,
+            "status.phase=Running",
+            `app=${appName}-runtime`
+        ).catch(e => console.log(e))).body.items.length;
+        if (numberOfRunningPods === 0) {
+            runtimeReady = false;
+        }
+    }
+    res.status(200).json({runtimeReady: runtimeReady});
+});
+
+app.post('/api/test', async (req, res) => {
+    let appName = req.body.clientAppName;
+    let appRuntimes = await getAppRuntimes(appName);
+
+    if (appRuntimes.length === 0) {
+        res.status(422).json({message: 'runtime is not up'});
+    } else {
+        let serviceRequest = createRuntimeServiceRequest(appName);
         await k8sCoreV1Api.patchNamespacedService(
             appName,
             'custom-serverless-runtime',
@@ -213,7 +276,7 @@ app.post('/api/ingress', async (req, res) => {
     res.status(200).json({});
 });
 
-app.listen(PORT, HOST, async () => {
+const server = app.listen(PORT, HOST, async () => {
     console.log(`Running on port ${PORT}`);
     await dns.lookup(process.env.API_SERVER_URL, (err, address, family) => {
             let API_SERVER_URL = process.env.ENVIRONMENT === 'production' ? `https://${address}` : process.env.API_SERVER_URL;
@@ -235,5 +298,47 @@ app.listen(PORT, HOST, async () => {
             k8sNetworkingV1Api = kc.makeApiClient(k8s.NetworkingV1Api);
         }
     );
+});
+
+const wsServer = new ws.Server({noServer: true});
+
+server.on('upgrade', (request, socket, head) => {
+    wsServer.handleUpgrade(request, socket, head, socket => {
+        // TODO ws authentication
+        // var validationResult = validateCookie(req.headers.cookie);
+        // if (validationResult) {
+        //     //...
+        // } else {
+        //     socket.write('HTTP/1.1 401 Web Socket Protocol Handshake\r\n' +
+        //         'Upgrade: WebSocket\r\n' +
+        //         'Connection: Upgrade\r\n' +
+        //         '\r\n');
+        //     socket.close();
+        //     socket.destroy();
+        //     return;
+        // }
+        // //...
+        wsServer.emit('connection', socket, request);
+    });
+});
+
+wsServer.on('connection', socket => {
+    socket.on('message', async appName => {
+        watch.watch(
+            '/api/v1/namespaces/custom-serverless-runtime/pods',
+            {
+                labelSelector: encodeURI(`app=${appName}-runtime`)
+            },
+            (phase, apiObj, watchObj) => {
+                if (phase === 'Running') {
+                    socket.send("ready");
+                }
+            },
+            (err) => {
+                console.log(`done with watching ${err}`);
+            }
+        ).then(result => console.log(result));
+        console.log('koniec');
+    });
 });
 

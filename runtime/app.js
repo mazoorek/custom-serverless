@@ -4,8 +4,15 @@ const port = 3000;
 app.use(express.json({limit: '10kb'}));
 
 app.post('/test', (req, res) => {
-    let testedFunction = eval(req.body.code);
-    res.json(testedFunction());
+    let result = {};
+    try {
+        let testedFunction = eval(req.body.code);
+        result = testedFunction();
+    } catch (e) {
+        console.log(e);
+        res.status(400).json({message: e.message})
+    }
+    res.status(200).json(result);
 });
 
 app.listen(port, () => {
