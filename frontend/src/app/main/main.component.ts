@@ -28,6 +28,12 @@ import {DOCUMENT} from '@angular/common';
     <button mat-raised-button color="primary" (click)="testFunction()" [disabled]="!validJavascriptSyntax">test
       function
     </button>
+    <form>
+      <mat-form-field class="input-container" appearance="fill">
+        <mat-label>Function app name</mat-label>
+        <input matInput value="test" #functionAppNameInput autocomplete="off">
+      </mat-form-field>
+    </form>
     <div class="center">
       <div style="height: 500px">
       </div>
@@ -53,6 +59,9 @@ import {DOCUMENT} from '@angular/common';
 export class MainComponent {
   @ViewChild('appNameInput')
   appNameInput!: ElementRef;
+
+  @ViewChild('functionAppNameInput')
+  functionAppNameInput!: ElementRef;
 
   @ViewChild('testEditor')
   testEditor!: EditorComponent;
@@ -144,20 +153,25 @@ export class MainComponent {
   }
 
   testFunction() {
+    const clientAppName: string = this.functionAppNameInput.nativeElement.value;
     let request: TestFunctionRequest = {
       code: this.testCode,
       args: {},
-      clientAppName: 'test'
+      clientAppName: clientAppName
     };
-    this.document.cookie = 'token=124';
-    this.mainService.getRuntime('test').subscribe(response => {
+    this.mainService.getRuntime(clientAppName).subscribe(response => {
       if (!response.runtimeReady) {
         this.websocketService.connect();
         this.websocketService.onOpen$.subscribe(_ => {
           console.log("ws connection opened");
-          this.websocketService.sendMessage("msg");
-          this.websocketService.onMessage$.subscribe(message => {
+          this.websocketService.sendMessage(clientAppName);
+          this.websocketService.onMessage$.subscribe((message: Event) => {
             console.log("received message: " + message);
+            if((message as MessageEvent).data === 'ready') {
+              this.mainService.testFunction(request).subscribe(response => {
+                console.log(response);
+              });
+            }
           });
         });
       } else {

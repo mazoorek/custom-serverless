@@ -144,47 +144,30 @@ async function getAppRuntimes(appName) {
 }
 
 app.get('/api/runtime/:clientAppName', async (req, res) => {
-    console.log(`runtime cookies: ${req.cookies.token}`);
-    res.status(200).json({runtimeReady: false});
     // TODO validation if clientAppName belongs to client
-    // let appName = req.params.clientAppName;
-    // let appRuntimes = await getAppRuntimes(appName);
-    // let runtimeReady = true;
-    // if (appRuntimes.length === 0) {
-    //     runtimeReady = false;
-    //     let serviceRequest = createRuntimeServiceRequest(appName);
-    //     let deploymentRequest = createRuntimeDeploymentRequest(appName);
-    //     await k8sCoreV1Api.createNamespacedService('custom-serverless-runtime', serviceRequest).catch(e => console.log(e));
-    //     await k8sAppsV1Api.createNamespacedDeployment('custom-serverless-runtime', deploymentRequest).catch(e => console.log(e));
-    //
-    //     const listFn = () => k8sCoreV1Api.listNamespacedPod('custom-serverless-runtime');
-    //     const informer = k8s.makeInformer(kc, '/api/v1/namespaces/custom-serverless-runtime/pods', listFn, `app=${appName}-runtime`);
-    //     informer.on('update', (obj) => {
-    //         console.log(`Updated: ${obj}`);
-    //         if (obj.status.phase === 'Running') {
-    //             console.log('faza running');
-    //             informer.stop().then(result => {
-    //                 console.log(`koniec: ${result}`);
-    //             });
-    //         }
-    //     });
-    //     await informer.start();
-    //
-    //
-    // } else {
-    //     let numberOfRunningPods = (await k8sCoreV1Api.listNamespacedPod(
-    //         'custom-serverless-runtime',
-    //         undefined,
-    //         undefined,
-    //         undefined,
-    //         "status.phase=Running",
-    //         `app=${appName}-runtime`
-    //     ).catch(e => console.log(e))).body.items.length;
-    //     if (numberOfRunningPods === 0) {
-    //         runtimeReady = false;
-    //     }
-    // }
-    // res.status(200).json({runtimeReady: runtimeReady});
+    let appName = req.params.clientAppName;
+    let appRuntimes = await getAppRuntimes(appName);
+    let runtimeReady = true;
+    if (appRuntimes.length === 0) {
+        runtimeReady = false;
+        let serviceRequest = createRuntimeServiceRequest(appName);
+        let deploymentRequest = createRuntimeDeploymentRequest(appName);
+        await k8sCoreV1Api.createNamespacedService('custom-serverless-runtime', serviceRequest).catch(e => console.log(e));
+        await k8sAppsV1Api.createNamespacedDeployment('custom-serverless-runtime', deploymentRequest).catch(e => console.log(e));
+    } else {
+        let numberOfRunningPods = (await k8sCoreV1Api.listNamespacedPod(
+            'custom-serverless-runtime',
+            undefined,
+            undefined,
+            undefined,
+            "status.phase=Running",
+            `app=${appName}-runtime`
+        ).catch(e => console.log(e))).body.items.length;
+        if (numberOfRunningPods === 0) {
+            runtimeReady = false;
+        }
+    }
+    res.status(200).json({runtimeReady: runtimeReady});
 });
 
 app.post('/api/test', async (req, res) => {
@@ -312,9 +295,21 @@ server.on('upgrade', (request, socket, head) => {
 });
 
 wsServer.on('connection', socket => {
-    socket.send("message from backend");
     socket.on('message', appName => {
-        console.log(appName);
+        const podList = () => k8sCoreV1Api.listNamespacedPod('custom-serverless-runtime');
+        const informer = k8s.makeInformer(kc, '/api/v1/namespaces/custom-serverless-runtime/pods', podList, `app=${appName}-runtime`);
+        informer.on('update', (obj) => {
+            console.log(`Updated: ${obj}`);
+            if (obj.status.phase === 'Running') {
+                console.log('faza running');
+                socket.send('ready');
+                informer.stop().then(result => {
+                    console.log(`koniec: ${result}`);
+                    // socket.close();
+                });
+            }
+        });
+        informer.start().then(_ => {});
     });
 });
 
