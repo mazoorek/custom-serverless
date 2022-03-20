@@ -26,6 +26,10 @@ export class MainService {
     return this.http.post<void>("/api/validate", {code: code});
   }
 
+  getRuntime(appName: string): Observable<{ runtimeReady: string }> {
+    return this.http.get<{ runtimeReady: string }>(`/api/runtime/${appName}`);
+  }
+
   testFunction(request: TestFunctionRequest): Observable<void> {
     return this.http.post<void>("/api/test", request);
   }

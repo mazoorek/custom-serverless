@@ -3,6 +3,7 @@ import {MainService, TestFunctionRequest} from './main.service';
 import {EditorComponent} from 'ngx-monaco-editor/lib/editor.component';
 import {editor, MarkerSeverity} from 'monaco-editor';
 import IStandaloneCodeEditor = editor.IStandaloneCodeEditor;
+import {WebsocketService} from './websocket.service';
 
 @Component({
   selector: 'app-main',
@@ -111,7 +112,7 @@ export class MainComponent {
   packageJsonEditor!: IStandaloneCodeEditor;
   testFunctionEditor!: IStandaloneCodeEditor;
 
-  constructor(private mainService: MainService) {
+  constructor(private mainService: MainService, private websocketService: WebsocketService) {
     this.mainService.getApps().subscribe(apps => this.dataSource = apps);
   }
 
@@ -147,8 +148,21 @@ export class MainComponent {
       args: {},
       clientAppName: 'test'
     };
-    this.mainService.testFunction(request).subscribe(response => {
-      console.log(response);
+    this.mainService.getRuntime('test').subscribe(response => {
+      if (!response.runtimeReady) {
+        this.websocketService.connect();
+        this.websocketService.onOpen$.subscribe(_ => {
+          console.log("ws connection opened");
+          this.websocketService.sendMessage("msg");
+          this.websocketService.onMessage$.subscribe(message => {
+            console.log("received message: " + message);
+          });
+        });
+      } else {
+        this.mainService.testFunction(request).subscribe(response => {
+          console.log(response);
+        });
+      }
     });
   }
 

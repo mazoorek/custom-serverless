@@ -10,7 +10,8 @@ app.post('/test', (req, res) => {
         result = testedFunction();
     } catch (e) {
         console.log(e);
-        res.status(400).json({message: e.message})
+        res.status(400).json({message: e.message});
+        return;
     }
     res.status(200).json(result);
 });
