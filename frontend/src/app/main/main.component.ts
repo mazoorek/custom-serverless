@@ -1,9 +1,10 @@
-import {Component, ElementRef, ViewChild} from '@angular/core';
+import {Component, ElementRef, Inject, ViewChild} from '@angular/core';
 import {MainService, TestFunctionRequest} from './main.service';
 import {EditorComponent} from 'ngx-monaco-editor/lib/editor.component';
 import {editor, MarkerSeverity} from 'monaco-editor';
 import IStandaloneCodeEditor = editor.IStandaloneCodeEditor;
 import {WebsocketService} from './websocket.service';
+import {DOCUMENT} from '@angular/common';
 
 @Component({
   selector: 'app-main',
@@ -112,7 +113,7 @@ export class MainComponent {
   packageJsonEditor!: IStandaloneCodeEditor;
   testFunctionEditor!: IStandaloneCodeEditor;
 
-  constructor(private mainService: MainService, private websocketService: WebsocketService) {
+  constructor(private mainService: MainService, private websocketService: WebsocketService, @Inject(DOCUMENT) private document: Document) {
     this.mainService.getApps().subscribe(apps => this.dataSource = apps);
   }
 
@@ -148,6 +149,7 @@ export class MainComponent {
       args: {},
       clientAppName: 'test'
     };
+    this.document.cookie = 'token=124';
     this.mainService.getRuntime('test').subscribe(response => {
       if (!response.runtimeReady) {
         this.websocketService.connect();

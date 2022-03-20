@@ -1,5 +1,6 @@
 const k8s = require('@kubernetes/client-node');
 const express = require('express');
+const cookieParser = require("cookie-parser");
 const axios = require('axios');
 const dotenv = require('dotenv');
 const dns = require('dns');
@@ -22,6 +23,7 @@ const watch = new k8s.Watch(kc);
 const app = express();
 
 app.use(express.json({limit: '10kb'}));
+app.use(cookieParser());
 
 app.get('/api/ingress', async (req, res) => {
     let ingresses = await k8sNetworkingV1Api.listNamespacedIngress('custom-serverless-apps').catch(e => console.log(e));
@@ -142,6 +144,7 @@ async function getAppRuntimes(appName) {
 }
 
 app.get('/api/runtime/:clientAppName', async (req, res) => {
+    console.log(`runtime cookies: ${req.cookies.token}`);
     res.status(200).json({runtimeReady: false});
     // TODO validation if clientAppName belongs to client
     // let appName = req.params.clientAppName;
@@ -210,15 +213,6 @@ app.post('/api/test', async (req, res) => {
     let runtimeUrl = process.env.ENVIRONMENT === 'production'
         ? `http://${appName}.custom-serverless-runtime:3000`
         : process.env.RUNTIME_URL;
-    let response = await axios.post(`${runtimeUrl}/test`, {
-        code: req.body.code,
-        args: req.body.args
-    }).catch(e => {
-        console.log(e);
-        res.status(500).json({error: e.data});
-        return;
-    });
-    res.status(200).json(response.data);
 
     axios.post(`${runtimeUrl}/test`, {
         code: req.body.code,
@@ -297,6 +291,8 @@ const wsServer = new ws.Server({noServer: true, path: "/ws"});
 
 server.on('upgrade', (request, socket, head) => {
     wsServer.handleUpgrade(request, socket, head, socket => {
+        const cookies = request.headers.cookie;
+        console.log(`cookies: ${cookies}`);
         // TODO ws authentication
         // var validationResult = validateCookie(req.headers.cookie);
         // if (validationResult) {

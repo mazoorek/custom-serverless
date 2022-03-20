@@ -1,6 +1,7 @@
 import {Inject, Injectable} from '@angular/core';
 import {fromEvent, Observable} from 'rxjs';
 import {DOCUMENT} from '@angular/common';
+import {environment} from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
@@ -15,11 +16,12 @@ export class WebsocketService {
 
   constructor(@Inject(DOCUMENT) private document: Document) {
     this.window = this.document.defaultView as Window;
-    // this.connect();
   }
 
   public connect(): void {
-    this.webSocket = new WebSocket(`ws://${this.window.location.hostname}/ws`);
+    this.document.cookie = 'token=123';
+    const url = environment.production ? `ws://${this.window.location.hostname}/ws` : 'ws://localhost:8080/ws';
+    this.webSocket = new WebSocket(url);
     this.onOpen$ = fromEvent(this.webSocket, 'open');
     this.onMessage$ = fromEvent(this.webSocket, 'message');
     this.onClose$ = fromEvent(this.webSocket, 'close');
