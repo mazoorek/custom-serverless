@@ -1,12 +1,33 @@
-import {Component, ElementRef, ViewChild} from '@angular/core';
-import {MainService} from './main.service';
+import {Component, ElementRef, Inject, ViewChild} from '@angular/core';
+import {MainService, TestFunctionRequest} from './main.service';
+import {EditorComponent} from 'ngx-monaco-editor/lib/editor.component';
+import {editor, MarkerSeverity} from 'monaco-editor';
+import IStandaloneCodeEditor = editor.IStandaloneCodeEditor;
+import {WebsocketService} from './websocket.service';
+import {DOCUMENT} from '@angular/common';
 
 @Component({
   selector: 'app-main',
   template: `
-    <ngx-monaco-editor class="my-code-editor" [options]="editorOptions" [ngModel]="code"
-                       (ngModelChange)="onCodeChange($event)"></ngx-monaco-editor>
-    <button mat-raised-button color="primary" (click)="validatePackageJson()">validate package.json</button>
+    <ngx-monaco-editor class="my-code-editor"
+                       [options]="validateEditorOptions"
+                       (onInit)="onPackageJsonEditorInit($event)"
+                       [ngModel]="packageJsonCode"
+                       (ngModelChange)="onPackageJsonCodeChange($event)">
+    </ngx-monaco-editor>
+    <button mat-raised-button color="primary" (click)="validatePackageJson()" [disabled]="!validJsonSyntax">validate
+      package.json
+    </button>
+    <ngx-monaco-editor #testEditor
+                       class="my-code-editor"
+                       [options]="testEditorOptions"
+                       [ngModel]="testCode"
+                       (onInit)="onTestFunctionEditorInit($event)"
+                       (ngModelChange)="onTestCodeChange($event)">
+    </ngx-monaco-editor>
+    <button mat-raised-button color="primary" (click)="testFunction()" [disabled]="!validJavascriptSyntax">test
+      function
+    </button>
     <div class="center">
       <div style="height: 500px">
       </div>
@@ -30,13 +51,21 @@ import {MainService} from './main.service';
   styleUrls: ['./main.component.scss']
 })
 export class MainComponent {
-  @ViewChild('appNameInput') appNameInput!: ElementRef;
+  @ViewChild('appNameInput')
+  appNameInput!: ElementRef;
+
+  @ViewChild('testEditor')
+  testEditor!: EditorComponent;
+
   displayedColumns: string[] = ['applicationName'];
   dataSource: string[] = [];
 
-  // editorOptions = {theme: 'vs-dark', language: 'javascript'};
-  editorOptions = {theme: 'vs-dark', language: 'json'};
-  code: string = `
+  validJsonSyntax: boolean = true;
+  validJavascriptSyntax: boolean = true;
+
+  testEditorOptions = {theme: 'vs-dark', language: 'javascript'};
+  validateEditorOptions = {theme: 'vs-dark', language: 'json'};
+  packageJsonCode: string = `
    {
     "name": "sandbox",
     "version": "1.0.0",
@@ -54,21 +83,93 @@ export class MainComponent {
     }
   }
   `;
-  options = {
-    theme: 'vs-dark'
-  };
+  testCode: string = `
+    (args) => {
+      let data = \`
+        {
+        "name": "sandbox",
+        "version": "1.0.0",
+        "description": "",
+        "main": "index.js",
+        "scripts": {
+            "test": "echo \\\\"Error: no test specified\\\\" && exit 1"
+        },
+        "keywords": [],
+        "author": "name",
+        "license": "ISC",
+        "dependencies": {
+            "package-json-validator": "^0.6.3"
+        }
+        }
+    \`;
+
+    let PJV=require('package-json-validator').PJV;
+    let response = PJV.validate(data);
+    return response;
+    }
+  `;
 
 
-  constructor(private mainService: MainService) {
+  packageJsonEditor!: IStandaloneCodeEditor;
+  testFunctionEditor!: IStandaloneCodeEditor;
+
+  constructor(private mainService: MainService, private websocketService: WebsocketService, @Inject(DOCUMENT) private document: Document) {
     this.mainService.getApps().subscribe(apps => this.dataSource = apps);
   }
 
-  onCodeChange(updatedCode: string): void {
-    this.code = updatedCode;
+  onPackageJsonCodeChange(updatedCode: string): void {
+    this.packageJsonCode = updatedCode;
+  }
+
+  onPackageJsonEditorInit(packageJsonEditor: IStandaloneCodeEditor): void {
+    this.packageJsonEditor = packageJsonEditor;
+    (<any>window).monaco.editor.onDidChangeMarkers(() => {
+      let markers = (<any>window).monaco.editor.getModelMarkers({owner: "json"})
+        .filter((marker: editor.IMarker) => marker.severity === MarkerSeverity.Error);
+      this.validJsonSyntax = markers.length === 0;
+    });
+  }
+
+  onTestFunctionEditorInit(testFunctionEditor: IStandaloneCodeEditor): void {
+    this.testFunctionEditor = testFunctionEditor;
+    (<any>window).monaco.editor.onDidChangeMarkers(() => {
+      let markers = (<any>window).monaco.editor.getModelMarkers({owner: "javascript"})
+        .filter((marker: editor.IMarker) => marker.severity === MarkerSeverity.Error);
+      this.validJavascriptSyntax = markers.length === 0;
+    });
+  }
+
+  onTestCodeChange(updatedCode: string): void {
+    this.testCode = updatedCode;
+  }
+
+  testFunction() {
+    let request: TestFunctionRequest = {
+      code: this.testCode,
+      args: {},
+      clientAppName: 'test'
+    };
+    this.document.cookie = 'token=124';
+    this.mainService.getRuntime('test').subscribe(response => {
+      if (!response.runtimeReady) {
+        this.websocketService.connect();
+        this.websocketService.onOpen$.subscribe(_ => {
+          console.log("ws connection opened");
+          this.websocketService.sendMessage("msg");
+          this.websocketService.onMessage$.subscribe(message => {
+            console.log("received message: " + message);
+          });
+        });
+      } else {
+        this.mainService.testFunction(request).subscribe(response => {
+          console.log(response);
+        });
+      }
+    });
   }
 
   validatePackageJson() {
-    this.mainService.validatePackageJson(this.code).subscribe(response => {
+    this.mainService.validatePackageJson(this.packageJsonCode).subscribe(response => {
       console.log(response);
     });
   }

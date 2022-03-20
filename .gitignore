@@ -12,9 +12,13 @@
 #kubernetes
 manifests/secrets/backend-ecr-secret.yaml
 manifests/secrets/frontend-ecr-secret.yaml
+manifests/secrets/runtime-ecr-secret.yaml
 
 #backend
 backend/node_modules/
 backend/.env
+
+#runtime
+runtime/node_modules/
 
 

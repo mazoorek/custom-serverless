@@ -7,3 +7,7 @@ echo "---------------------------------push custom-serverless frontend----------
 docker build -t custom-serverless-frontend -f ../frontend/Dockerfile ../frontend/
 docker tag custom-serverless-frontend:latest 444773651763.dkr.ecr.eu-central-1.amazonaws.com/custom-serverless-frontend:latest
 docker push 444773651763.dkr.ecr.eu-central-1.amazonaws.com/custom-serverless-frontend:latest
+echo "---------------------------------push custom-serverless runtime-------------------------------------------------"
+docker build -t custom-serverless-runtime -f ../runtime/Dockerfile ../runtime/
+docker tag custom-serverless-runtime:latest 444773651763.dkr.ecr.eu-central-1.amazonaws.com/custom-serverless-runtime:latest
+docker push 444773651763.dkr.ecr.eu-central-1.amazonaws.com/custom-serverless-runtime:latest

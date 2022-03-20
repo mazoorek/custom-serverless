@@ -11,8 +11,12 @@
   "license": "ISC",
   "dependencies": {
     "@kubernetes/client-node": "^0.16.1",
+    "axios": "^0.26.0",
+    "cookie-parser": "^1.4.6",
     "dotenv": "^10.0.0",
     "express": "^4.17.2",
-    "package-json-validator": "^0.6.3"
+    "moment": "^2.29.1",
+    "package-json-validator": "^0.6.3",
+    "ws": "^8.5.0"
   }
 }

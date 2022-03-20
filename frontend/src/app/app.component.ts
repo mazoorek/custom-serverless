@@ -17,7 +17,7 @@ export class AppComponent implements AfterViewInit {
   matTabGroup!: MatTabGroup;
 
   onTabChange(event: MatTabChangeEvent): void {
-    console.log(event.index);
+    // console.log(event.index);
   }
 
   ngAfterViewInit(): void {
