@@ -168,6 +168,7 @@ export class MainComponent {
           this.websocketService.onMessage$.subscribe((message: Event) => {
             console.log("received message: " + message);
             if((message as MessageEvent).data === 'ready') {
+              this.websocketService.closeWebSocket();
               this.mainService.testFunction(request).subscribe(response => {
                 console.log(response);
               });

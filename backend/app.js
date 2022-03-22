@@ -8,6 +8,7 @@ const ws = require('ws');
 const moment = require("moment");
 const PJV = require('package-json-validator').PJV;
 const pickManifest = require('npm-pick-manifest');
+const cron = require('node-cron');
 
 dotenv.config({path: './.env'});
 const kc = new k8s.KubeConfig();
@@ -47,12 +48,13 @@ app.post('/api/validate', async (req, res) => {
                 try {
                     pickManifest(packument.data, dependencyVersion);
                 } catch (e) {
-                    response = {valid: false, errors: [...response.errors, `version '${dependencyVersion}' for dependency '${dependency}' not found`]};
-                    // return;
+                    response = {
+                        valid: false,
+                        errors: [...response.errors, `version '${dependencyVersion}' for dependency '${dependency}' not found`]
+                    };
                 }
             } catch (e) {
                 response = {valid: false, errors: [...response.errors, `dependency '${dependency}' not found`]};
-                // return;
             }
         }
     }
@@ -269,6 +271,22 @@ app.post('/api/ingress', async (req, res) => {
     res.status(200).json({});
 });
 
+cron.schedule(
+    '*/5 * * * *',
+    async () => {
+        const runtimes = await k8sCoreV1Api.listNamespacedService('custom-serverless-runtime');
+        const currentDate = new Date().getTime();
+        for (const service of runtimes.body.items) {
+            if(currentDate > +service.metadata.labels.expire) {
+                await k8sCoreV1Api.deleteNamespacedService(service.metadata.name, 'custom-serverless-runtime');
+                await k8sAppsV1Api.deleteNamespacedDeployment(`${service.metadata.name}-runtime`, 'custom-serverless-runtime');
+                console.log(`${service.metadata.name} runtime has expired`);
+            }
+        }
+    },
+    {scheduled: true}
+);
+
 const server = app.listen(PORT, HOST, async () => {
     console.log(`Running on port ${PORT}`);
     await dns.lookup(process.env.API_SERVER_URL, (err, address, family) => {
@@ -326,9 +344,8 @@ wsServer.on('connection', socket => {
             if (obj.status.phase === 'Running') {
                 console.log('faza running');
                 socket.send('ready');
-                informer.stop().then(result => {
-                    console.log(`koniec: ${result}`);
-                    // socket.close();
+                informer.stop().then(_ => {
+                    console.log(`end watching`);
                 });
             }
         });
@@ -336,4 +353,6 @@ wsServer.on('connection', socket => {
         });
     });
 });
+
+
 
