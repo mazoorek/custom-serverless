@@ -7,6 +7,7 @@ const dns = require('dns');
 const ws = require('ws');
 const moment = require("moment");
 const PJV = require('package-json-validator').PJV;
+const pickManifest = require('npm-pick-manifest');
 
 dotenv.config({path: './.env'});
 const kc = new k8s.KubeConfig();
@@ -32,8 +33,30 @@ app.get('/api/ingress', async (req, res) => {
 });
 
 app.post('/api/validate', async (req, res) => {
-    let response = PJV.validate(req.body.code);
-    res.json(response);
+    let response = {valid: true, errors: []};
+    const packageJson = req.body.code;
+    const pjvResult = await PJV.validate(packageJson);
+    if (!pjvResult.valid) {
+        response = {valid: false, errors: pjvResult.errors};
+    } else {
+        const dependencies = JSON.parse(packageJson).dependencies;
+        for (const dependency in dependencies) {
+            const dependencyVersion = dependencies[dependency];
+            try {
+                const packument = await axios.get(`https://registry.npmjs.org/${dependency}`);
+                try {
+                    pickManifest(packument.data, dependencyVersion);
+                } catch (e) {
+                    response = {valid: false, errors: [...response.errors, `version '${dependencyVersion}' for dependency '${dependency}' not found`]};
+                    // return;
+                }
+            } catch (e) {
+                response = {valid: false, errors: [...response.errors, `dependency '${dependency}' not found`]};
+                // return;
+            }
+        }
+    }
+    res.status(200).json(response);
 });
 
 let createRuntimeServiceRequest = (appName) => {
@@ -309,7 +332,8 @@ wsServer.on('connection', socket => {
                 });
             }
         });
-        informer.start().then(_ => {});
+        informer.start().then(_ => {
+        });
     });
 });
 
