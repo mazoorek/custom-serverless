@@ -58,4 +58,7 @@ ssh ubuntu@"$CONTROL_PLANE_IP" -i /home/piotr/.ssh/id_rsa -o StrictHostKeyChecki
 ssh ubuntu@"$CONTROL_PLANE_IP" -i /home/piotr/.ssh/id_rsa -o StrictHostKeyChecking=no kubectl apply -f /tmp/custom-serverless/manifests/controllers/
 ssh ubuntu@"$CONTROL_PLANE_IP" -i /home/piotr/.ssh/id_rsa -o StrictHostKeyChecking=no kubectl apply -f /tmp/custom-serverless/manifests/service-accounts/
 ssh ubuntu@"$CONTROL_PLANE_IP" -i /home/piotr/.ssh/id_rsa -o StrictHostKeyChecking=no kubectl apply -f /tmp/custom-serverless/manifests/secrets/
+ssh ubuntu@"$CONTROL_PLANE_IP" -i /home/piotr/.ssh/id_rsa -o StrictHostKeyChecking=no kubectl apply -f /tmp/custom-serverless/manifests/secrets/mongodb/mongodb-secret.yaml -n=custom-serverless
+ssh ubuntu@"$CONTROL_PLANE_IP" -i /home/piotr/.ssh/id_rsa -o StrictHostKeyChecking=no kubectl apply -f /tmp/custom-serverless/manifests/secrets/mongodb/mongodb-secret.yaml -n=custom-serverless-runtime
+ssh ubuntu@"$CONTROL_PLANE_IP" -i /home/piotr/.ssh/id_rsa -o StrictHostKeyChecking=no kubectl apply -f /tmp/custom-serverless/manifests/secrets/mongodb/mongodb-secret.yaml -n=custom-serverless-apps
 ssh ubuntu@"$CONTROL_PLANE_IP" -i /home/piotr/.ssh/id_rsa -o StrictHostKeyChecking=no kubectl apply -f /tmp/custom-serverless/manifests/

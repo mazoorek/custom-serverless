@@ -9,6 +9,7 @@ const moment = require("moment");
 const PJV = require('package-json-validator').PJV;
 const pickManifest = require('npm-pick-manifest');
 const cron = require('node-cron');
+const mongoose = require('mongoose');
 
 dotenv.config({path: './.env'});
 const kc = new k8s.KubeConfig();
@@ -26,6 +27,18 @@ const app = express();
 
 app.use(express.json({limit: '10kb'}));
 app.use(cookieParser());
+
+const userSchema = new mongoose.Schema({
+    name: String
+});
+
+const User = mongoose.model('User', userSchema);
+
+mongoose.connect(process.env.DB_URL, {}).then( async () => {
+    console.log('DB connection successful!');
+    const users = await User.find();
+    console.log(users);
+});
 
 app.get('/api/ingress', async (req, res) => {
     let ingresses = await k8sNetworkingV1Api.listNamespacedIngress('custom-serverless-apps').catch(e => console.log(e));

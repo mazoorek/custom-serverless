@@ -31,3 +31,8 @@ spec:
                 secretKeyRef:
                   name: backend-sa-secret
                   key: token
+            - name: DB_URL
+              valueFrom:
+                secretKeyRef:
+                  name: mongodb-secret
+                  key: DB_URL

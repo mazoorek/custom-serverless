@@ -12,11 +12,19 @@ provision infrastructure and start cluster:
    terraform init
 6) in infrastructure/ run: 
    terraform apply --auto-approve
+7) in infrastructure/:
+copy mongodb-secret-template.yaml to manifests/secrets/mongodb/mongodb-secret.yaml 
+get your mongodb_url in mongodb+srv format: mongodb+srv://<user>:<password>@<hostname>/<database-name>
+for example: mongodb+srv://test-user:123@cluster0.u1tcd.mongodb.net/custom-serverless
+generate base64 of your mongodb_url value with command:
+echo -n "<mongodb_url>" | base64
+for example: echo -n "mongodb+srv://test-user:123@cluster0.u1tcd.mongodb.net/custom-serverless" | base64
+copy output value and replace url in mongodb-secret.yaml with this output value
    5) in infrastructure/ run:
    chmod +x provision-cluster.sh
    ./provision-cluster.sh <path-to-your-aws-instances-private-key>
       
-7) you can verify that cluster is running correctly:
+9) you can verify that cluster is running correctly:
    CONTROL_PLANE_IP=$(terraform output control-plane-ip | cut -d "=" -f2 | tr -d "\"")
    ssh ubuntu@<CONTROL_PLANE_IP> -i <PRIVATE_KEY_LOCATION> -o StrictHostKeyChecking=no
    kubectl get nodes
