@@ -13,6 +13,7 @@
 manifests/secrets/backend-ecr-secret.yaml
 manifests/secrets/frontend-ecr-secret.yaml
 manifests/secrets/runtime-ecr-secret.yaml
+manifests/secrets/mongodb/mongodb-secret.yaml
 
 #backend
 backend/node_modules/
