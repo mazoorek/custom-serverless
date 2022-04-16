@@ -1,15 +1,16 @@
 const cron = require("node-cron");
+const clusterService = require("./clusterService");
 
 exports.scheduleRuntimeCleaner = () => {
     cron.schedule(
         '*/5 * * * *',
         async () => {
-            const runtimes = await k8sCoreV1Api.listNamespacedService('custom-serverless-runtime');
+            const runtimes = await clusterService.listNamespacedService('custom-serverless-runtime').catch(e => console.log(e));
             const currentDate = new Date().getTime();
             for (const service of runtimes.body.items) {
                 if(currentDate > +service.metadata.labels.expire) {
-                    await k8sCoreV1Api.deleteNamespacedService(service.metadata.name, 'custom-serverless-runtime');
-                    await k8sAppsV1Api.deleteNamespacedDeployment(`${service.metadata.name}-runtime`, 'custom-serverless-runtime');
+                     await clusterService.deleteNamespacedService(service.metadata.name, 'custom-serverless-runtime');
+                    await clusterService.deleteNamespacedDeployment(`${service.metadata.name}-runtime`, 'custom-serverless-runtime');
                     console.log(`${service.metadata.name} runtime has expired`);
                 }
             }
