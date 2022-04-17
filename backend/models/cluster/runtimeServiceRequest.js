@@ -1,4 +1,6 @@
 const moment = require("moment");
+const {CUSTOM_SERVERLESS_RUNTIME} = require("./namespaces");
+
 module.exports = (appName) => {
     let expirationDate = moment(new Date()).add(5, 'm').toDate();
     return {
@@ -10,7 +12,7 @@ module.exports = (appName) => {
                 "expire": `${expirationDate.getTime()}`
             },
             "name": `${appName}`,
-            "namespace": "custom-serverless-runtime"
+            "namespace": CUSTOM_SERVERLESS_RUNTIME
         },
         "spec": {
             "ports": [

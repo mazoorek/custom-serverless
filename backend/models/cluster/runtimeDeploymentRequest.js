@@ -1,3 +1,5 @@
+const {CUSTOM_SERVERLESS_RUNTIME} = require("./namespaces");
+
 module.exports = (appName) => {
     // TODO wywalic tego example
     let exampleValidPackageJson = `
@@ -27,7 +29,7 @@ module.exports = (appName) => {
                 "app": "runtime"
             },
             "name": `${appName}-runtime`,
-            "namespace": "custom-serverless-runtime"
+            "namespace": CUSTOM_SERVERLESS_RUNTIME
         },
         "spec": {
             "replicas": 1,

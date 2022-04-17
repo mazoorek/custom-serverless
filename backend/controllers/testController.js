@@ -1,6 +1,7 @@
 const clusterService = require("../services/clusterService");
 const runtimeServiceRequest = require("../models/cluster/runtimeServiceRequest");
 const axios = require("axios");
+const {CUSTOM_SERVERLESS_RUNTIME} = require("../models/cluster/namespaces");
 
 exports.test = async (req, res) => {
     let appName = req.body.clientAppName;
@@ -12,7 +13,7 @@ exports.test = async (req, res) => {
         await clusterService.patchNamespacedService(appName, runtimeServiceRequest(appName));
     }
     let runtimeUrl = process.env.ENVIRONMENT === 'production'
-        ? `http://${appName}.custom-serverless-runtime:3000`
+        ? `http://${appName}.${CUSTOM_SERVERLESS_RUNTIME}:3000`
         : process.env.RUNTIME_URL;
 
     axios.post(`${runtimeUrl}/test`, {

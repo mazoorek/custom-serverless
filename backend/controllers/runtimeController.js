@@ -1,6 +1,7 @@
 const clusterService = require("../services/clusterService");
 const runtimeServiceRequest = require("../models/cluster/runtimeServiceRequest");
 const runtimeDeploymentRequest = require("../models/cluster/runtimeDeploymentRequest");
+const {CUSTOM_SERVERLESS_RUNTIME} = require("../models/cluster/namespaces");
 
 exports.checkRuntime = async (req, res) => {
     // TODO validation if clientAppName belongs to client
@@ -15,8 +16,8 @@ exports.checkRuntime = async (req, res) => {
     let runtimeReady = true;
     if (appRuntimes.length === 0) {
         runtimeReady = false;
-        await clusterService.createNamespacedService('custom-serverless-runtime', runtimeServiceRequest(appName)).catch(e => console.log(e));
-        await clusterService.createNamespacedDeployment('custom-serverless-runtime', runtimeDeploymentRequest(appName)).catch(e => console.log(e));
+        await clusterService.createNamespacedService(CUSTOM_SERVERLESS_RUNTIME, runtimeServiceRequest(appName)).catch(e => console.log(e));
+        await clusterService.createNamespacedDeployment(CUSTOM_SERVERLESS_RUNTIME, runtimeDeploymentRequest(appName)).catch(e => console.log(e));
     } else {
         let numberOfRunningPods = 0;
         try {

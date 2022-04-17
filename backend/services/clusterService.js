@@ -1,5 +1,6 @@
 const k8s = require('@kubernetes/client-node');
 const dns = require("dns");
+const {CUSTOM_SERVERLESS_RUNTIME} = require("../models/cluster/namespaces");
 const kc = new k8s.KubeConfig();
 
 let cluster;
@@ -33,7 +34,7 @@ exports.setupClusterConnection = async () => {
 
 exports.getAppRuntimes = (appName) => {
     return k8sCoreV1Api.listNamespacedService(
-        'custom-serverless-runtime',
+        CUSTOM_SERVERLESS_RUNTIME,
         undefined,
         false,
         undefined,
@@ -56,7 +57,7 @@ exports.deleteNamespacedDeployment = (name, namespace) => {
 exports.patchNamespacedService = (appName, serviceRequest) => {
     return k8sCoreV1Api.patchNamespacedService(
         appName,
-        'custom-serverless-runtime',
+        CUSTOM_SERVERLESS_RUNTIME,
         serviceRequest,
         undefined,
         undefined,
@@ -87,11 +88,16 @@ exports.createNamespacedDeployment = (namespace, deploymentRequest) => {
 }
 
 exports.listRunetimeNamespacedPods = () => {
-    return k8sCoreV1Api.listNamespacedPod('custom-serverless-runtime');
+    return k8sCoreV1Api.listNamespacedPod(CUSTOM_SERVERLESS_RUNTIME);
 }
 
 exports.monitorPodUntilRunning = (appName, callback) => {
-    const informer = k8s.makeInformer(kc, '/api/v1/namespaces/custom-serverless-runtime/pods', this.listRunetimeNamespacedPods, `app=${appName}-runtime`);
+    const informer = k8s.makeInformer(
+        kc,
+        `/api/v1/namespaces/${CUSTOM_SERVERLESS_RUNTIME}/pods`,
+        this.listRunetimeNamespacedPods,
+        `app=${appName}-runtime`
+    );
     informer.on('update', (obj) => {
         console.log(`Updated: ${obj}`);
         if (obj.status.phase === 'Running') {
@@ -108,7 +114,7 @@ exports.monitorPodUntilRunning = (appName, callback) => {
 
 exports.listRunningPods = async (appName) => {
     return await k8sCoreV1Api.listNamespacedPod(
-        'custom-serverless-runtime',
+        CUSTOM_SERVERLESS_RUNTIME,
         undefined,
         undefined,
         undefined,
