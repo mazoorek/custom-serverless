@@ -5,6 +5,7 @@ const {CUSTOM_SERVERLESS_RUNTIME} = require("../models/cluster/namespaces");
 
 exports.test = async (req, res) => {
     let appName = req.body.clientAppName;
+    console.log(`testing code for app: ${appName}`);
     let appRuntimes = await clusterService.getAppRuntimes(appName);
 
     if (appRuntimes.length === 0) {
@@ -20,6 +21,7 @@ exports.test = async (req, res) => {
         code: req.body.code,
         args: req.body.args
     }).then(response => {
+        console.log(`got result for testing app: ${appName}`);
         res.status(200).json(response.data);
     }).catch(e => {
         console.log(e);

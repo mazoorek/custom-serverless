@@ -31,7 +31,7 @@ import {DOCUMENT} from '@angular/common';
     <form>
       <mat-form-field class="input-container" appearance="fill">
         <mat-label>Function app name</mat-label>
-        <input matInput value="test" #functionAppNameInput autocomplete="off">
+        <input matInput value="something" #functionAppNameInput autocomplete="off">
       </mat-form-field>
     </form>
     <div class="center">
@@ -166,12 +166,13 @@ export class MainComponent {
           console.log("ws connection opened");
           this.websocketService.sendMessage(clientAppName);
           this.websocketService.onMessage$.subscribe((message: Event) => {
-            console.log("received message: " + message);
-            if((message as MessageEvent).data === 'ready') {
-              this.websocketService.closeWebSocket();
+            console.log("received message: " + (message as MessageEvent).data);
+            if ((message as MessageEvent).data === 'ready') {
               this.mainService.testFunction(request).subscribe(response => {
                 console.log(response);
               });
+            } else if ((message as MessageEvent).data === 'failed') {
+              console.log('setting up runtime failed');
             }
           });
         });

@@ -1,6 +1,7 @@
 const k8s = require('@kubernetes/client-node');
 const dns = require("dns");
 const {CUSTOM_SERVERLESS_RUNTIME} = require("../models/cluster/namespaces");
+const axios = require("axios");
 const kc = new k8s.KubeConfig();
 
 let cluster;
@@ -87,29 +88,56 @@ exports.createNamespacedDeployment = (namespace, deploymentRequest) => {
     return k8sAppsV1Api.createNamespacedDeployment(namespace, deploymentRequest);
 }
 
-exports.listRunetimeNamespacedPods = () => {
+exports.listRuntimeNamespacedPods = () => {
     return k8sCoreV1Api.listNamespacedPod(CUSTOM_SERVERLESS_RUNTIME);
 }
 
-exports.monitorPodUntilRunning = (appName, callback) => {
+const wait = (ms) => {
+    return new Promise((resolve) => {
+        setTimeout(resolve, ms);
+    });
+}
+
+exports.monitorPodUntilRunning = (appName, callback, errorCallback) => {
+    console.log(`creating informer to monitor appName: ${appName}`);
     const informer = k8s.makeInformer(
         kc,
         `/api/v1/namespaces/${CUSTOM_SERVERLESS_RUNTIME}/pods`,
-        this.listRunetimeNamespacedPods,
+        this.listRuntimeNamespacedPods,
         `app=${appName}-runtime`
     );
-    informer.on('update', (obj) => {
-        console.log(`Updated: ${obj}`);
+    informer.on('update', async (obj) => {
+        console.log(`Updated: ${appName}`);
         if (obj.status.phase === 'Running') {
-            console.log(`${appName} is in phase Running`);
-            callback();
-            informer.stop().then(_ => {
-                console.log(`end watching`);
-            });
+            console.log(`${appName} Pod is in phase Running`);
+            console.log(`check if runtime-app: [${appName}] is up...`);
+            let runtimeUrl = process.env.ENVIRONMENT === 'production'
+                ? `http://${appName}.${CUSTOM_SERVERLESS_RUNTIME}:3000`
+                : process.env.RUNTIME_URL;
+            const maxNumberOfHealthChecks = 5;
+            for (let i = 1; i <= maxNumberOfHealthChecks; i++) {
+                await wait(2000);
+                console.log(`attempt nr ${i} to reach runtime`);
+                try {
+                    await axios.get(`${runtimeUrl}/up`);
+                    console.log(`runtime for app: [${appName}] is up, sending notification to frontend`);
+                    callback();
+                    informer.stop().then(_ => {
+                        console.log(`end watching`);
+                    });
+                    break;
+                } catch (e) {
+                    console.log(`error in reaching ${appName} runtime, error: ${e}`);
+                    if(i === maxNumberOfHealthChecks) {
+                        errorCallback();
+                    }
+                }
+            }
         }
     });
     informer.start().then(_ => {
-    });
+        }
+    );
 }
 
 exports.listRunningPods = async (appName) => {

@@ -19,17 +19,18 @@ export class WebsocketService {
   }
 
   public connect(): void {
+    // TODO usunac cookie
     this.document.cookie = 'token=123';
     const url = environment.production ? `ws://${this.window.location.hostname}/ws` : 'ws://localhost:8080/ws';
     this.webSocket = new WebSocket(url);
     this.onOpen$ = fromEvent(this.webSocket, 'open');
     this.onMessage$ = fromEvent(this.webSocket, 'message');
     this.onClose$ = fromEvent(this.webSocket, 'close');
-    console.log("ws connection opened");
   }
 
   public sendMessage (message: string): void {
     this.webSocket.send(message);
+    console.log(`message: ${message} has been sent`);
   }
 
   public closeWebSocket(): void {

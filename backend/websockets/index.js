@@ -27,8 +27,14 @@ module.exports =  (expressServer) => {
     });
 
     wsServer.on('connection', socket => {
+        console.log('user connected');
         socket.on('message', appName => {
-            clusterService.monitorPodUntilRunning(appName, () => socket.send('ready'));
+            console.log(`start monitoring appName: ${appName}`);
+            clusterService.monitorPodUntilRunning(
+                appName,
+                () => socket.send('ready'),
+                () => socket.send('failed'),
+                );
         });
     });
 }
