@@ -3,6 +3,10 @@ const app = express();
 const port = 3000;
 app.use(express.json({limit: '10kb'}));
 
+app.get('/up', (req, res) => {
+   res.status(200).json({status: 'up'});
+});
+
 app.post('/test', (req, res) => {
     let result = {};
     try {
