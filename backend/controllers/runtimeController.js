@@ -2,8 +2,9 @@ const clusterService = require("../services/clusterService");
 const runtimeServiceRequest = require("../models/cluster/runtimeServiceRequest");
 const runtimeDeploymentRequest = require("../models/cluster/runtimeDeploymentRequest");
 const {CUSTOM_SERVERLESS_RUNTIME} = require("../models/cluster/namespaces");
+const asyncHandler = require("../utils/asyncHandler");
 
-exports.checkRuntime = async (req, res) => {
+exports.checkRuntime = asyncHandler(async (req, res) => {
     // TODO validation if clientAppName belongs to client
     let appName = req.params.clientAppName;
     let appRuntimes = 0;
@@ -31,4 +32,4 @@ exports.checkRuntime = async (req, res) => {
         }
     }
     res.status(200).json({runtimeReady: runtimeReady});
-};
+});

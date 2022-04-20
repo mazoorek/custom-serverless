@@ -59,7 +59,7 @@ exports.restrictTo = (...roles) => {
     };
 };
 
-exports.forgotPassword = async (req, res) => {
+exports.forgotPassword = asyncHandler(async (req, res) => {
     const user = await User.findOne({email: req.body.email});
     if (!user) {
         return res.status(404).json({message: "There is no user with this email address"});
@@ -69,9 +69,7 @@ exports.forgotPassword = async (req, res) => {
     await user.save({validateBeforeSave: false});
 
     try {
-        const resetURL = `http://${req.get(
-            'host'
-        )}/api/v1/users/resetPassword/${resetToken}`;
+        const resetURL = `http://${req.get('host')}/api/password/reset/${resetToken}`;
         await new Email(user, resetURL).sendPasswordReset();
 
         return res.status(200).json({
@@ -84,9 +82,9 @@ exports.forgotPassword = async (req, res) => {
         await user.save({validateBeforeSave: false});
         return res.status(500).json({message: "There was an error sending the email. Try again later"});
     }
-};
+});
 
-exports.resetPassword = async (req, res) => {
+exports.resetPassword = asyncHandler(async (req, res) => {
     const hashedToken = crypto
         .createHash('sha256')
         .update(req.params.token)
@@ -98,7 +96,7 @@ exports.resetPassword = async (req, res) => {
     });
 
     if (!user) {
-        return res.status(400).json({message: "TToken is invalid or has expired"});
+        return res.status(400).json({message: "Token is invalid or has expired"});
     }
     user.password = req.body.password;
     user.passwordConfirm = req.body.passwordConfirm;
@@ -107,7 +105,7 @@ exports.resetPassword = async (req, res) => {
     await user.save();
 
     await authService.sendJwt(user, 200, res);
-};
+});
 
 exports.updatePassword = async (req, res) => {
     const user = await User.findById(req.user.id).select('+password');
