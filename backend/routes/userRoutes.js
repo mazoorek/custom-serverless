@@ -6,9 +6,9 @@ router.route('/signup')
     .post(authController.signup);
 router.route('/login')
     .post(authController.login);
-router.route('/forgot')
+router.route('/password/forgot')
     .post(authController.forgotPassword);
-router.route('/reset/:token')
+router.route('/password/reset/:token')
     .patch(authController.resetPassword);
 
 module.exports = router;

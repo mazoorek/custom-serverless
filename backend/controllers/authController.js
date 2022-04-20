@@ -69,11 +69,11 @@ exports.forgotPassword = asyncHandler(async (req, res) => {
     await user.save({validateBeforeSave: false});
 
     try {
-        const resetURL = `http://${req.get('host')}/api/password/reset/${resetToken}`;
+        // TODO modify this url
+        const resetURL = `http://${req.get('host')}/api/user/password/reset/${resetToken}`;
         await new Email(user, resetURL).sendPasswordReset();
 
         return res.status(200).json({
-            status: 'success',
             message: 'Token sent to email'
         });
     } catch (err) {

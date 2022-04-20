@@ -1,7 +1,6 @@
 const crypto = require('crypto');
 const mongoose = require('mongoose');
-const validator = require('validator');
-const {check, validationResult} = require('express-validator');
+const emailValidator = require("email-validator");
 const bcrypt = require('bcryptjs');
 
 const userSchema = new mongoose.Schema({
@@ -10,10 +9,9 @@ const userSchema = new mongoose.Schema({
         required: [true, 'Please provide your email'],
         unique: true,
         lowercase: true,
-        // TODO walidacja maila
         validate: {
-            validator: el => {
-                return true;
+            validator: email => {
+                return emailValidator.validate(email);
             },
             message: 'Please provide a valid email'
         }

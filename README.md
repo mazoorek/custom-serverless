@@ -20,7 +20,8 @@ generate base64 of your mongodb_url value with command:
 echo -n "<mongodb_url>" | base64
 for example: echo -n "mongodb+srv://test-user:123@cluster0.u1tcd.mongodb.net/custom-serverless" | base64
 copy output value and replace url in mongodb-secret.yaml with this output value
-8) in infrastructure/:
+8) create sendgrid account and sendgrid api key to send mails
+9) in infrastructure/:
    copy backend-secret-template.yaml to manifests/secrets/backend-secret.yaml
 generate base64 for all the needed values and fill them
    5) in infrastructure/ run:
