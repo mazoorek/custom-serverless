@@ -2,8 +2,9 @@ const clusterService = require("../services/clusterService");
 const runtimeServiceRequest = require("../models/cluster/runtimeServiceRequest");
 const axios = require("axios");
 const {CUSTOM_SERVERLESS_RUNTIME} = require("../models/cluster/namespaces");
+const asyncHandler = require("../utils/asyncHandler");
 
-exports.test = async (req, res) => {
+exports.test = asyncHandler(async (req, res) => {
     let appName = req.body.clientAppName;
     console.log(`testing code for app: ${appName}`);
     let appRuntimes = await clusterService.getAppRuntimes(appName);
@@ -27,4 +28,4 @@ exports.test = async (req, res) => {
         console.log(e);
         res.status(500).json({error: e.response.data.message});
     });
-};
+});
