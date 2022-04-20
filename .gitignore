@@ -10,6 +10,7 @@
 **/terraform.tfvars
 
 #kubernetes
+manifests/secrets/backend-secret.yaml
 manifests/secrets/backend-ecr-secret.yaml
 manifests/secrets/frontend-ecr-secret.yaml
 manifests/secrets/runtime-ecr-secret.yaml

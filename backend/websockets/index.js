@@ -1,27 +1,29 @@
 const ws = require("ws");
+const cookie = require('cookie');
 const clusterService = require("../services/clusterService");
+const authService = require("../services/authService");
 
-module.exports =  (expressServer) => {
-    const wsServer = new ws.Server({noServer: true, path: "/ws"});
+module.exports = (expressServer) => {
+    const wsServer = new ws.Server({
+        noServer: true,
+        path: "/ws",
+        verifyClient: async function (info, cb) {
+            const cookies = info.req.headers.cookie;
+            if(!cookies) {
+                cb(false, 401, 'Unauthorized')
+            } else {
+                const jwtValid = (await authService.validateJwt(cookie.parse(cookies).jwt)).jwtValid;
+                if (!jwtValid) {
+                    cb(false, 401, 'Unauthorized')
+                } else {
+                    cb(true)
+                }
+            }
+        }
+    });
 
     expressServer.on('upgrade', (request, socket, head) => {
-        wsServer.handleUpgrade(request, socket, head, socket => {
-            const cookies = request.headers.cookie;
-            console.log(`cookies: ${cookies}`);
-            // TODO ws authentication
-            // var validationResult = validateCookie(req.headers.cookie);
-            // if (validationResult) {
-            //     //...
-            // } else {
-            //     socket.write('HTTP/1.1 401 Web Socket Protocol Handshake\r\n' +
-            //         'Upgrade: WebSocket\r\n' +
-            //         'Connection: Upgrade\r\n' +
-            //         '\r\n');
-            //     socket.close();
-            //     socket.destroy();
-            //     return;
-            // }
-            // //...
+        wsServer.handleUpgrade(request, socket, head, async socket => {
             wsServer.emit('connection', socket, request);
         });
     });
@@ -34,7 +36,7 @@ module.exports =  (expressServer) => {
                 appName,
                 () => socket.send('ready'),
                 () => socket.send('failed'),
-                );
+            );
         });
     });
 }

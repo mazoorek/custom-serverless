@@ -8,6 +8,11 @@ export interface TestFunctionRequest {
   clientAppName: string;
 }
 
+export interface LoginRequest {
+  email: string;
+  password: string;
+}
+
 @Injectable({providedIn: "root"})
 export class MainService {
 
@@ -32,5 +37,9 @@ export class MainService {
 
   testFunction(request: TestFunctionRequest): Observable<void> {
     return this.http.post<void>("/api/test", request);
+  }
+
+  login(request: LoginRequest): Observable<void> {
+    return this.http.post<void>("/api/login", request);
   }
 }

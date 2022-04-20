@@ -20,32 +20,35 @@ generate base64 of your mongodb_url value with command:
 echo -n "<mongodb_url>" | base64
 for example: echo -n "mongodb+srv://test-user:123@cluster0.u1tcd.mongodb.net/custom-serverless" | base64
 copy output value and replace url in mongodb-secret.yaml with this output value
+8) in infrastructure/:
+   copy backend-secret-template.yaml to manifests/secrets/backend-secret.yaml
+generate base64 for all the needed values and fill them
    5) in infrastructure/ run:
    chmod +x provision-cluster.sh
    ./provision-cluster.sh <path-to-your-aws-instances-private-key>
       
-9) you can verify that cluster is running correctly:
-   CONTROL_PLANE_IP=$(terraform output control-plane-ip | cut -d "=" -f2 | tr -d "\"")
-   ssh ubuntu@<CONTROL_PLANE_IP> -i <PRIVATE_KEY_LOCATION> -o StrictHostKeyChecking=no
-   kubectl get nodes
-   should return output similar to:
-   NAME            STATUS   ROLES                  AGE     VERSION
-   control-plane   Ready    control-plane,master   3m52s   v1.21.0
-   worker-node-0   Ready    <none>                 2m45s   v1.21.0
-   worker-node-1   Ready    <none>                 106s    v1.21.0
-   kubectl get pod -A
-   every pod should be up and running, there should be as many weave-net pods as control-planes + worker-nodes
-   to verify if weave net is working correctly grab one weave net pod from:
-   kubectl get pod -n kube-system -o wide | grep weave
-   and run:
-   kubectl exec -n kube-system <one-of-weaves-pods-name for instance weave-net-gssmt> -c weave -- /home/weave/weave --local status
-   in output property status should be ready and connections should be control-planes + worker-nodes -1 so there should be 
-   connection to every other node in cluster
+10) you can verify that cluster is running correctly:
+    CONTROL_PLANE_IP=$(terraform output control-plane-ip | cut -d "=" -f2 | tr -d "\"")
+    ssh ubuntu@<CONTROL_PLANE_IP> -i <PRIVATE_KEY_LOCATION> -o StrictHostKeyChecking=no
+    kubectl get nodes
+    should return output similar to:
+    NAME            STATUS   ROLES                  AGE     VERSION
+    control-plane   Ready    control-plane,master   3m52s   v1.21.0
+    worker-node-0   Ready    <none>                 2m45s   v1.21.0
+    worker-node-1   Ready    <none>                 106s    v1.21.0
+    kubectl get pod -A
+    every pod should be up and running, there should be as many weave-net pods as control-planes + worker-nodes
+    to verify if weave net is working correctly grab one weave net pod from:
+    kubectl get pod -n kube-system -o wide | grep weave
+    and run:
+    kubectl exec -n kube-system <one-of-weaves-pods-name for instance weave-net-gssmt> -c weave -- /home/weave/weave --local status
+    in output property status should be ready and connections should be control-planes + worker-nodes -1 so there should be 
+    connection to every other node in cluster
    
-   to test setup you can schedule test pod and see if it's running on one of worker nodes:
-   kubectl run test --image=nginx
-   you can verify on which node this test pod was scheduled by running command:
-   kubectl get pod -o wide
+    to test setup you can schedule test pod and see if it's running on one of worker nodes:
+    kubectl run test --image=nginx
+    you can verify on which node this test pod was scheduled by running command:
+    kubectl get pod -o wide
    
 
 

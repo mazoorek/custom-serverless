@@ -25,8 +25,8 @@ import {DOCUMENT} from '@angular/common';
                        (onInit)="onTestFunctionEditorInit($event)"
                        (ngModelChange)="onTestCodeChange($event)">
     </ngx-monaco-editor>
-    <button mat-raised-button color="primary" (click)="testFunction()" [disabled]="!validJavascriptSyntax">test
-      function
+    <button mat-raised-button color="primary" (click)="testFunction()" [disabled]="!validJavascriptSyntax">
+      test function
     </button>
     <form>
       <mat-form-field class="input-container" appearance="fill">
@@ -34,6 +34,19 @@ import {DOCUMENT} from '@angular/common';
         <input matInput value="something" #functionAppNameInput autocomplete="off">
       </mat-form-field>
     </form>
+    <form>
+      <mat-form-field class="input-container" appearance="fill">
+        <mat-label>Email</mat-label>
+        <input matInput value="" #emailInput autocomplete="off">
+      </mat-form-field>
+      <mat-form-field class="input-container" appearance="fill">
+        <mat-label>Password</mat-label>
+        <input matInput value="" #passwordInput autocomplete="off">
+      </mat-form-field>
+    </form>
+    <button mat-raised-button color="primary" (click)="login()" [disabled]="!validJavascriptSyntax">
+      Log in
+    </button>
     <div class="center">
       <div style="height: 500px">
       </div>
@@ -62,6 +75,12 @@ export class MainComponent {
 
   @ViewChild('functionAppNameInput')
   functionAppNameInput!: ElementRef;
+
+  @ViewChild('emailInput')
+  emailInput!: ElementRef;
+
+  @ViewChild('passwordInput')
+  passwordInput!: ElementRef;
 
   @ViewChild('testEditor')
   testEditor!: EditorComponent;
@@ -150,6 +169,14 @@ export class MainComponent {
 
   onTestCodeChange(updatedCode: string): void {
     this.testCode = updatedCode;
+  }
+
+  login() {
+    const email: string = this.emailInput.nativeElement.value;
+    const password: string = this.passwordInput.nativeElement.value;
+    this.mainService.login({email, password}).subscribe(() => {
+      console.log('user logged in');
+    });
   }
 
   testFunction() {

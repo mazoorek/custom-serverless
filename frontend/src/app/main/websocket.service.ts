@@ -19,8 +19,6 @@ export class WebsocketService {
   }
 
   public connect(): void {
-    // TODO usunac cookie
-    this.document.cookie = 'token=123';
     const url = environment.production ? `ws://${this.window.location.hostname}/ws` : 'ws://localhost:8080/ws';
     this.webSocket = new WebSocket(url);
     this.onOpen$ = fromEvent(this.webSocket, 'open');

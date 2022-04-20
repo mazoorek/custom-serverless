@@ -26,6 +26,8 @@ spec:
               value: kubernetes.default
             - name: ENVIRONMENT
               value: production
+            - name: JWT_COOKIE_EXPIRES_IN
+              value: '1'
             - name: TOKEN
               valueFrom:
                 secretKeyRef:
