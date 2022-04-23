@@ -4,8 +4,8 @@ import {TestComponent} from './test/test.component';
 import {MainComponent} from './main/main.component';
 
 const routes: Routes = [
-  {path: '', component: MainComponent},
-  {path: 'test', component: TestComponent}
+  {path: '', component: TestComponent},
+  {path: 'test', component: MainComponent}
 ];
 
 @NgModule({

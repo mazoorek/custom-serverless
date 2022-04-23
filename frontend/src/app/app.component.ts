@@ -1,27 +1,58 @@
-import {AfterViewInit, Component, OnInit, ViewChild} from '@angular/core';
-import {MatTabChangeEvent, MatTabGroup} from '@angular/material/tabs/tab-group';
+import {ChangeDetectionStrategy, Component, OnInit} from '@angular/core';
+import {Observable} from 'rxjs';
+import {AuthService} from './auth/auth.service';
+import {AuthenticateOption} from './login/login.component';
 
 @Component({
   selector: 'app-root',
   template: `
-    <mat-tab-group #matTabGroup (selectedTabChange)="onTabChange($event)" [color]="'primary'" [selectedIndex]="1">
-      <mat-tab label="Applications" ></mat-tab>
-      <mat-tab label="Functions"></mat-tab>
-    </mat-tab-group>
-    <router-outlet></router-outlet>
+    <header class="header">
+      <nav class="nav"><a class="nav__el" href="/">Custom serverless</a></nav>
+      <nav class="nav">
+        <ng-container *ngIf="isLoggedOut$ | async">
+          <a class="nav__el" (click)="onLogInClicked()">Log in</a>
+          <a class="nav__el" (click)="onSignUpClicked()">Sign up</a>
+        </ng-container>
+        <ng-container *ngIf="isLoggedIn$ | async">
+          <a class="nav__el" (click)="onLogOutClicked()">Log out</a>
+        </ng-container>
+      </nav>
+    </header>
+    <ng-container *ngIf="isLoggedOut$ | async">
+      <login [authenticateOption]="authenticateOption"></login>
+    </ng-container>
+    <ng-container *ngIf="isLoggedIn$ | async">
+      <app-main></app-main>
+    </ng-container>
   `,
-  styleUrls: ['./app.component.scss']
+  styleUrls: ['./app.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class AppComponent implements AfterViewInit {
-  @ViewChild('matTabGroup')
-  matTabGroup!: MatTabGroup;
+export class AppComponent implements OnInit {
 
-  onTabChange(event: MatTabChangeEvent): void {
-    // console.log(event.index);
+  authenticateOption: AuthenticateOption = AuthenticateOption.LOG_IN;
+
+  isLoggedIn$: Observable<boolean> | undefined;
+  isLoggedOut$: Observable<boolean> | undefined;
+
+  constructor(private authService: AuthService) {
   }
 
-  ngAfterViewInit(): void {
-    this.matTabGroup.focusTab(0);
-    this.matTabGroup.selectedIndex = 0;
+  ngOnInit(): void {
+    this.isLoggedIn$ = this.authService.isLoggedIn$;
+    this.isLoggedOut$ = this.authService.isLoggedOut$;
+  }
+
+  onLogInClicked(): void {
+    this.authenticateOption = AuthenticateOption.LOG_IN;
+  }
+
+  onSignUpClicked(): void {
+    this.authenticateOption = AuthenticateOption.SIGN_UP;
+  }
+
+  onLogOutClicked(): void {
+    this.authenticateOption = AuthenticateOption.LOG_IN;
+    this.authService.logout().subscribe();
   }
 }

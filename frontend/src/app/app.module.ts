@@ -10,28 +10,31 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import {MatButtonModule} from '@angular/material/button';
 import {MatInputModule} from '@angular/material/input';
 import {MatTableModule} from '@angular/material/table';
-import {FormsModule} from '@angular/forms';
+import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {MatTabsModule} from '@angular/material/tabs';
 import {MonacoEditorModule} from 'ngx-monaco-editor';
+import {LoginComponent} from './login/login.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     TestComponent,
-    MainComponent
+    MainComponent,
+    LoginComponent
   ],
-    imports: [
-        BrowserModule,
-        AppRoutingModule,
-        HttpClientModule,
-        MonacoEditorModule.forRoot(),
-        BrowserAnimationsModule,
-        MatButtonModule,
-        MatInputModule,
-        MatTableModule,
-        FormsModule,
-        MatTabsModule
-    ],
+  imports: [
+    BrowserModule,
+    AppRoutingModule,
+    HttpClientModule,
+    MonacoEditorModule.forRoot(),
+    BrowserAnimationsModule,
+    MatButtonModule,
+    MatInputModule,
+    MatTableModule,
+    FormsModule,
+    MatTabsModule,
+    ReactiveFormsModule
+  ],
   providers: [],
   bootstrap: [AppComponent]
 })

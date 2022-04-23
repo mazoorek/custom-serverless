@@ -1,6 +1,4 @@
 const crypto = require('crypto');
-const {promisify} = require('util');
-const jwt = require('jsonwebtoken');
 const User = require('./../models/userModel');
 const Email = require('../models/email/email');
 const asyncHandler = require('../utils/asyncHandler');
@@ -15,6 +13,18 @@ exports.signup = asyncHandler(async (req, res) => {
     });
 
     await authService.sendJwt(newUser, 201, res);
+});
+
+exports.getUser = asyncHandler(async (req, res) => {
+    const {jwtValid, user} = await authService.validateJwt(req.cookies.jwt);
+    if (!jwtValid) {
+        return res.status(204).json({});
+    } else {
+        return res.status(200).json({
+            id: user._id,
+            email: user.email
+        });
+    }
 });
 
 
@@ -34,16 +44,13 @@ exports.login = asyncHandler(async (req, res) => {
 });
 
 exports.logout = (req, res) => {
-    res.cookie('jwt', 'loggedout', {
-        expires: new Date(Date.now() + 10 * 1000),
-        httpOnly: true
-    });
+    res.clearCookie('jwt');
     res.status(200).json({status: 'success'});
 };
 
 exports.protect = asyncHandler(async (req, res, next) => {
     const {jwtValid, user} = await authService.validateJwt(req.cookies.jwt);
-    if(!jwtValid) {
+    if (!jwtValid) {
         return res.status(401).json({message: "access forbidden"});
     }
     req.user = user;
