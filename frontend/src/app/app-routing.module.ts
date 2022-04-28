@@ -1,6 +1,5 @@
 import {NgModule} from '@angular/core';
 import {RouterModule, Routes} from '@angular/router';
-import {MainComponent} from './main/main.component';
 import {ApplicationsComponent} from './applications/applications.component';
 import {SettingsComponent} from './settings/settings.component';
 import {OverviewComponent} from './applications/overview/overview.component';
@@ -17,10 +16,9 @@ const routes: Routes = [
       {path: 'overview', component: OverviewComponent},
       {path: 'dependencies', component: DependenciesComponent},
       {path: 'endpoints', component: EndpointsComponent},
-      {path: 'functions', component: FunctionsComponent},
+      {path: 'functions', component: FunctionsComponent}
     ]
-  },
-  {path: 'test', component: MainComponent}
+  }
 ];
 
 @NgModule({

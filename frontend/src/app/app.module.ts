@@ -4,7 +4,6 @@ import {BrowserModule} from '@angular/platform-browser';
 import {AppRoutingModule} from './app-routing.module';
 import {AppComponent} from './app.component';
 import {DashboardComponent} from './dashboard/dashboard.component';
-import {MainComponent} from './main/main.component';
 import {HttpClientModule} from '@angular/common/http';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import {MatButtonModule} from '@angular/material/button';
@@ -25,7 +24,6 @@ import {FunctionsComponent} from './applications/functions/functions.component';
   declarations: [
     AppComponent,
     DashboardComponent,
-    MainComponent,
     LoginComponent,
     ApplicationsComponent,
     SettingsComponent,
