@@ -13,7 +13,12 @@ exports.sendJwt = async (user, statusCode, res) => {
     };
 
     res.cookie('jwt', token, cookieOptions);
-    res.status(statusCode).json({});
+    res.status(statusCode).json(
+        {
+            id: user._id,
+            email: user.email
+        }
+    );
 };
 
 exports.validateJwt = async (token) => {
