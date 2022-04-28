@@ -2,6 +2,7 @@ import {ChangeDetectionStrategy, Component, OnInit} from '@angular/core';
 import {Observable} from 'rxjs';
 import {AuthService} from './auth/auth.service';
 import {AuthenticateOption} from './login/login.component';
+import {SidebarService} from './dashboard/sidebar/sidebar.service';
 
 @Component({
   selector: 'app-root',
@@ -22,7 +23,9 @@ import {AuthenticateOption} from './login/login.component';
       <login [authenticateOption]="authenticateOption"></login>
     </ng-container>
     <ng-container *ngIf="isLoggedIn$ | async">
-      <app-main></app-main>
+      <dashboard>
+        <router-outlet></router-outlet>
+      </dashboard>
     </ng-container>
   `,
   styleUrls: ['./app.component.scss'],
@@ -35,7 +38,7 @@ export class AppComponent implements OnInit {
   isLoggedIn$: Observable<boolean> | undefined;
   isLoggedOut$: Observable<boolean> | undefined;
 
-  constructor(private authService: AuthService) {
+  constructor(private authService: AuthService, private  sidebarService: SidebarService) {
   }
 
   ngOnInit(): void {

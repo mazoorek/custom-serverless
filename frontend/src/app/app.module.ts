@@ -3,7 +3,7 @@ import {BrowserModule} from '@angular/platform-browser';
 
 import {AppRoutingModule} from './app-routing.module';
 import {AppComponent} from './app.component';
-import {TestComponent} from './test/test.component';
+import {DashboardComponent} from './dashboard/dashboard.component';
 import {MainComponent} from './main/main.component';
 import {HttpClientModule} from '@angular/common/http';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
@@ -14,13 +14,25 @@ import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {MatTabsModule} from '@angular/material/tabs';
 import {MonacoEditorModule} from 'ngx-monaco-editor';
 import {LoginComponent} from './login/login.component';
+import {ApplicationsComponent} from './applications/applications.component';
+import {SettingsComponent} from './settings/settings.component';
+import {OverviewComponent} from './applications/overview/overview.component';
+import {DependenciesComponent} from './applications/dependencies/dependencies.component';
+import {EndpointsComponent} from './applications/endpoints/endpoints.component';
+import {FunctionsComponent} from './applications/functions/functions.component';
 
 @NgModule({
   declarations: [
     AppComponent,
-    TestComponent,
+    DashboardComponent,
     MainComponent,
-    LoginComponent
+    LoginComponent,
+    ApplicationsComponent,
+    SettingsComponent,
+    OverviewComponent,
+    DependenciesComponent,
+    EndpointsComponent,
+    FunctionsComponent
   ],
   imports: [
     BrowserModule,

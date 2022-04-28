@@ -11,10 +11,10 @@ export enum AuthenticateOption {
   selector: 'login',
   template: `
     <div class="login-form">
-      <h2 class="heading-secondary ma-bt-lg" *ngIf="authenticateOption === AuthenticateOption.LOG_IN">
+      <h2 *ngIf="authenticateOption === AuthenticateOption.LOG_IN">
         Log into your account
       </h2>
-      <h2 class="heading-secondary ma-bt-lg" *ngIf="authenticateOption === AuthenticateOption.SIGN_UP">
+      <h2 *ngIf="authenticateOption === AuthenticateOption.SIGN_UP">
         Sign up a new account
       </h2>
       <form [formGroup]="loginForm" class="form form--login">
@@ -22,14 +22,15 @@ export enum AuthenticateOption {
           <label class="form__label" for="email">Email address</label>
           <input formControlName="email" class="form__input" id="email" type="email" placeholder="you@example.com" required="required"/>
         </div>
-        <div class="form__group ma-bt-md">
+        <div class="form__group">
           <label class="form__label" for="password">Password</label>
           <input formControlName="password" class="form__input" id="password" type="password" placeholder="••••••••" required="required"
                  minlength="8"/>
         </div>
-        <div class="form__group ma-bt-md" *ngIf="authenticateOption === AuthenticateOption.SIGN_UP">
+        <div class="form__group" *ngIf="authenticateOption === AuthenticateOption.SIGN_UP">
           <label class="form__label" for="passwordConfirm">Password Confirm</label>
-          <input formControlName="passwordConfirm" class="form__input" id="passwordConfirm" type="password" placeholder="••••••••" required="required"
+          <input formControlName="passwordConfirm" class="form__input" id="passwordConfirm" type="password" placeholder="••••••••"
+                 required="required"
                  minlength="8"/>
         </div>
         <div class="form__group" *ngIf="authenticateOption === AuthenticateOption.LOG_IN">

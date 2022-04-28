@@ -1,17 +1,11 @@
 .header {
   background-color: #444;
-  padding: 0 5rem;
-  height: 8rem;
+  padding: 0 80px;
+  height: 128px;
   position: relative;
   z-index: 100;
-  display: -webkit-box;
-  display: -ms-flexbox;
   display: flex;
-  -webkit-box-pack: justify;
-  -ms-flex-pack: justify;
   justify-content: space-between;
-  -webkit-box-align: center;
-  -ms-flex-align: center;
   align-items: center;
 }
 
@@ -20,15 +14,10 @@
 .nav__el:visited {
   color: #f7f7f7;
   text-transform: uppercase;
-  font-size: 1.6rem;
+  font-size: 24px;
   text-decoration: none;
-  display: -webkit-inline-box;
-  display: -ms-inline-flexbox;
   display: inline-flex;
-  -webkit-box-align: center;
-  -ms-flex-align: center;
   align-items: center;
-  -webkit-transition: all 0.2s;
   transition: all 0.2s;
   font-weight: 400;
   background: none;
@@ -38,12 +27,11 @@
 }
 .nav__el:hover,
 .nav__el:active {
-  -webkit-transform: translateY(-2px);
   transform: translateY(-2px);
-  text-shadow: 0 0.7rem 1rem black;
+  text-shadow: 0 10px 16px black;
 }
 .nav__el:not(:last-child) {
-  margin-right: 3rem;
+  margin-right: 48px;
 }
 
 .nav__el:focus {
