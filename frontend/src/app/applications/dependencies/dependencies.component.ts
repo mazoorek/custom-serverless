@@ -13,8 +13,8 @@ import IStandaloneCodeEditor = editor.IStandaloneCodeEditor;
                        [ngModel]="packageJsonCode"
                        (ngModelChange)="onPackageJsonCodeChange($event)">
     </ngx-monaco-editor>
-    <button mat-raised-button color="primary" (click)="validatePackageJson()" [disabled]="!validJsonSyntax">validate
-      package.json
+    <button mat-raised-button color="primary" (click)="savePackageJson()" [disabled]="!validJsonSyntax">
+      save package.json
     </button>
   `,
   styleUrls: ['./dependencies.component.scss']
@@ -38,6 +38,8 @@ export class DependenciesComponent {
     "license": "ISC",
     "dependencies": {
       "express": "^4.17.3",
+      "mongoose": "^6.3.0",
+      "dotenv": "^10.0.0",
       "package-json-validator": "^0.6.3"
     }
   }
@@ -61,8 +63,9 @@ export class DependenciesComponent {
     this.packageJsonCode = updatedCode;
   }
 
-  validatePackageJson() {
-    this.mainService.validatePackageJson(this.packageJsonCode).subscribe(response => {
+  savePackageJson() {
+    const appName = 'test-app';
+    this.mainService.savePackageJson(appName, this.packageJsonCode).subscribe(response => {
       console.log(response);
     });
   }

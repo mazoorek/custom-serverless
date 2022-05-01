@@ -1,5 +1,5 @@
 const moment = require("moment");
-const {CUSTOM_SERVERLESS_RUNTIME} = require("./namespaces");
+const {CUSTOM_SERVERLESS_RUNTIME} = require("../namespaces");
 
 module.exports = (appName) => {
     let expirationDate = moment(new Date()).add(5, 'm').toDate();

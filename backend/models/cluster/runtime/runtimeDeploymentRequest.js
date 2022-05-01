@@ -1,4 +1,4 @@
-const {CUSTOM_SERVERLESS_RUNTIME} = require("./namespaces");
+const {CUSTOM_SERVERLESS_RUNTIME} = require("../namespaces");
 
 module.exports = (appName) => {
     // TODO wywalic tego example
@@ -16,6 +16,8 @@ module.exports = (appName) => {
     "license": "ISC",
     "dependencies": {
       "express": "^4.17.3",
+      "mongoose": "^6.3.0",
+      "dotenv": "^10.0.0",
       "package-json-validator": "^0.6.3"
     }
   }

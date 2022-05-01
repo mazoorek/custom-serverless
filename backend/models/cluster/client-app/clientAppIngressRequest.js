@@ -16,9 +16,9 @@ module.exports = (appName) => {
                             {
                                 "backend": {
                                     "service": {
-                                        "name": "nginx-service",
+                                        "name": appName,
                                         "port": {
-                                            "number": 8080
+                                            "number": 4000
                                         }
                                     }
                                 },

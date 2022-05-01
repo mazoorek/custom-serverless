@@ -14,6 +14,7 @@ startup().then(() => {
         console.log(`Running on port ${PORT}`);
         await clusterService.setupClusterConnection();
         cronService.scheduleRuntimeCleaner();
+        // TODO run client apps that should be in run state
     });
     websockets(server);
 }).catch( error => {
