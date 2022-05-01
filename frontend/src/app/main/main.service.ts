@@ -27,8 +27,8 @@ export class MainService {
     return this.http.post<void>("/api/ingress", {clientAppName: clientAppName});
   }
 
-  validatePackageJson(code: string): Observable<void> {
-    return this.http.post<void>("/api/validate", {code: code});
+  savePackageJson(appName: string, code: string): Observable<void> {
+    return this.http.post<void>(`/api/applications/${appName}/dependencies`, {code: code});
   }
 
   getRuntime(appName: string): Observable<{ runtimeReady: string }> {

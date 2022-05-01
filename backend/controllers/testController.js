@@ -1,5 +1,5 @@
 const clusterService = require("../services/clusterService");
-const runtimeServiceRequest = require("../models/cluster/runtimeServiceRequest");
+const runtimeServiceRequest = require("../models/cluster/runtime/runtimeServiceRequest");
 const axios = require("axios");
 const {CUSTOM_SERVERLESS_RUNTIME} = require("../models/cluster/namespaces");
 const asyncHandler = require("../utils/asyncHandler");

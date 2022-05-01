@@ -1,9 +1,15 @@
 const {PJV} = require("package-json-validator");
 const axios = require("axios");
 const pickManifest = require("npm-pick-manifest");
-exports.validate = async (req, res) => {
-    let response = {valid: true, errors: []};
+const Application = require("../models/applicationModel");
+exports.dependencies = async (req, res) => {
+    let appName = req.params.clientAppName;
+    const application = await Application.findOne({name: appName, user: req.user.id});
+    if(!application) {
+        return res.status(404).json({message: "There is no application with this name that belongs to this user"});
+    }
     const packageJson = req.body.code;
+    let response = {valid: true, errors: []};
     const pjvResult = await PJV.validate(packageJson);
     if (!pjvResult.valid) {
         response = {valid: false, errors: pjvResult.errors};
@@ -26,5 +32,7 @@ exports.validate = async (req, res) => {
             }
         }
     }
+    application.packageJson = packageJson;
+    await application.save();
     res.status(200).json(response);
 };
