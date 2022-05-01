@@ -21,5 +21,5 @@ app.post('/test', (req, res) => {
 });
 
 app.listen(port, () => {
-    console.log(`Runtime app listening on port ${port}`)
+    console.log(`Runtime app listening on port ${port}`);
 });
