@@ -1,5 +1,4 @@
 import {ChangeDetectorRef, Component, ElementRef, ViewChild} from '@angular/core';
-import {MainService} from '../main/main.service';
 import {Application, ApplicationsService} from './applications.service';
 import {Router} from '@angular/router';
 import {FormBuilder, FormGroup, Validators} from '@angular/forms';
@@ -89,7 +88,7 @@ export class ApplicationsComponent {
 
   createApp(): void {
     let appName = this.applicationForm.value.name;
-    this.applicationsService.createApps(appName).subscribe(_ => {
+    this.applicationsService.createApp(appName).subscribe(_ => {
       this.router.navigate(['applications', appName, 'overview']);
     });
   }
@@ -134,6 +133,8 @@ export class ApplicationsComponent {
   }
 
   showApp(appName: string): void {
-    this.router.navigate(['applications', appName, 'overview']);
+    this.applicationsService.getApp(appName).subscribe(() => {
+      this.router.navigate(['applications', appName, 'overview']);
+    });
   }
 }

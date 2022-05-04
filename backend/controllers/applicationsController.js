@@ -36,7 +36,21 @@ exports.deleteApp = asyncHandler(async (req, res) => {
         name: req.params.clientAppName,
         user: req.user.id
     });
-    res.status(204).json({});
+    res.status(200).json({});
+});
+
+exports.getApp = asyncHandler(async (req, res) => {
+    let appName = req.params.clientAppName;
+    const application = await Application.findOne({name: appName, user: req.user.id});
+    res.status(200).json(application);
+});
+
+exports.editAppName = asyncHandler(async (req, res) => {
+    let appName = req.params.clientAppName;
+    const application = await Application.findOne({name: appName, user: req.user.id});
+    application.name = req.body.newAppName;
+    await application.save();
+    res.status(200).json();
 });
 
 exports.start = asyncHandler(async (req, res) => {
