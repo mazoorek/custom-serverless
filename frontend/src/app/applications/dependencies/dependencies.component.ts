@@ -1,21 +1,25 @@
-import {Component} from '@angular/core';
-import {MainService} from '../../main/main.service';
+import {ChangeDetectorRef, Component} from '@angular/core';
 import {editor, MarkerSeverity} from 'monaco-editor';
 import IStandaloneCodeEditor = editor.IStandaloneCodeEditor;
+import {Application, ApplicationsService} from '../applications.service';
 
 @Component({
   selector: 'dependencies',
   template: `
     <h2>dependencies</h2>
-    <ngx-monaco-editor class="my-code-editor"
+    <ngx-monaco-editor class="code-editor"
                        [options]="validateEditorOptions"
                        (onInit)="onPackageJsonEditorInit($event)"
-                       [ngModel]="packageJsonCode"
+                       [ngModel]="application.packageJson"
                        (ngModelChange)="onPackageJsonCodeChange($event)">
     </ngx-monaco-editor>
-    <button mat-raised-button color="primary" (click)="savePackageJson()" [disabled]="!validJsonSyntax">
-      save package.json
-    </button>
+    <button class="btn btn--green validate-button" (click)="savePackageJson()"  [disabled]="!validJsonSyntax">VALIDATE AND SAVE</button>
+    <ng-container *ngIf="errors.length > 0">
+      <div class="validation-error validation-error--title">Dependencies has not been saved due to validation errors:</div>
+      <div *ngFor="let error of errors" class="validation-error">
+        {{error}}
+      </div>
+    </ng-container>
   `,
   styleUrls: ['./dependencies.component.scss']
 })
@@ -23,31 +27,14 @@ export class DependenciesComponent {
 
   validJsonSyntax: boolean = true;
   validateEditorOptions = {theme: 'vs-dark', language: 'json'};
-
-  packageJsonCode: string = `
-   {
-    "name": "sandbox",
-    "version": "1.0.0",
-    "description": "",
-    "main": "index.js",
-    "scripts": {
-      "test": "echo \\"Error: no test specified\\" && exit 1"
-    },
-    "keywords": [],
-    "author": "",
-    "license": "ISC",
-    "dependencies": {
-      "express": "^4.17.3",
-      "mongoose": "^6.3.0",
-      "dotenv": "^10.0.0",
-      "package-json-validator": "^0.6.3"
-    }
-  }
-  `;
-
+  packageJsonCode: string;
   packageJsonEditor!: IStandaloneCodeEditor;
+  application: Application;
+  errors: string[] = [];
 
-  constructor(private mainService: MainService) {
+  constructor(private applicationsService: ApplicationsService, private changeDetection: ChangeDetectorRef) {
+    this.application = this.applicationsService.currentApplication;
+    this.packageJsonCode = this.application.packageJson;
   }
 
   onPackageJsonEditorInit(packageJsonEditor: IStandaloneCodeEditor): void {
@@ -64,10 +51,9 @@ export class DependenciesComponent {
   }
 
   savePackageJson() {
-    const appName = 'test-app';
-    this.mainService.savePackageJson(appName, this.packageJsonCode).subscribe(response => {
-      console.log(response);
+    this.applicationsService.saveDependencies(this.application.name, this.packageJsonCode).subscribe(response => {
+     this.errors = response.errors;
+      this.changeDetection.markForCheck();
     });
   }
-
 }
