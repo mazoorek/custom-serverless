@@ -1,22 +1,29 @@
 const express = require('express');
-const ingressController = require('../controllers/applicationsController');
+const applicationsController = require('../controllers/applicationsController');
 const validateController = require("../controllers/validateController");
 const router = express.Router({mergeParams: true});
 
 router.route('/')
-    .get(ingressController.getApps)
-    .post(ingressController.createApp);
+    .get(applicationsController.getApps)
+    .post(applicationsController.createApp);
+
+router.route('/:clientAppName')
+    .delete(applicationsController.deleteApp);
 
 router.route('/:clientAppName/start')
-    .post(ingressController.start);
+    .post(applicationsController.start);
+
+router.route('/:clientAppName/stop')
+    .post(applicationsController.stop);
 
 router.route('/:clientAppName/dependencies')
+    .get(applicationsController.getDependencies)
     .post(validateController.dependencies);
 
 router.route('/:clientAppName/functions')
-    .post(ingressController.createFunction);
+    .post(applicationsController.createFunction);
 
 router.route('/:clientAppName/endpoints')
-    .post(ingressController.createEndpoint);
+    .post(applicationsController.createEndpoint);
 
 module.exports = router;

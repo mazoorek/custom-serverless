@@ -19,6 +19,10 @@ import {OverviewComponent} from './applications/overview/overview.component';
 import {DependenciesComponent} from './applications/dependencies/dependencies.component';
 import {EndpointsComponent} from './applications/endpoints/endpoints.component';
 import {FunctionsComponent} from './applications/functions/functions.component';
+import {MatIconModule} from '@angular/material/icon';
+import {MatPaginatorModule} from '@angular/material/paginator';
+import {ApplicationsPopupComponent} from './popup/applications-popup.component';
+import {MatDialogModule} from '@angular/material/dialog';
 
 @NgModule({
   declarations: [
@@ -30,7 +34,8 @@ import {FunctionsComponent} from './applications/functions/functions.component';
     OverviewComponent,
     DependenciesComponent,
     EndpointsComponent,
-    FunctionsComponent
+    FunctionsComponent,
+    ApplicationsPopupComponent
   ],
   imports: [
     BrowserModule,
@@ -43,7 +48,10 @@ import {FunctionsComponent} from './applications/functions/functions.component';
     MatTableModule,
     FormsModule,
     MatTabsModule,
-    ReactiveFormsModule
+    ReactiveFormsModule,
+    MatIconModule,
+    MatPaginatorModule,
+    MatDialogModule
   ],
   providers: [],
   bootstrap: [AppComponent]

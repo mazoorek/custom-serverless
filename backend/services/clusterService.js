@@ -55,6 +55,10 @@ exports.deleteNamespacedDeployment = (name, namespace) => {
     return k8sAppsV1Api.deleteNamespacedDeployment(name, namespace);
 }
 
+exports.deleteNamespacedIngress = (name, namespace) => {
+    return k8sNetworkingV1Api.deleteNamespacedIngress(name, namespace);
+}
+
 exports.patchNamespacedService = (appName, serviceRequest) => {
     return k8sCoreV1Api.patchNamespacedService(
         appName,

@@ -26,7 +26,7 @@ import {ActivatedRoute, NavigationEnd, Router} from '@angular/router';
 export class DashboardComponent implements OnInit {
   sidebarOptions: SidebarOption[] = [];
 
-  constructor(private sidebarService: SidebarService, private router: Router, private route: ActivatedRoute) {
+  constructor(private sidebarService: SidebarService, private router: Router) {
   }
 
   ngOnInit(): void {

@@ -4,7 +4,8 @@ const endpointSchema = new mongoose.Schema({
     url: {
         type: String,
         required: [true, 'Please provide application name'],
-        unique: true
+        unique: true,
+        sparse: true
     },
     functionName: {
         type: String,
@@ -16,7 +17,8 @@ const functionSchema = new mongoose.Schema({
     name: {
         type: String,
         required: [true, 'Please provide function name'],
-        unique: true
+        unique: true,
+        sparse: true
     },
     content: {
         type: String,
@@ -47,6 +49,10 @@ const applicationSchema = new mongoose.Schema({
         type: [functionSchema],
         default: []
     },
+    up: {
+        type: Boolean,
+        default: false
+    },
     packageJson: {
         type: String,
         default: function() {
@@ -58,24 +64,16 @@ const applicationSchema = new mongoose.Schema({
 applicationSchema.index({user: 1});
 
 applicationSchema.methods.defaultPackageJson = function () {
-    return `
-            {
-                "name": ${this.name},
-                "version": "1.0.0",
-                "description": ${this.name},
-                "main": "index.js",
-                "scripts": {
-                    "test": "echo \\"Error: no test specified\\" && exit 1"
-                },
-                "keywords": [],
-                "author": "",
-                "license": "ISC",
-                "dependencies": {
-                    "express": "^4.17.3",
-                    "mongoose": "^6.3.0"
-                }
-            }
-    `;
+    return `\n   {\n    \"name\": \"${this.name}\",\n    \"version\": \"1.0.0\",
+    \n    \"description\": \"${this.name}\",\n    \"main\": \"index.js\",
+    \n    \"scripts\": {\n      \"test\": \"echo \\\"Error: no test specified\\\" && exit 1\"\n    },
+    \n    \"keywords\": [],\n    \"author\": \"\",\n    \"license\": \"ISC\",
+    \n    \"dependencies\": {
+    \n      \"express\": \"^4.17.3\",
+    \n      \"mongoose\": \"^6.3.0\",
+    \n      \"dotenv\": \"^10.0.0\",
+    \n      \"package-json-validator\": \"^0.6.3\"
+    \n    }\n  }\n`;
 }
 
 const Application = mongoose.model('Application', applicationSchema);
