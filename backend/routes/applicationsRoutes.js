@@ -8,7 +8,9 @@ router.route('/')
     .post(applicationsController.createApp);
 
 router.route('/:clientAppName')
-    .delete(applicationsController.deleteApp);
+    .delete(applicationsController.deleteApp)
+    .patch(applicationsController.editAppName)
+    .get(applicationsController.getApp);
 
 router.route('/:clientAppName/start')
     .post(applicationsController.start);

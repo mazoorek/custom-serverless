@@ -23,6 +23,7 @@ import {MatIconModule} from '@angular/material/icon';
 import {MatPaginatorModule} from '@angular/material/paginator';
 import {ApplicationsPopupComponent} from './popup/applications-popup.component';
 import {MatDialogModule} from '@angular/material/dialog';
+import {MatCardModule} from '@angular/material/card';
 
 @NgModule({
   declarations: [
@@ -37,22 +38,23 @@ import {MatDialogModule} from '@angular/material/dialog';
     FunctionsComponent,
     ApplicationsPopupComponent
   ],
-  imports: [
-    BrowserModule,
-    AppRoutingModule,
-    HttpClientModule,
-    MonacoEditorModule.forRoot(),
-    BrowserAnimationsModule,
-    MatButtonModule,
-    MatInputModule,
-    MatTableModule,
-    FormsModule,
-    MatTabsModule,
-    ReactiveFormsModule,
-    MatIconModule,
-    MatPaginatorModule,
-    MatDialogModule
-  ],
+    imports: [
+        BrowserModule,
+        AppRoutingModule,
+        HttpClientModule,
+        MonacoEditorModule.forRoot(),
+        BrowserAnimationsModule,
+        MatButtonModule,
+        MatInputModule,
+        MatTableModule,
+        FormsModule,
+        MatTabsModule,
+        ReactiveFormsModule,
+        MatIconModule,
+        MatPaginatorModule,
+        MatDialogModule,
+        MatCardModule
+    ],
   providers: [],
   bootstrap: [AppComponent]
 })

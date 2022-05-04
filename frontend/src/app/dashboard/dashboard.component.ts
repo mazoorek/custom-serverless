@@ -1,7 +1,7 @@
 import {Component, OnInit} from '@angular/core';
 import {SidebarOption} from './sidebar/sidebar.model';
 import {SidebarService} from './sidebar/sidebar.service';
-import {ActivatedRoute, NavigationEnd, Router} from '@angular/router';
+import {NavigationEnd, Router} from '@angular/router';
 
 @Component({
   selector: 'dashboard',
@@ -16,6 +16,11 @@ import {ActivatedRoute, NavigationEnd, Router} from '@angular/router';
           </ul>
         </nav>
         <div class="user-view__content">
+          <div>
+            <mat-icon (click)="goBack()" *ngIf="isNotRootLevelMenu()" class="back-arrow mat-elevation-z8">
+              keyboard_backspace
+            </mat-icon>
+          </div>
           <ng-content></ng-content>
         </div>
       </div>
@@ -43,9 +48,17 @@ export class DashboardComponent implements OnInit {
     return optionUrl === lastUrlSegment;
   }
 
+  goBack(): void {
+    this.router.navigate(this.router.url.substring(1).split('/').slice(0, -2));
+  }
+
+  isNotRootLevelMenu(): boolean {
+    return /\/applications\/.+/.test(this.router.url);
+  }
+
 
   navigate(url: string): void {
-    if (/\/applications\/.+/.test(this.router.url)) {
+    if (this.isNotRootLevelMenu()) {
       let parentPath = this.router.url.match(/\/applications\/.+\//)![0];
       this.router.navigate([`${parentPath}/${url}`]);
     } else {
