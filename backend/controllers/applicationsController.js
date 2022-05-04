@@ -5,6 +5,9 @@ const clientAppServiceRequest = require("../models/cluster/client-app/clientAppS
 const {CUSTOM_SERVERLESS_APPS} = require("../models/cluster/namespaces");
 const asyncHandler = require("../utils/asyncHandler");
 const Application = require('./../models/applicationModel');
+const {PJV} = require("package-json-validator");
+const axios = require("axios");
+const pickManifest = require("npm-pick-manifest");
 
 exports.getApps = asyncHandler( async  (req, res) => {
     const applications = await Application.find().select({ "name": 1, "_id": 0, "up": 1});
@@ -16,6 +19,43 @@ exports.getDependencies = asyncHandler( async  (req, res) => {
     const application = await Application.findOne({name: appName, user: req.user.id});
     res.status(200).json({packageJson: application.packageJson});
 });
+
+exports.validateAndSaveDependencies = async (req, res) => {
+    let appName = req.params.clientAppName;
+    const application = await Application.findOne({name: appName, user: req.user.id});
+    if(!application) {
+        return res.status(404).json({message: "There is no application with this name that belongs to this user"});
+    }
+    const packageJson = req.body.code;
+    let response = {valid: true, errors: []};
+    const pjvResult = await PJV.validate(packageJson);
+    if (!pjvResult.valid) {
+        response = {valid: false, errors: pjvResult.errors};
+    } else {
+        const dependencies = JSON.parse(packageJson).dependencies;
+        for (const dependency in dependencies) {
+            const dependencyVersion = dependencies[dependency];
+            try {
+                const packument = await axios.get(`https://registry.npmjs.org/${dependency}`);
+                try {
+                    pickManifest(packument.data, dependencyVersion);
+                } catch (e) {
+                    response = {
+                        valid: false,
+                        errors: [...response.errors, `version '${dependencyVersion}' for dependency '${dependency}' not found`]
+                    };
+                }
+            } catch (e) {
+                response = {valid: false, errors: [...response.errors, `dependency '${dependency}' not found`]};
+            }
+        }
+    }
+    if(response.errors.length === 0) {
+        application.packageJson = packageJson;
+        await application.save();
+    }
+    res.status(200).json(response);
+};
 
 exports.getRunningApps = asyncHandler(async (req, res) => {
     let ingresses = await clusterService.listNamespacedIngress(CUSTOM_SERVERLESS_APPS);

@@ -26,6 +26,11 @@ export interface Application {
   packageJson: string;
 }
 
+export interface DependenciesResponse {
+  valid: boolean;
+  errors: string[];
+}
+
 @Injectable({providedIn: "root"})
 export class ApplicationsService {
   currentApplication!: Application;
@@ -62,5 +67,9 @@ export class ApplicationsService {
 
   stopApp(clientAppName: string): Observable<void> {
     return this.http.post<void>(`/api/applications/${clientAppName}/stop`, {});
+  }
+
+  saveDependencies(appName: string, code: string): Observable<DependenciesResponse> {
+    return this.http.post<DependenciesResponse>(`/api/applications/${appName}/dependencies`, {code: code});
   }
 }

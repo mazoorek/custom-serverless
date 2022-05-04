@@ -1,6 +1,5 @@
 const express = require('express');
 const applicationsController = require('../controllers/applicationsController');
-const validateController = require("../controllers/validateController");
 const router = express.Router({mergeParams: true});
 
 router.route('/')
@@ -20,7 +19,7 @@ router.route('/:clientAppName/stop')
 
 router.route('/:clientAppName/dependencies')
     .get(applicationsController.getDependencies)
-    .post(validateController.dependencies);
+    .post(applicationsController.validateAndSaveDependencies);
 
 router.route('/:clientAppName/functions')
     .post(applicationsController.createFunction);
