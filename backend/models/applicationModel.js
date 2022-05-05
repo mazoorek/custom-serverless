@@ -71,6 +71,15 @@ applicationSchema.pre('save', async function(next) {
     next();
 });
 
+applicationSchema.methods.defaultFunctionContent = function () {
+    return `
+    (args) => {
+    
+        return {};
+    };
+    `;
+}
+
 applicationSchema.methods.defaultPackageJson = function () {
     return `\n{\n    \"name\": \"${this.name}\",\n    \"version\": \"1.0.0\",
     \n    \"description\": \"${this.name}\",\n    \"main\": \"index.js\",

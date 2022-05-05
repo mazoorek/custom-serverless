@@ -3,7 +3,7 @@ import {Application, ApplicationsService} from './applications.service';
 import {Router} from '@angular/router';
 import {FormBuilder, FormGroup, Validators} from '@angular/forms';
 import {MatDialog} from '@angular/material/dialog';
-import {ApplicationsPopupComponent} from '../popup/applications-popup.component';
+import {DeletePopupComponent} from '../popup/delete-popup.component';
 
 @Component({
   selector: 'applications',
@@ -63,9 +63,6 @@ import {ApplicationsPopupComponent} from '../popup/applications-popup.component'
 })
 export class ApplicationsComponent {
 
-  @ViewChild('appNameInput')
-  appNameInput!: ElementRef;
-
   displayedColumns: string[] = ['name', 'up', 'changeState', 'delete'];
   dataSource: Application[] = [];
 
@@ -115,9 +112,9 @@ export class ApplicationsComponent {
 
   deleteApp(appName: string, event: Event): void {
     event.stopPropagation();
-    this.dialog.open(ApplicationsPopupComponent, {
+    this.dialog.open(DeletePopupComponent, {
       data: {
-        appName
+        name: appName
       },
     }).afterClosed().subscribe(deleted => {
         if (deleted) {

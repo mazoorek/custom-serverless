@@ -22,7 +22,7 @@ exports.test = asyncHandler(async (req, res) => {
         code: req.body.code,
         args: req.body.args
     }).then(response => {
-        console.log(`got result for testing app: ${appName}`);
+        console.log(`got result for testing function: ${appName}`);
         res.status(200).json(response.data);
     }).catch(e => {
         console.log(e);

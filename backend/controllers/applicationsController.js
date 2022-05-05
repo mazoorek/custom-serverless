@@ -2,7 +2,7 @@ const clusterService = require("../services/clusterService");
 const clientAppIngressAppRequest = require("../models/cluster/client-app/clientAppIngressRequest");
 const clientAppDeploymentRequest = require("../models/cluster/client-app/clientAppDeploymentRequest");
 const clientAppServiceRequest = require("../models/cluster/client-app/clientAppServiceRequest");
-const {CUSTOM_SERVERLESS_APPS} = require("../models/cluster/namespaces");
+const {CUSTOM_SERVERLESS_APPS, CUSTOM_SERVERLESS_RUNTIME} = require("../models/cluster/namespaces");
 const asyncHandler = require("../utils/asyncHandler");
 const Application = require('./../models/applicationModel');
 const {PJV} = require("package-json-validator");
@@ -72,8 +72,10 @@ exports.createApp = asyncHandler(async (req, res) => {
 });
 
 exports.deleteApp = asyncHandler(async (req, res) => {
+    const appName = req.params.clientAppName;
+    await stopApp(appName);
     await Application.deleteOne({
-        name: req.params.clientAppName,
+        name: appName,
         user: req.user.id
     });
     res.status(200).json({});
@@ -85,9 +87,56 @@ exports.getApp = asyncHandler(async (req, res) => {
     res.status(200).json(application);
 });
 
+exports.getFunction = asyncHandler(async (req, res) => {
+    let appName = req.params.clientAppName;
+    let functionName = req.params.functionName;
+    const application = await Application.findOne({name: appName, user: req.user.id});
+    if(!application) {
+        return res.status(404).json({message: "There is no application with this name that belongs to this user"});
+    }
+    const resultFunction = application.functions.toObject().find(func => func.name === functionName);
+    if(!resultFunction) {
+        return res.status(404).json({message: "There is no function with this name that belongs to this application"});
+    }
+    res.status(200).json(resultFunction);
+});
+
+exports.editFunction = asyncHandler(async (req, res) => {
+    let appName = req.params.clientAppName;
+    let functionName = req.params.functionName;
+    const application = await Application.findOne({name: appName, user: req.user.id});
+    if(!application) {
+        return res.status(404).json({message: "There is no application with this name that belongs to this user"});
+    }
+    let functions = application.functions.toObject();
+    const resultFunction = functions.find(func => func.name === functionName);
+    if(!resultFunction) {
+        return res.status(404).json({message: "There is no function with this name that belongs to this application"});
+    }
+    if(req.body.name) {
+        resultFunction.name = req.body.name;
+    }
+    if(req.body.idempotent) {
+        resultFunction.idempotent = req.body.idempotent;
+    }
+    if(req.body.content) {
+       // TODO checking content structure regex
+        // TODO checking require
+        resultFunction.content = req.body.content;
+    }
+    const resultFunctionIndex = functions.findIndex(func => func.name === functionName);
+    functions[resultFunctionIndex] = resultFunction;
+    application.functions = functions;
+    await application.save();
+    res.status(200).json();
+});
+
 exports.editAppName = asyncHandler(async (req, res) => {
     let appName = req.params.clientAppName;
     const application = await Application.findOne({name: appName, user: req.user.id});
+    if(!application) {
+        return res.status(404).json({message: "There is no application with this name that belongs to this user"});
+    }
     application.name = req.body.newAppName;
     await application.save();
     res.status(200).json();
@@ -116,11 +165,15 @@ exports.stop = asyncHandler(async (req, res) => {
     }
     application.up = false;
     await application.save();
+    await stopApp(appName);
+    res.status(200).json({});
+});
+
+const stopApp = async (appName) => {
     await clusterService.deleteNamespacedIngress(appName, CUSTOM_SERVERLESS_APPS);
     await clusterService.deleteNamespacedService(appName, CUSTOM_SERVERLESS_APPS);
     await clusterService.deleteNamespacedDeployment(appName, CUSTOM_SERVERLESS_APPS);
-    res.status(200).json({});
-});
+}
 
 exports.createFunction = asyncHandler(async (req, res) => {
     const application = await Application.findOne({name: req.params.clientAppName});
@@ -129,10 +182,23 @@ exports.createFunction = asyncHandler(async (req, res) => {
     }
     application.functions.push({
         name: req.body.name,
-        content: req.body.content
+        content: !!req.body.content ? req.body.content : application.defaultFunctionContent()
     });
     await application.save();
     res.status(201).json({});
+});
+
+exports.deleteFunction = asyncHandler(async (req, res) => {
+    const application = await Application.findOne({
+        name: req.params.clientAppName,
+        user: req.user.id
+    });
+    if (!application) {
+        return res.status(404).json({message: "There is no application with this name"});
+    }
+    application.functions = application.functions.toObject().filter(func => func.name !== req.params.functionName);
+    await application.save();
+    res.status(200).json({});
 });
 
 exports.createEndpoint = asyncHandler(async (req, res) => {

@@ -5,6 +5,7 @@ import {SettingsComponent} from './settings/settings.component';
 import {OverviewComponent} from './applications/overview/overview.component';
 import {DependenciesComponent} from './applications/dependencies/dependencies.component';
 import {EndpointsComponent} from './applications/endpoints/endpoints.component';
+import {FunctionEditComponent} from './applications/functions/edit/function-edit.component';
 import {FunctionsComponent} from './applications/functions/functions.component';
 
 const routes: Routes = [
@@ -16,7 +17,8 @@ const routes: Routes = [
       {path: 'overview', component: OverviewComponent},
       {path: 'dependencies', component: DependenciesComponent},
       {path: 'endpoints', component: EndpointsComponent},
-      {path: 'functions', component: FunctionsComponent}
+      {path: 'functions', component: FunctionsComponent},
+      {path: 'functions/:functionId/edit', component: FunctionEditComponent}
     ]
   }
 ];

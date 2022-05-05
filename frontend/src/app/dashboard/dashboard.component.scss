@@ -19,7 +19,7 @@
 }
 
 .user-view__menu {
-  flex: 512px 0 0;
+  width: 350px;
   background-image: linear-gradient(to right bottom, #7dd56f, #28b487);
   padding: 64px 0;
 }
@@ -27,8 +27,6 @@
 .user-view__content {
   flex: 1;
   padding: 112px 128px;
-  margin: 0 auto;
-  max-width: 1088px;
 }
 
 .back-arrow {

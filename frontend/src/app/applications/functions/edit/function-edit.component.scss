@@ -1,0 +1,26 @@
+.code-editor {
+  width: 100%;
+}
+
+.form--function {
+  padding-bottom: 50px;
+}
+
+.validation-error {
+  color: red;
+
+  &--title {
+    font-weight: bold;
+    margin-bottom: 20px;
+  }
+}
+
+.buttons-container {
+  display: flex;
+  justify-content: space-between;
+  margin: 50px 0;
+}
+
+.function__input {
+  margin-top: 50px;
+}

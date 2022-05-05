@@ -1,7 +1,7 @@
 import {Component} from '@angular/core';
 import {FormBuilder, FormGroup, Validators} from '@angular/forms';
 import {Application, ApplicationsService} from '../applications.service';
-import {ApplicationsPopupComponent} from '../../popup/applications-popup.component';
+import {DeletePopupComponent} from '../../popup/delete-popup.component';
 import {Router} from '@angular/router';
 import {MatDialog} from '@angular/material/dialog';
 
@@ -65,7 +65,7 @@ export class OverviewComponent {
   }
 
   deleteApp(): void {
-    this.dialog.open(ApplicationsPopupComponent, {
+    this.dialog.open(DeletePopupComponent, {
       data: {
         appName: this.application.name
       },

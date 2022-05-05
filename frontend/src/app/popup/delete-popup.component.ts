@@ -3,11 +3,11 @@ import {MAT_DIALOG_DATA, MatDialogRef} from '@angular/material/dialog';
 
 
 @Component({
-  selector: 'app-musicians-popup',
+  selector: 'delete-popup',
   template: `
     <div>
       <div mat-dialog-content>
-        Do you really want to delete {{data.appName}}?
+        Do you really want to delete {{data.name}}?
       </div>
       <div class="buttons-container">
         <button [mat-dialog-close]="false" class="btn btn--white">Close</button>
@@ -15,11 +15,11 @@ import {MAT_DIALOG_DATA, MatDialogRef} from '@angular/material/dialog';
       </div>
     </div>
   `,
-  styleUrls: ['./applications-popup.component.scss']
+  styleUrls: ['./delete-popup.component.scss']
 })
-export class ApplicationsPopupComponent {
+export class DeletePopupComponent {
 
-  constructor(private dialogRef: MatDialogRef<ApplicationsPopupComponent>,
-              @Inject(MAT_DIALOG_DATA) public data: {appName: string}) {
+  constructor(private dialogRef: MatDialogRef<DeletePopupComponent>,
+              @Inject(MAT_DIALOG_DATA) public data: {name: string}) {
   }
 }
