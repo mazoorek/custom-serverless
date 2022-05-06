@@ -26,6 +26,7 @@ import {MatDialogModule} from '@angular/material/dialog';
 import {MatCardModule} from '@angular/material/card';
 import {FunctionsComponent} from './applications/functions/functions.component';
 import {MatCheckboxModule} from '@angular/material/checkbox';
+import {EndpointEditComponent} from './applications/endpoints/edit/endpoint-edit.component';
 
 @NgModule({
   declarations: [
@@ -39,7 +40,8 @@ import {MatCheckboxModule} from '@angular/material/checkbox';
     EndpointsComponent,
     FunctionEditComponent,
     DeletePopupComponent,
-    FunctionsComponent
+    FunctionsComponent,
+    EndpointEditComponent
   ],
     imports: [
         BrowserModule,

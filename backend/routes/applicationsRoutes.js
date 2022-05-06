@@ -24,10 +24,18 @@ router.route('/:clientAppName/dependencies')
 router.route('/:clientAppName/functions')
     .post(applicationsController.createFunction);
 
+router.route('/:clientAppName/endpoints')
+    .post(applicationsController.createEndpoint);
+
 router.route('/:clientAppName/functions/:functionName')
     .get(applicationsController.getFunction)
     .patch(applicationsController.editFunction)
     .delete(applicationsController.deleteFunction);
+
+router.route('/:clientAppName/endpoints/:endpointUrl')
+    .get(applicationsController.getEndpoint)
+    .put(applicationsController.editEndpoint)
+    .delete(applicationsController.deleteEndpoint);
 
 router.route('/:clientAppName/endpoints')
     .post(applicationsController.createEndpoint);

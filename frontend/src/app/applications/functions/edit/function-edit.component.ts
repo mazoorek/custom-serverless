@@ -7,7 +7,7 @@ import {Application, ApplicationsService, Function} from '../../applications.ser
 import IStandaloneCodeEditor = editor.IStandaloneCodeEditor;
 
 @Component({
-  selector: 'functions',
+  selector: 'function-edit',
   template: `
     <h2>functions</h2>
     <form [formGroup]="functionMetadataForm" class="form--function">

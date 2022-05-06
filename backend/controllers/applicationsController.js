@@ -101,6 +101,20 @@ exports.getFunction = asyncHandler(async (req, res) => {
     res.status(200).json(resultFunction);
 });
 
+exports.getEndpoint = asyncHandler(async (req, res) => {
+    let appName = req.params.clientAppName;
+    let endpointUrl = req.params.endpointUrl;
+    const application = await Application.findOne({name: appName, user: req.user.id});
+    if(!application) {
+        return res.status(404).json({message: "There is no application with this name that belongs to this user"});
+    }
+    const resultEndpoint = application.endpoints.toObject().find(endpoint => endpoint.url === endpointUrl);
+    if(!resultEndpoint) {
+        return res.status(404).json({message: "There is no function with this name that belongs to this application"});
+    }
+    res.status(200).json(resultEndpoint);
+});
+
 exports.editFunction = asyncHandler(async (req, res) => {
     let appName = req.params.clientAppName;
     let functionName = req.params.functionName;
@@ -186,6 +200,55 @@ exports.createFunction = asyncHandler(async (req, res) => {
     });
     await application.save();
     res.status(201).json({});
+});
+
+exports.createEndpoint = asyncHandler(async (req, res) => {
+    const application = await Application.findOne({name: req.params.clientAppName});
+    if (!application) {
+        return res.status(404).json({message: "There is no application with this name"});
+    }
+    application.endpoints.push({
+        url: req.body.url,
+        functionName: req.body.functionName
+    });
+    await application.save();
+    res.status(201).json({});
+});
+
+exports.editEndpoint = asyncHandler(async (req, res) => {
+    let appName = req.params.clientAppName;
+    let endpointUrl = req.params.endpointUrl;
+    const application = await Application.findOne({name: appName, user: req.user.id});
+    if(!application) {
+        return res.status(404).json({message: "There is no application with this name that belongs to this user"});
+    }
+    let endpoints = application.endpoints.toObject();
+    const resultEndpoint = endpoints.find(endpoint => endpoint.url === endpointUrl);
+    if(!resultEndpoint) {
+        return res.status(404).json({message: "There is no endpoint with this url that belongs to this application"});
+    }
+
+    resultEndpoint.url = req.body.url;
+    resultEndpoint.functionName = req.body.functionName;
+
+    const resultEndpointIndex = endpoints.findIndex(endpoint => endpoint.url === endpointUrl);
+    endpoints[resultEndpointIndex] = resultEndpoint;
+    application.endpoints = endpoints;
+    await application.save();
+    res.status(200).json();
+});
+
+exports.deleteEndpoint = asyncHandler(async (req, res) => {
+    const application = await Application.findOne({
+        name: req.params.clientAppName,
+        user: req.user.id
+    });
+    if (!application) {
+        return res.status(404).json({message: "There is no application with this name"});
+    }
+    application.endpoints = application.endpoints.toObject().filter(endpoint => endpoint.url !== req.params.endpointUrl);
+    await application.save();
+    res.status(200).json({});
 });
 
 exports.deleteFunction = asyncHandler(async (req, res) => {
