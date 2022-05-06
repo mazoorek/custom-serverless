@@ -10,7 +10,7 @@ const axios = require("axios");
 const pickManifest = require("npm-pick-manifest");
 
 exports.getApps = asyncHandler( async  (req, res) => {
-    const applications = await Application.find().select({ "name": 1, "_id": 0, "up": 1});
+    const applications = await Application.find({user: req.user.id}).select({ "name": 1, "_id": 0, "up": 1});
     res.status(200).json(applications);
 });
 
@@ -53,6 +53,7 @@ exports.validateAndSaveDependencies = async (req, res) => {
     if(response.errors.length === 0) {
         application.packageJson = packageJson;
         await application.save();
+        // TODO restart runtime after saving
     }
     res.status(200).json(response);
 };
@@ -73,7 +74,8 @@ exports.createApp = asyncHandler(async (req, res) => {
 
 exports.deleteApp = asyncHandler(async (req, res) => {
     const appName = req.params.clientAppName;
-    await stopApp(appName);
+    // TODO stop if running
+    // await stopApp(appName);
     await Application.deleteOne({
         name: appName,
         user: req.user.id

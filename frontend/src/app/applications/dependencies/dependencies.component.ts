@@ -17,13 +17,13 @@ import {Application, ApplicationsService} from '../applications.service';
       VALIDATE AND SAVE
     </button>
     <ng-container *ngIf="syntaxErrors.length > 0">
-      <div class="validation-error validation-error--title">Dependencies has not been saved due to syntax errors:</div>
+      <div class="validation-error validation-error--title">Dependencies have not been saved due to syntax errors:</div>
       <div *ngFor="let error of syntaxErrors" class="validation-error">
         {{error}}
       </div>
     </ng-container>
     <ng-container *ngIf="validationErrors.length > 0">
-      <div class="validation-error validation-error--title">Dependencies has not been saved due to validation errors:
+      <div class="validation-error validation-error--title">Dependencies have not been saved due to validation errors:
       </div>
       <div *ngFor="let error of validationErrors" class="validation-error">
         {{error}}
