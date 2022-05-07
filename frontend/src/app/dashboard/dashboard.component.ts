@@ -59,8 +59,9 @@ export class DashboardComponent implements OnInit {
 
   navigate(url: string): void {
     if (this.isNotRootLevelMenu()) {
-      let parentPath = this.router.url.match(/\/applications\/.+\//)![0];
-      this.router.navigate([`${parentPath}/${url}`]);
+      // let parentPath = this.router.url.match(/\/applications\/.+\//)![0];
+      // this.router.navigate([`${parentPath}/${url}`]);
+      this.router.navigate([...this.router.url.substring(1).split('/').slice(0, 2), url]);
     } else {
       this.router.navigate([`/${url}`]);
     }

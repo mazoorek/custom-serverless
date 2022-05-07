@@ -76,7 +76,7 @@ exports.forgotPassword = asyncHandler(async (req, res) => {
     await user.save({validateBeforeSave: false});
 
     try {
-        // TODO modify this url
+        // TODO modify this url and do email on frontend
         const resetURL = `http://${req.get('host')}/api/user/password/reset/${resetToken}`;
         await new Email(user, resetURL).sendPasswordReset();
 

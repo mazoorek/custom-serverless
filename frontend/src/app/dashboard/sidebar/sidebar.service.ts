@@ -40,12 +40,12 @@ export class SidebarService {
         url: 'dependencies'
       },
       {
-        name: 'ENDPOINTS',
-        url: 'endpoints'
-      },
-      {
         name: 'FUNCTIONS',
         url: 'functions'
+      },
+      {
+        name: 'ENDPOINTS',
+        url: 'endpoints'
       }
     ];
   }

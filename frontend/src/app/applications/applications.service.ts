@@ -15,7 +15,8 @@ export interface Endpoint {
 
 export interface Function {
   name: string;
-  content: string
+  content: string;
+  idempotent: boolean;
 }
 
 export interface Application {
@@ -34,6 +35,8 @@ export interface DependenciesResponse {
 @Injectable({providedIn: "root"})
 export class ApplicationsService {
   currentApplication!: Application;
+  currentFunction!: Function;
+  currentEndpoint!: Endpoint;
 
 
   constructor(private http: HttpClient) {
@@ -47,10 +50,54 @@ export class ApplicationsService {
     return this.http.post<void>("/api/applications", {clientAppName: clientAppName});
   }
 
+  createFunction(clientAppName: string, functionName: string): Observable<void> {
+    return this.http.post<void>(`/api/applications/${clientAppName}/functions`, {name: functionName});
+  }
+
+  createEndpoint(clientAppName: string, endpoint: Endpoint): Observable<void> {
+    return this.http.post<void>(`/api/applications/${clientAppName}/endpoints`, endpoint);
+  }
+
+  editFunction(clientAppName: string, functionName: string, request: Function): Observable<void> {
+    return this.http.patch<void>(`/api/applications/${clientAppName}/functions/${functionName}`, request);
+  }
+
+  editEndpoint(clientAppName: string, endpointUrl: string, request: Endpoint): Observable<void> {
+    return this.http.put<void>(`/api/applications/${clientAppName}/endpoints/${endpointUrl}`, request);
+  }
+
+  deleteFunction(clientAppName: string, functionName: string): Observable<void> {
+    return this.http.delete<void>(`/api/applications/${clientAppName}/functions/${functionName}`);
+  }
+
+  deleteEndpoint(clientAppName: string, endpointUrl: string): Observable<void> {
+    return this.http.delete<void>(`/api/applications/${clientAppName}/endpoints/${endpointUrl}`);
+  }
+
   getApp(clientAppName: string): Observable<Application> {
     return this.http.get<Application>(`/api/applications/${clientAppName}`).pipe(
       tap(app => this.currentApplication = app)
     );
+  }
+
+  getFunction(clientAppName: string, functionName: string): Observable<Function> {
+    return this.http.get<Function>(`/api/applications/${clientAppName}/functions/${functionName}`).pipe(
+      tap(func => this.currentFunction = func)
+    );
+  }
+
+  getEndpoint(clientAppName: string, endpointUrl: string): Observable<Endpoint> {
+    return this.http.get<Endpoint>(`/api/applications/${clientAppName}/endpoints/${endpointUrl}`).pipe(
+      tap(endpoint => this.currentEndpoint = endpoint)
+    );
+  }
+
+  testFunction(request: TestFunctionRequest): Observable<void> {
+    return this.http.post<void>("/api/test", request);
+  }
+
+  getRuntime(appName: string): Observable<{ runtimeReady: string }> {
+    return this.http.get<{ runtimeReady: string }>(`/api/runtime/${appName}`);
   }
 
   editApp(oldAppName: string, newAppName: string): Observable<void> {

@@ -5,7 +5,9 @@ import {SettingsComponent} from './settings/settings.component';
 import {OverviewComponent} from './applications/overview/overview.component';
 import {DependenciesComponent} from './applications/dependencies/dependencies.component';
 import {EndpointsComponent} from './applications/endpoints/endpoints.component';
+import {FunctionEditComponent} from './applications/functions/edit/function-edit.component';
 import {FunctionsComponent} from './applications/functions/functions.component';
+import {EndpointEditComponent} from './applications/endpoints/edit/endpoint-edit.component';
 
 const routes: Routes = [
   {path: '', component: ApplicationsComponent},
@@ -15,8 +17,10 @@ const routes: Routes = [
     path: 'applications/:id', children: [
       {path: 'overview', component: OverviewComponent},
       {path: 'dependencies', component: DependenciesComponent},
+      {path: 'functions', component: FunctionsComponent},
+      {path: 'functions/:functionId/edit', component: FunctionEditComponent},
       {path: 'endpoints', component: EndpointsComponent},
-      {path: 'functions', component: FunctionsComponent}
+      {path: 'endpoints/:endpointId/edit', component: EndpointEditComponent}
     ]
   }
 ];

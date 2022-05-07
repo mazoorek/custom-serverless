@@ -8,15 +8,24 @@ import {Application, ApplicationsService} from '../applications.service';
   template: `
     <h2>dependencies</h2>
     <ngx-monaco-editor class="code-editor"
-                       [options]="validateEditorOptions"
+                       [options]="packageJsonEditorOptions"
                        (onInit)="onPackageJsonEditorInit($event)"
                        [ngModel]="application.packageJson"
                        (ngModelChange)="onPackageJsonCodeChange($event)">
     </ngx-monaco-editor>
-    <button class="btn btn--green validate-button" (click)="savePackageJson()"  [disabled]="!validJsonSyntax">VALIDATE AND SAVE</button>
-    <ng-container *ngIf="errors.length > 0">
-      <div class="validation-error validation-error--title">Dependencies has not been saved due to validation errors:</div>
-      <div *ngFor="let error of errors" class="validation-error">
+    <button class="btn btn--green validate-button" (click)="savePackageJson()">
+      VALIDATE AND SAVE
+    </button>
+    <ng-container *ngIf="syntaxErrors.length > 0">
+      <div class="validation-error validation-error--title">Dependencies have not been saved due to syntax errors:</div>
+      <div *ngFor="let error of syntaxErrors" class="validation-error">
+        {{error}}
+      </div>
+    </ng-container>
+    <ng-container *ngIf="validationErrors.length > 0">
+      <div class="validation-error validation-error--title">Dependencies have not been saved due to validation errors:
+      </div>
+      <div *ngFor="let error of validationErrors" class="validation-error">
         {{error}}
       </div>
     </ng-container>
@@ -25,12 +34,12 @@ import {Application, ApplicationsService} from '../applications.service';
 })
 export class DependenciesComponent {
 
-  validJsonSyntax: boolean = true;
-  validateEditorOptions = {theme: 'vs-dark', language: 'json'};
+  packageJsonEditorOptions = {theme: 'vs-dark', language: 'json'};
   packageJsonCode: string;
   packageJsonEditor!: IStandaloneCodeEditor;
   application: Application;
-  errors: string[] = [];
+  validationErrors: string[] = [];
+  syntaxErrors: string[] = [];
 
   constructor(private applicationsService: ApplicationsService, private changeDetection: ChangeDetectorRef) {
     this.application = this.applicationsService.currentApplication;
@@ -40,9 +49,10 @@ export class DependenciesComponent {
   onPackageJsonEditorInit(packageJsonEditor: IStandaloneCodeEditor): void {
     this.packageJsonEditor = packageJsonEditor;
     (<any>window).monaco.editor.onDidChangeMarkers(() => {
-      let markers = (<any>window).monaco.editor.getModelMarkers({owner: "json"})
-        .filter((marker: editor.IMarker) => marker.severity === MarkerSeverity.Error);
-      this.validJsonSyntax = markers.length === 0;
+      this.syntaxErrors = (<any>window).monaco.editor.getModelMarkers({owner: "json"})
+        .filter((marker: editor.IMarker) => marker.severity === MarkerSeverity.Error)
+        .map((marker: editor.IMarker) => marker.message);
+      this.changeDetection.markForCheck();
     });
   }
 
@@ -51,9 +61,11 @@ export class DependenciesComponent {
   }
 
   savePackageJson() {
-    this.applicationsService.saveDependencies(this.application.name, this.packageJsonCode).subscribe(response => {
-     this.errors = response.errors;
-      this.changeDetection.markForCheck();
-    });
+    if (this.syntaxErrors.length == 0) {
+      this.applicationsService.saveDependencies(this.application.name, this.packageJsonCode).subscribe(response => {
+        this.validationErrors = response.errors;
+        this.changeDetection.markForCheck();
+      });
+    }
   }
 }

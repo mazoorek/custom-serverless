@@ -1,117 +1,104 @@
-import {Component, ElementRef, ViewChild} from '@angular/core';
-import {EditorComponent} from 'ngx-monaco-editor/lib/editor.component';
-import {MainService, TestFunctionRequest} from '../../main/main.service';
-import {WebsocketService} from '../../main/websocket.service';
-import {editor, MarkerSeverity} from 'monaco-editor';
-import IStandaloneCodeEditor = editor.IStandaloneCodeEditor;
+import {ChangeDetectorRef, Component} from '@angular/core';
+import {Application, ApplicationsService, Function} from '../applications.service';
+import {Router} from '@angular/router';
+import {FormBuilder, FormGroup, Validators} from '@angular/forms';
+import {MatDialog} from '@angular/material/dialog';
+import {DeletePopupComponent} from '../../popup/delete-popup.component';
 
 @Component({
-  selector: 'functions',
+  selector: 'settings',
   template: `
-    <h2>functions</h2>
-    <ngx-monaco-editor #testEditor
-                       class="my-code-editor"
-                       [options]="testEditorOptions"
-                       [ngModel]="testCode"
-                       (onInit)="onTestFunctionEditorInit($event)"
-                       (ngModelChange)="onTestCodeChange($event)">
-    </ngx-monaco-editor>
-    <button mat-raised-button color="primary" (click)="testFunction()" [disabled]="!validJavascriptSyntax">
-      test function
-    </button>
-    <form>
-      <mat-form-field class="input-container" appearance="fill">
-        <mat-label>Function app name</mat-label>
-        <input matInput value="something" #functionAppNameInput autocomplete="off">
-      </mat-form-field>
+    <h2>Functions</h2>
+    <table mat-table [dataSource]="dataSource" class="mat-elevation-z8">
+      <ng-container matColumnDef="name">
+        <mat-header-cell *matHeaderCellDef>Function name</mat-header-cell>
+        <mat-cell *matCellDef="let func">
+          <span>{{func.name}}</span>
+        </mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="delete">
+        <mat-header-cell *matHeaderCellDef class="action-cell"></mat-header-cell>
+        <mat-cell *matCellDef="let func" class="action-cell action-cell--delete"
+                  (click)="deleteFunction(func.name, $event)">
+          <mat-icon>delete</mat-icon>
+        </mat-cell>
+      </ng-container>
+
+      <tr class="mat-row" *matNoDataRow>
+        <td class="mat-cell">You have no functions</td>
+      </tr>
+
+      <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+      <mat-row *matRowDef="let row; columns: displayedColumns;" (click)="showFunction(row.name)"></mat-row>
+    </table>
+
+    <form [formGroup]="functionForm" class="form--function">
+      <div class="form__group">
+        <label class="form__label" for="name">Function name</label>
+        <input formControlName="name"
+               class="form__input"
+               id="name"
+               required="required"
+               placeholder="type your function name"/>
+      </div>
+      <button class="btn btn--green" (click)="createFunction()">Create new function</button>
     </form>
   `,
   styleUrls: ['./functions.component.scss']
 })
 export class FunctionsComponent {
-  @ViewChild('functionAppNameInput')
-  functionAppNameInput!: ElementRef;
 
-  @ViewChild('testEditor')
-  testEditor!: EditorComponent;
+  displayedColumns: string[] = ['name', 'delete'];
 
-  validJavascriptSyntax: boolean = true;
+  dataSource: Function[] = [];
 
-  testEditorOptions = {theme: 'vs-dark', language: 'javascript'};
-  testCode: string = `
-    (args) => {
-      let data = \`
-        {
-        "name": "sandbox",
-        "version": "1.0.0",
-        "description": "",
-        "main": "index.js",
-        "scripts": {
-            "test": "echo \\\\"Error: no test specified\\\\" && exit 1"
-        },
-        "keywords": [],
-        "author": "name",
-        "license": "ISC",
-        "dependencies": {
-            "package-json-validator": "^0.6.3"
-        }
-        }
-    \`;
+  functionForm: FormGroup;
+  application: Application;
 
-    let PJV=require('package-json-validator').PJV;
-    let response = PJV.validate(data);
-    return response;
-    }
-  `;
-
-
-  testFunctionEditor!: IStandaloneCodeEditor;
-
-  constructor(private mainService: MainService, private websocketService: WebsocketService) {
-  }
-
-  onTestFunctionEditorInit(testFunctionEditor: IStandaloneCodeEditor): void {
-    this.testFunctionEditor = testFunctionEditor;
-    (<any>window).monaco.editor.onDidChangeMarkers(() => {
-      let markers = (<any>window).monaco.editor.getModelMarkers({owner: "javascript"})
-        .filter((marker: editor.IMarker) => marker.severity === MarkerSeverity.Error);
-      this.validJavascriptSyntax = markers.length === 0;
+  constructor(private applicationsService: ApplicationsService,
+              private changeDetection: ChangeDetectorRef,
+              private router: Router,
+              private fb: FormBuilder,
+              private dialog: MatDialog) {
+    this.application = this.applicationsService.currentApplication;
+    this.dataSource = this.application.functions;
+    this.functionForm = fb.group({
+      name: ['', Validators.compose([Validators.required, Validators.maxLength(255)])]
     });
   }
 
-  onTestCodeChange(updatedCode: string): void {
-    this.testCode = updatedCode;
+  createFunction(): void {
+    let functionName = this.functionForm.value.name;
+    this.applicationsService.createFunction(this.application.name, functionName).subscribe(_ => {
+      this.applicationsService.getFunction(this.application.name, functionName).subscribe(() => {
+        this.router.navigate(['applications', this.application.name, 'functions', functionName, 'edit']);
+      });
+    });
   }
 
-  testFunction() {
-    const clientAppName: string = this.functionAppNameInput.nativeElement.value;
-    let request: TestFunctionRequest = {
-      code: this.testCode,
-      args: {},
-      clientAppName: clientAppName
-    };
-    this.mainService.getRuntime(clientAppName).subscribe(response => {
-      if (!response.runtimeReady) {
-        this.websocketService.connect();
-        this.websocketService.onOpen$.subscribe(_ => {
-          console.log("ws connection opened");
-          this.websocketService.sendMessage(clientAppName);
-          this.websocketService.onMessage$.subscribe((message: Event) => {
-            console.log("received message: " + (message as MessageEvent).data);
-            if ((message as MessageEvent).data === 'ready') {
-              this.mainService.testFunction(request).subscribe(response => {
-                console.log(response);
-              });
-            } else if ((message as MessageEvent).data === 'failed') {
-              console.log('setting up runtime failed');
-            }
-          });
-        });
-      } else {
-        this.mainService.testFunction(request).subscribe(response => {
-          console.log(response);
-        });
+  showFunction(functionName: string): void {
+    this.applicationsService.getFunction(this.application.name, functionName).subscribe(() => {
+      this.router.navigate(['applications', this.application.name, 'functions', functionName, 'edit']);
+    });
+  }
+
+  deleteFunction(functionName: string, event: Event): void {
+    event.stopPropagation();
+    this.dialog.open(DeletePopupComponent, {
+      data: {
+        name: functionName
+      },
+    }).afterClosed().subscribe(deleted => {
+        if (deleted) {
+          this.applicationsService.deleteFunction(this.application.name, functionName).subscribe(() => {
+            this.applicationsService.getApp(this.application.name).subscribe(() => {
+              this.dataSource = this.applicationsService.currentApplication.functions;
+              this.changeDetection.markForCheck();
+            });
+          })
+        }
       }
-    });
+    );
   }
 }

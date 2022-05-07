@@ -18,12 +18,15 @@ import {SettingsComponent} from './settings/settings.component';
 import {OverviewComponent} from './applications/overview/overview.component';
 import {DependenciesComponent} from './applications/dependencies/dependencies.component';
 import {EndpointsComponent} from './applications/endpoints/endpoints.component';
-import {FunctionsComponent} from './applications/functions/functions.component';
+import {FunctionEditComponent} from './applications/functions/edit/function-edit.component';
 import {MatIconModule} from '@angular/material/icon';
 import {MatPaginatorModule} from '@angular/material/paginator';
-import {ApplicationsPopupComponent} from './popup/applications-popup.component';
+import {DeletePopupComponent} from './popup/delete-popup.component';
 import {MatDialogModule} from '@angular/material/dialog';
 import {MatCardModule} from '@angular/material/card';
+import {FunctionsComponent} from './applications/functions/functions.component';
+import {MatCheckboxModule} from '@angular/material/checkbox';
+import {EndpointEditComponent} from './applications/endpoints/edit/endpoint-edit.component';
 
 @NgModule({
   declarations: [
@@ -35,8 +38,10 @@ import {MatCardModule} from '@angular/material/card';
     OverviewComponent,
     DependenciesComponent,
     EndpointsComponent,
+    FunctionEditComponent,
+    DeletePopupComponent,
     FunctionsComponent,
-    ApplicationsPopupComponent
+    EndpointEditComponent
   ],
     imports: [
         BrowserModule,
@@ -53,7 +58,8 @@ import {MatCardModule} from '@angular/material/card';
         MatIconModule,
         MatPaginatorModule,
         MatDialogModule,
-        MatCardModule
+        MatCardModule,
+        MatCheckboxModule
     ],
   providers: [],
   bootstrap: [AppComponent]
