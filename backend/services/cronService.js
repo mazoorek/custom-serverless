@@ -6,14 +6,18 @@ exports.scheduleRuntimeCleaner = () => {
     cron.schedule(
         '*/5 * * * *',
         async () => {
-            const runtimes = await clusterService.listNamespacedService(CUSTOM_SERVERLESS_RUNTIME).catch(e => console.log(e));
-            const currentDate = new Date().getTime();
-            for (const service of runtimes.body.items) {
-                if (currentDate > +service.metadata.labels.expire) {
-                    await clusterService.deleteNamespacedService(service.metadata.name, CUSTOM_SERVERLESS_RUNTIME);
-                    await clusterService.deleteNamespacedDeployment(`${service.metadata.name}-runtime`, CUSTOM_SERVERLESS_RUNTIME);
-                    console.log(`${service.metadata.name} runtime has expired`);
+            try {
+                const runtimes = await clusterService.listNamespacedService(CUSTOM_SERVERLESS_RUNTIME);
+                const currentDate = new Date().getTime();
+                for (const service of runtimes.body.items) {
+                    if (currentDate > +service.metadata.labels.expire) {
+                        await clusterService.deleteNamespacedService(service.metadata.name, CUSTOM_SERVERLESS_RUNTIME);
+                        await clusterService.deleteNamespacedDeployment(`${service.metadata.name}-runtime`, CUSTOM_SERVERLESS_RUNTIME);
+                        console.log(`${service.metadata.name} runtime has expired`);
+                    }
                 }
+            } catch (e) {
+                console.log(e);
             }
         },
         {scheduled: true}

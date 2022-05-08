@@ -1,28 +1,6 @@
 const {CUSTOM_SERVERLESS_RUNTIME} = require("../namespaces");
 
-module.exports = (appName) => {
-    // TODO wywalic tego example
-    let exampleValidPackageJson = `
-   {
-    "name": "sandbox",
-    "version": "1.0.0",
-    "description": "",
-    "main": "index.js",
-    "scripts": {
-      "test": "echo \\"Error: no test specified\\" && exit 1"
-    },
-    "keywords": [],
-    "author": "",
-    "license": "ISC",
-    "dependencies": {
-      "express": "^4.17.3",
-      "mongoose": "^6.3.0",
-      "dotenv": "^10.0.0",
-      "package-json-validator": "^0.6.3"
-    }
-  }
-  `;
-
+module.exports = (appName, packageJson) => {
     return {
         "apiVersion": "apps/v1",
         "kind": "Deployment",
@@ -52,7 +30,20 @@ module.exports = (appName) => {
                             "env": [
                                 {
                                     "name": "PACKAGE_JSON",
-                                    "value": exampleValidPackageJson
+                                    "value": packageJson
+                                },
+                                {
+                                    "name": "APP_NAME",
+                                    "value": `${appName}`
+                                },
+                                {
+                                    "name": "DB_URL",
+                                    "valueFrom": {
+                                        "secretKeyRef": {
+                                            "name": "mongodb-secret",
+                                            "key": "DB_URL"
+                                        }
+                                    }
                                 }
                             ],
                             "image": "444773651763.dkr.ecr.eu-central-1.amazonaws.com/custom-serverless-runtime:latest",

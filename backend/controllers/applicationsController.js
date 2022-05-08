@@ -8,22 +8,32 @@ const Application = require('./../models/applicationModel');
 const {PJV} = require("package-json-validator");
 const axios = require("axios");
 const pickManifest = require("npm-pick-manifest");
+const runtimeDeploymentRequest = require("../models/cluster/runtime/runtimeDeploymentRequest");
 
-exports.getApps = asyncHandler( async  (req, res) => {
-    const applications = await Application.find({user: req.user.id}).select({ "name": 1, "_id": 0, "up": 1});
+exports.getApps = asyncHandler(async (req, res) => {
+    const applications = await Application.find({user: req.user.id}).select({"name": 1, "_id": 0, "up": 1});
     res.status(200).json(applications);
 });
 
-exports.getDependencies = asyncHandler( async  (req, res) => {
+exports.getDependencies = asyncHandler(async (req, res) => {
     let appName = req.params.clientAppName;
     const application = await Application.findOne({name: appName, user: req.user.id});
     res.status(200).json({packageJson: application.packageJson});
 });
 
+requiredDependenciesNotPresent = (dependencies) => {
+    return !dependencies.express
+        || dependencies.express !== "^4.17.3"
+        || !dependencies.mongoose
+        || dependencies.mongoose !== "^6.3.0"
+        || !dependencies.dotenv
+        || dependencies.dotenv !== "^10.0.0"
+}
+
 exports.validateAndSaveDependencies = async (req, res) => {
     let appName = req.params.clientAppName;
     const application = await Application.findOne({name: appName, user: req.user.id});
-    if(!application) {
+    if (!application) {
         return res.status(404).json({message: "There is no application with this name that belongs to this user"});
     }
     const packageJson = req.body.code;
@@ -33,6 +43,14 @@ exports.validateAndSaveDependencies = async (req, res) => {
         response = {valid: false, errors: pjvResult.errors};
     } else {
         const dependencies = JSON.parse(packageJson).dependencies;
+        if (requiredDependenciesNotPresent(dependencies)) {
+            response = {
+                valid: false,
+                errors: [...response.errors, `missing one of required dependencies with required versions: 
+                {"express": "^4.17.3","mongoose": "^6.3.0","dotenv": "^10.0.0","package-json-validator": "^0.6.3"}`
+                ]
+            };
+        }
         for (const dependency in dependencies) {
             const dependencyVersion = dependencies[dependency];
             try {
@@ -50,10 +68,17 @@ exports.validateAndSaveDependencies = async (req, res) => {
             }
         }
     }
-    if(response.errors.length === 0) {
+    if (response.errors.length === 0) {
         application.packageJson = packageJson;
         await application.save();
-        // TODO restart runtime after saving
+        let numberOfRunningPods = (await clusterService.listRunningPods(appName)).body.items.length;
+        if (numberOfRunningPods > 0) {
+            await clusterService.restartNamespacedDeployment(
+                `${appName}-runtime`,
+                CUSTOM_SERVERLESS_RUNTIME,
+                runtimeDeploymentRequest(appName, application.packageJson)
+            );
+        }
     }
     res.status(200).json(response);
 };
@@ -93,11 +118,11 @@ exports.getFunction = asyncHandler(async (req, res) => {
     let appName = req.params.clientAppName;
     let functionName = req.params.functionName;
     const application = await Application.findOne({name: appName, user: req.user.id});
-    if(!application) {
+    if (!application) {
         return res.status(404).json({message: "There is no application with this name that belongs to this user"});
     }
     const resultFunction = application.functions.toObject().find(func => func.name === functionName);
-    if(!resultFunction) {
+    if (!resultFunction) {
         return res.status(404).json({message: "There is no function with this name that belongs to this application"});
     }
     res.status(200).json(resultFunction);
@@ -107,11 +132,11 @@ exports.getEndpoint = asyncHandler(async (req, res) => {
     let appName = req.params.clientAppName;
     let endpointUrl = req.params.endpointUrl;
     const application = await Application.findOne({name: appName, user: req.user.id});
-    if(!application) {
+    if (!application) {
         return res.status(404).json({message: "There is no application with this name that belongs to this user"});
     }
     const resultEndpoint = application.endpoints.toObject().find(endpoint => endpoint.url === endpointUrl);
-    if(!resultEndpoint) {
+    if (!resultEndpoint) {
         return res.status(404).json({message: "There is no function with this name that belongs to this application"});
     }
     res.status(200).json(resultEndpoint);
@@ -121,22 +146,22 @@ exports.editFunction = asyncHandler(async (req, res) => {
     let appName = req.params.clientAppName;
     let functionName = req.params.functionName;
     const application = await Application.findOne({name: appName, user: req.user.id});
-    if(!application) {
+    if (!application) {
         return res.status(404).json({message: "There is no application with this name that belongs to this user"});
     }
     let functions = application.functions.toObject();
     const resultFunction = functions.find(func => func.name === functionName);
-    if(!resultFunction) {
+    if (!resultFunction) {
         return res.status(404).json({message: "There is no function with this name that belongs to this application"});
     }
-    if(req.body.name) {
+    if (req.body.name) {
         resultFunction.name = req.body.name;
     }
-    if(req.body.idempotent) {
+    if (req.body.idempotent) {
         resultFunction.idempotent = req.body.idempotent;
     }
-    if(req.body.content) {
-       // TODO checking content structure regex
+    if (req.body.content) {
+        // TODO checking content structure regex
         // TODO checking require
         resultFunction.content = req.body.content;
     }
@@ -150,7 +175,7 @@ exports.editFunction = asyncHandler(async (req, res) => {
 exports.editAppName = asyncHandler(async (req, res) => {
     let appName = req.params.clientAppName;
     const application = await Application.findOne({name: appName, user: req.user.id});
-    if(!application) {
+    if (!application) {
         return res.status(404).json({message: "There is no application with this name that belongs to this user"});
     }
     application.name = req.body.newAppName;
@@ -161,7 +186,7 @@ exports.editAppName = asyncHandler(async (req, res) => {
 exports.start = asyncHandler(async (req, res) => {
     let appName = req.params.clientAppName;
     const application = await Application.findOne({name: appName, user: req.user.id});
-    if(!application) {
+    if (!application) {
         return res.status(404).json({message: "There is no application with this name that belongs to this user"});
     }
     application.up = true;
@@ -176,7 +201,7 @@ exports.start = asyncHandler(async (req, res) => {
 exports.stop = asyncHandler(async (req, res) => {
     let appName = req.params.clientAppName;
     const application = await Application.findOne({name: appName, user: req.user.id});
-    if(!application) {
+    if (!application) {
         return res.status(404).json({message: "There is no application with this name that belongs to this user"});
     }
     application.up = false;
@@ -221,12 +246,12 @@ exports.editEndpoint = asyncHandler(async (req, res) => {
     let appName = req.params.clientAppName;
     let endpointUrl = req.params.endpointUrl;
     const application = await Application.findOne({name: appName, user: req.user.id});
-    if(!application) {
+    if (!application) {
         return res.status(404).json({message: "There is no application with this name that belongs to this user"});
     }
     let endpoints = application.endpoints.toObject();
     const resultEndpoint = endpoints.find(endpoint => endpoint.url === endpointUrl);
-    if(!resultEndpoint) {
+    if (!resultEndpoint) {
         return res.status(404).json({message: "There is no endpoint with this url that belongs to this application"});
     }
 
