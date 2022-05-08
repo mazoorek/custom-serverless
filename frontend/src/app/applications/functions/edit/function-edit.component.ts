@@ -1,4 +1,4 @@
-import {Component} from '@angular/core';
+import {ChangeDetectionStrategy, ChangeDetectorRef, Component} from '@angular/core';
 import {TestFunctionRequest} from '../../../main/main.service';
 import {WebsocketService} from '../../../main/websocket.service';
 import {editor, MarkerSeverity} from 'monaco-editor';
@@ -27,6 +27,7 @@ import IStandaloneCodeEditor = editor.IStandaloneCodeEditor;
     </form>
     <ngx-monaco-editor class="code-editor"
                        [options]="contentEditorOptions"
+                       [style.height.px]="contentEditorHeight"
                        [ngModel]="contentCode"
                        (onInit)="onContentFunctionEditorInit($event)"
                        (ngModelChange)="onContentCodeChange($event)">
@@ -35,6 +36,7 @@ import IStandaloneCodeEditor = editor.IStandaloneCodeEditor;
       <div>Input definition for testing function</div>
       <ngx-monaco-editor class="code-editor"
                          [options]="inputEditorOptions"
+                         [style.height.px]="inputEditorHeight"
                          (onInit)="onInputEditorInit($event)"
                          [ngModel]="inputCode"
                          (ngModelChange)="onInputCodeChange($event)">
@@ -60,12 +62,31 @@ import IStandaloneCodeEditor = editor.IStandaloneCodeEditor;
         {{error}}
       </div>
     </ng-container>
+    <ng-container *ngIf="resultError">
+      <div class="validation-error validation-error--title">
+        Error result:
+      </div>
+      <div class="validation-error">
+        {{resultError}}
+      </div>
+    </ng-container>
+    <ng-container *ngIf="result">
+      <mat-card class="mat-elevation-z4">
+        <div class="validation-valid validation-valid--title">
+          Result:
+        </div>
+        <div class="validation-valid">
+          <pre>{{result}}</pre>
+        </div>
+      </mat-card>
+    </ng-container>
   `,
-  styleUrls: ['./function-edit.component.scss']
+  styleUrls: ['./function-edit.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class FunctionEditComponent {
 
-  contentEditorOptions = {theme: 'vs-dark', language: 'javascript'};
+  contentEditorOptions = {theme: 'vs-dark', language: 'javascript', automaticLayout: true, scrollBeyondLastLine: false};
   contentFunctionEditor!: IStandaloneCodeEditor;
   contentCode: string;
   functionContentSyntaxErrors: string[] = [];
@@ -74,13 +95,18 @@ export class FunctionEditComponent {
   currentFunction: Function;
   application: Application;
 
-  inputEditorOptions = {theme: 'vs-dark', language: 'json'};
-  inputCode: string =`{}`;
+  inputEditorOptions = {theme: 'vs-dark', language: 'json', automaticLayout: true, scrollBeyondLastLine: false};
+  inputCode: string = `{\n\n}`;
   inputEditor!: IStandaloneCodeEditor;
   inputSyntaxErrors: string[] = [];
+  contentEditorHeight: number = 500;
+  inputEditorHeight: number = 500;
+  resultError: string = '';
+  result: string = '';
 
   constructor(private applicationsService: ApplicationsService,
               private websocketService: WebsocketService,
+              private changeDetection: ChangeDetectorRef,
               private fb: FormBuilder) {
     this.currentFunction = this.applicationsService.currentFunction;
     this.application = this.applicationsService.currentApplication;
@@ -95,7 +121,7 @@ export class FunctionEditComponent {
     this.applicationsService.editFunction(this.application.name, this.currentFunction.name, this.functionMetadataForm.value)
       .subscribe(() => {
         this.applicationsService.getFunction(this.application.name, this.functionMetadataForm.value.name)
-          .subscribe( () => {
+          .subscribe(() => {
             this.currentFunction = this.applicationsService.currentFunction;
           });
       });
@@ -105,7 +131,7 @@ export class FunctionEditComponent {
     this.applicationsService.editFunction(this.application.name, this.currentFunction.name, {content: this.contentCode} as Function)
       .subscribe(() => {
         this.applicationsService.getFunction(this.application.name, this.currentFunction.name)
-          .subscribe( () => {
+          .subscribe(() => {
             this.currentFunction = this.applicationsService.currentFunction;
           });
       });
@@ -117,6 +143,15 @@ export class FunctionEditComponent {
       this.functionContentSyntaxErrors = (<any>window).monaco.editor.getModelMarkers({owner: "javascript"})
         .filter((marker: editor.IMarker) => marker.severity === MarkerSeverity.Error)
         .map((marker: editor.IMarker) => marker.message);
+      this.changeDetection.detectChanges();
+    });
+    this.contentEditorHeight = this.contentFunctionEditor.getContentHeight() + 20;
+    this.changeDetection.detectChanges();
+    this.contentFunctionEditor.getModel()?.onDidChangeContent(event => {
+      if (event.changes[0].text.startsWith('\r\n') || event.changes[0].text.startsWith('\n')) {
+        this.contentEditorHeight = this.contentFunctionEditor.getContentHeight() + 20;
+        this.changeDetection.detectChanges();
+      }
     });
   }
 
@@ -126,6 +161,15 @@ export class FunctionEditComponent {
       this.inputSyntaxErrors = (<any>window).monaco.editor.getModelMarkers({owner: "json"})
         .filter((marker: editor.IMarker) => marker.severity === MarkerSeverity.Error)
         .map((marker: editor.IMarker) => marker.message);
+      this.changeDetection.detectChanges();
+    });
+    this.inputEditorHeight = this.inputEditor.getContentHeight() + 20;
+    this.changeDetection.detectChanges();
+    this.inputEditor.getModel()?.onDidChangeContent(event => {
+      if (event.changes[0].text.startsWith('\n')) {
+        this.inputEditorHeight = this.inputEditor.getContentHeight() + 20;
+        this.changeDetection.detectChanges();
+      }
     });
   }
 
@@ -138,7 +182,8 @@ export class FunctionEditComponent {
   }
 
   testFunction() {
-    if(this.functionContentSyntaxErrors.length === 0 && this.inputSyntaxErrors.length === 0) {
+    this.result = '';
+    if (this.functionContentSyntaxErrors.length === 0 && this.inputSyntaxErrors.length === 0) {
       let request: TestFunctionRequest = {
         code: this.contentCode,
         args: JSON.parse(this.inputCode),
@@ -154,7 +199,13 @@ export class FunctionEditComponent {
               console.log("received message: " + (message as MessageEvent).data);
               if ((message as MessageEvent).data === 'ready') {
                 this.applicationsService.testFunction(request).subscribe(response => {
-                  console.log(response);
+                  this.result = JSON.stringify(response, null, 2);
+                  this.resultError = '';
+                  this.changeDetection.detectChanges();
+                }, error => {
+                  this.resultError = error?.error?.error;
+                  this.resultError = '';
+                  this.changeDetection.detectChanges();
                 });
               } else if ((message as MessageEvent).data === 'failed') {
                 console.log('setting up runtime failed');
@@ -163,7 +214,13 @@ export class FunctionEditComponent {
           });
         } else {
           this.applicationsService.testFunction(request).subscribe(response => {
-            console.log(response);
+            this.result = JSON.stringify(response, null, 2);
+            console.log(this.result);
+            this.resultError = '';
+            this.changeDetection.detectChanges();
+          }, error => {
+            this.resultError = error?.error?.error;
+            this.changeDetection.detectChanges();
           });
         }
       });

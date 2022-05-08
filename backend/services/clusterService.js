@@ -88,6 +88,11 @@ exports.createNamespacedService = (namespace, serviceRequest) => {
     return k8sCoreV1Api.createNamespacedService(namespace, serviceRequest);
 }
 
+exports.restartNamespacedDeployment = async (appName, namespace, deploymentRequest) => {
+    await this.deleteNamespacedDeployment(appName, namespace);
+    await this.createNamespacedDeployment(namespace, deploymentRequest);
+};
+
 exports.createNamespacedDeployment = (namespace, deploymentRequest) => {
     return k8sAppsV1Api.createNamespacedDeployment(namespace, deploymentRequest);
 }

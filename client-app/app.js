@@ -19,6 +19,9 @@ startup().then(async () => {
             return res.status(404).json({message: "There is no endpoint with this url"});
         }
         let functionToRun = application.functions.toObject().filter(func => func.name === endpoint.functionName).pop();
+        let call = (functionName, args) => {
+            return callWithCache(functionName, args, req.body.cache, req.body.edgeResults, application.functions.toObject());
+        }
         let result = {};
         try {
             result = eval(functionToRun.content)(req.body.args);
@@ -29,6 +32,14 @@ startup().then(async () => {
         }
         res.status(200).json(result);
     });
+
+    const callWithCache = (functionName, args, cache, edgeResult, functions) => {
+        const calledFunction = functions.find(func => func.name === functionName);
+        if(!calledFunction) {
+            throw new Error(`There is no function with name=[${functionName}] that belongs to this application`);
+        }
+        return eval(calledFunction.content)(args);
+    }
 
     app.listen(port, () => {
         console.log(`Client app listening on port ${port}`);

@@ -4,8 +4,7 @@ const endpointSchema = new mongoose.Schema({
     url: {
         type: String,
         required: [true, 'Please provide application name'],
-        unique: true,
-        sparse: true
+        unique: true
     },
     functionName: {
         type: String,
@@ -17,8 +16,7 @@ const functionSchema = new mongoose.Schema({
     name: {
         type: String,
         required: [true, 'Please provide function name'],
-        unique: true,
-        sparse: true
+        unique: true
     },
     content: {
         type: String,
@@ -49,44 +47,35 @@ const applicationSchema = new mongoose.Schema({
         type: [functionSchema],
         default: []
     },
-    up: {
-        type: Boolean,
-        default: false
-    },
     packageJson: {
-        type: String
+        type: String,
+        default: function() {
+            return this.defaultPackageJson();
+        }
     }
 });
 
 applicationSchema.index({user: 1});
 
-applicationSchema.pre('save', async function(next) {
-    await this.populate({
-        path: 'user',
-        select: 'email'
-    });
-    if(!this.packageJson) {
-        this.packageJson = this.defaultPackageJson();
-    }
-    next();
-});
-
-applicationSchema.methods.defaultFunctionContent = function () {
-    return `(args) => { 
-    return {};
-};`;
-}
-
 applicationSchema.methods.defaultPackageJson = function () {
-    return `{\n    \"name\": \"${this.name}\",\n    \"version\": \"1.0.0\",
-    \"description\": \"${this.name}\",\n    \"main\": \"index.js\",
-    \"scripts\": {\n      \"test\":    \"echo \\\"Error: no test specified\\\" && exit 1\"\n    },
-    \"keywords\": [],\n    \"author\": \"${this.user.email}\",\n    \"license\": \"ISC\",
-    \"dependencies\": {
-            \"express\": \"^4.17.3\",
-            \"mongoose\": \"^6.3.0\",
-            \"dotenv\": \"^10.0.0\"
-    }\n}`;
+    return `
+            {
+                "name": ${this.name},
+                "version": "1.0.0",
+                "description": ${this.name},
+                "main": "index.js",
+                "scripts": {
+                    "test": "echo \\"Error: no test specified\\" && exit 1"
+                },
+                "keywords": [],
+                "author": "",
+                "license": "ISC",
+                "dependencies": {
+                    "express": "^4.17.3",
+                    "mongoose": "^6.3.0"
+                }
+            }
+    `;
 }
 
 const Application = mongoose.model('Application', applicationSchema);

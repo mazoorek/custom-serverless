@@ -3,30 +3,22 @@ const runtimeServiceRequest = require("../models/cluster/runtime/runtimeServiceR
 const runtimeDeploymentRequest = require("../models/cluster/runtime/runtimeDeploymentRequest");
 const {CUSTOM_SERVERLESS_RUNTIME} = require("../models/cluster/namespaces");
 const asyncHandler = require("../utils/asyncHandler");
+const Application = require("../models/applicationModel");
 
 exports.checkRuntime = asyncHandler(async (req, res) => {
-    // TODO validation if clientAppName belongs to client
     let appName = req.params.clientAppName;
-    let appRuntimes = 0;
-    try {
-        appRuntimes = (await clusterService.getAppRuntimes(appName)).body.items;
-    } catch (e) {
-        console.log(e);
-        return res.status(500).json({message: 'could not get appRuntimes'});
+    const application = await Application.findOne({name: appName, user: req.user.id});
+    if(!application) {
+        return res.status(404).json({message: "There is no application with this name that belongs to this user"});
     }
+    let appRuntimes = (await clusterService.getAppRuntimes(appName)).body.items;
     let runtimeReady = true;
     if (appRuntimes.length === 0) {
         runtimeReady = false;
         await clusterService.createNamespacedService(CUSTOM_SERVERLESS_RUNTIME, runtimeServiceRequest(appName));
-        await clusterService.createNamespacedDeployment(CUSTOM_SERVERLESS_RUNTIME, runtimeDeploymentRequest(appName));
+        await clusterService.createNamespacedDeployment(CUSTOM_SERVERLESS_RUNTIME, runtimeDeploymentRequest(appName, application.packageJson));
     } else {
-        let numberOfRunningPods = 0;
-        try {
-            numberOfRunningPods = (await clusterService.listRunningPods(appName)).body.items.length;
-        } catch (e) {
-            console.log(e);
-            return res.status(500).json({message: 'could not get numberOfRunningPods'});
-        }
+        let numberOfRunningPods = (await clusterService.listRunningPods(appName)).body.items.length;
         if (numberOfRunningPods === 0) {
             runtimeReady = false;
         }

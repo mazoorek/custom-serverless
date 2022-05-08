@@ -1,6 +1,5 @@
 .code-editor {
   width: 100%;
-  height: 70%;
 }
 
 .validate-button {
@@ -14,4 +13,12 @@
     font-weight: bold;
     margin-bottom: 20px;
   }
+}
+
+.validation-valid {
+  &--title {
+    font-weight: bold;
+    margin-bottom: 20px;
+  }
+  color: green;
 }
