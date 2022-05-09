@@ -1,0 +1,12 @@
+{
+  "args": {
+    "a": 4,
+    "b": 5,
+    "c": 6
+  },
+  "cache": {
+    "inner-function": {
+        "ewogICAgImEiOiA0LAogICAgImIiOiA1CiAgfQ==": {"result": 20}
+    }
+  }
+}

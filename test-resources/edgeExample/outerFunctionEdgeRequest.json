@@ -1,0 +1,19 @@
+{
+  "args": {
+    "a": 4,
+    "b": 5,
+    "c": 6
+  },
+  "edgeResults": {
+    "inner-function": {
+      "eyJhIjo0LCJiIjo1fQ==": {
+        "result": 9
+      }
+    },
+    "outer-function": {
+      "eyJhIjo0LCJiIjo1LCJjIjo2fQ==": {
+        "out": 54
+      }
+    }
+  }
+}

@@ -96,7 +96,7 @@ export class FunctionEditComponent {
   application: Application;
 
   inputEditorOptions = {theme: 'vs-dark', language: 'json', automaticLayout: true, scrollBeyondLastLine: false};
-  inputCode: string = `{\n\n}`;
+  inputCode: string = `{\n    \"args\":{},\n    \"cache\":{},\n    \"edgeResults\":{}\n}`;
   inputEditor!: IStandaloneCodeEditor;
   inputSyntaxErrors: string[] = [];
   contentEditorHeight: number = 500;
@@ -184,10 +184,11 @@ export class FunctionEditComponent {
   testFunction() {
     this.result = '';
     if (this.functionContentSyntaxErrors.length === 0 && this.inputSyntaxErrors.length === 0) {
+
       let request: TestFunctionRequest = {
         code: this.contentCode,
-        args: JSON.parse(this.inputCode),
-        clientAppName: this.application.name
+        clientAppName: this.application.name,
+        ...JSON.parse(this.inputCode)
       };
       this.applicationsService.getRuntime(this.application.name).subscribe(response => {
         if (!response.runtimeReady) {

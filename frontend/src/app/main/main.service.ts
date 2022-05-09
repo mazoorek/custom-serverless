@@ -5,6 +5,8 @@ import {Observable} from 'rxjs';
 export interface TestFunctionRequest {
   code: string;
   args: any;
+  cache: any;
+  edgeResults: any;
   clientAppName: string;
 }
 
