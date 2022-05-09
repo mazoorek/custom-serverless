@@ -13,6 +13,22 @@ startup().then(async () => {
         res.status(200).json({status: 'up'});
     });
 
+    app.get('/edge', (req, res) => {
+        let appFunctions = application.functions.toObject();
+        let response = {runEdgeFunction: runEdgeFunction.toString(), functions: []};
+        req.body.functions.forEach(functionName => {
+            let requestedFunction = appFunctions.find(func => func.name === functionName);
+            if (!requestedFunction) {
+                return res.status(404).json({message: `There is no function with name [${functionName}]`});
+            }
+            response.functions.push({
+                functionName: functionName,
+                functionContent: requestedFunction.content
+            })
+        });
+        res.status(200).json(response);
+    });
+
     app.post('/:endpoint', (req, res) => {
         let endpoint = application.endpoints.toObject().filter(endpoint => endpoint.url === req.params.endpoint).pop();
         if (!endpoint) {
@@ -20,19 +36,25 @@ startup().then(async () => {
         }
         let functionToRun = application.functions.toObject().filter(func => func.name === endpoint.functionName).pop();
         let cache = req.body.cache ? req.body.cache : {};
+        let edgeResults = req.body.edgeResults;
         let args = req.body.args;
         let call = (functionName, args) => {
-            return callWithCache(functionName, args, cache, req.body.edgeResults, application.functions.toObject());
+            return callWithCache(functionName, args, cache, edgeResults, application.functions.toObject());
         }
         let result = {};
         try {
-            cacheResult = tryFromCache(functionToRun, cache, args);
-            if(cacheResult) {
-                result = cacheResult;
+            let edgeResult = tryFromEdgeResults(functionToRun, edgeResults, args);
+            if (edgeResult) {
+                result = edgeResult;
             } else {
-                result = eval(functionToRun.content)(args);
-                if(functionToRun.idempotent) {
-                    addToCache(cache, functionToRun.name, result, args);
+                let cacheResult = tryFromCache(functionToRun, cache, args);
+                if (cacheResult) {
+                    result = cacheResult;
+                } else {
+                    result = eval(functionToRun.content)(args);
+                    if (functionToRun.idempotent) {
+                        addToCache(cache, functionToRun.name, result, args);
+                    }
                 }
             }
         } catch (e) {
@@ -43,20 +65,43 @@ startup().then(async () => {
         res.status(200).json({result, cache});
     });
 
+    let runEdgeFunction = (functionName, functions, args) => {
+        let edgeResults = {};
+        let call = (functionName, args) => {
+            let functionToCall = functions.find(func => func.functionName === functionName);
+            if (!functionToCall) {
+                throw new Error(`can not call unknown function: [${functionName}]`);
+            }
+            let result = eval(functionToCall.functionContent)(args);
+            addToEdgeResults(edgeResults, functionName, result, args);
+            return result;
+        }
+
+        let addToEdgeResults = (edgeResults, functionName, result, args) => {
+            if (!edgeResults[functionName]) {
+                edgeResults[functionName] = {};
+            }
+            edgeResults[functionName][Buffer.from(JSON.stringify(args)).toString('base64')] = result;
+        }
+        let result = call(functionName, args);
+        addToEdgeResults(edgeResults, functionName, result, args);
+        return edgeResults;
+    };
+
     const addToCache = (cache, functionName, result, args) => {
-        if(!cache[functionName]) {
+        if (!cache[functionName]) {
             cache[functionName] = {};
         }
-        cache[functionName][new Buffer(JSON.stringify(args)).toString('base64')] = result;
+        cache[functionName][Buffer.from(JSON.stringify(args)).toString('base64')] = result;
     };
 
     const tryFromCache = (calledFunction, cache, args) => {
         let functionName = calledFunction.name;
-        if(calledFunction.idempotent) {
-            if(cache && cache[functionName]) {
-                for(const cacheInput in cache[functionName]) {
+        if (calledFunction.idempotent) {
+            if (cache && cache[functionName]) {
+                for (const cacheInput in cache[functionName]) {
                     let cacheInputObject = JSON.parse(Buffer.from(cacheInput, 'base64').toString());
-                    if(deepEqual(args, cacheInputObject)) {
+                    if (deepEqual(args, cacheInputObject)) {
                         return cache[functionName][cacheInput];
                     }
                 }
@@ -65,21 +110,38 @@ startup().then(async () => {
         return undefined;
     }
 
-    const callWithCache = (functionName, args, cache, edgeResult, functions) => {
+    const tryFromEdgeResults = (calledFunction, edgeResults, args) => {
+        let functionName = calledFunction.name;
+        if (edgeResults && edgeResults[functionName]) {
+            for (const edgeResultInput in edgeResults[functionName]) {
+                let cacheInputObject = JSON.parse(Buffer.from(edgeResultInput, 'base64').toString());
+                if (deepEqual(args, cacheInputObject)) {
+                    return edgeResults[functionName][edgeResultInput];
+                }
+            }
+        }
+        return undefined;
+    }
+
+    const callWithCache = (functionName, args, cache, edgeResults, functions) => {
         const calledFunction = functions.find(func => func.name === functionName);
         if (!calledFunction) {
             throw new Error(`There is no function with name=[${functionName}] that belongs to this application`);
         }
-
-        let cacheResult = tryFromCache(calledFunction, cache, args, functionName);
-        if(!cacheResult) {
-            let result =  eval(calledFunction.content)(args);
-            if(calledFunction.idempotent) {
-                addToCache(cache, calledFunction.name, result, args);
-            }
-            return result;
+        let edgeResult = tryFromEdgeResults(calledFunction, edgeResults, args);
+        if (edgeResult) {
+            return edgeResult;
         } else {
-            return cacheResult;
+            let cacheResult = tryFromCache(calledFunction, cache, args, functionName);
+            if (!cacheResult) {
+                let result = eval(calledFunction.content)(args);
+                if (calledFunction.idempotent) {
+                    addToCache(cache, calledFunction.name, result, args);
+                }
+                return result;
+            } else {
+                return cacheResult;
+            }
         }
     }
 
