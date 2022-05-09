@@ -6,11 +6,10 @@ const clusterService = require('./services/clusterService');
 const cronService = require('./services/cronService');
 
 startup().then(() => {
-    const HOST = '0.0.0.0';
     const PORT = 8080;
     const app = express();
     middleware(app);
-    const server = app.listen(PORT, HOST, async () => {
+    const server = app.listen(PORT, async () => {
         console.log(`Running on port ${PORT}`);
         await clusterService.setupClusterConnection();
         cronService.scheduleRuntimeCleaner();

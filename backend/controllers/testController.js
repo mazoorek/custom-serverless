@@ -20,7 +20,9 @@ exports.test = asyncHandler(async (req, res) => {
 
     axios.post(`${runtimeUrl}/test`, {
         code: req.body.code,
-        args: req.body.args
+        args: req.body.args,
+        cache: req.body.cache,
+        edgeResults: req.body.edgeResults
     }).then(response => {
         console.log(`got result for testing function: ${appName}`);
         res.status(200).json(response.data);

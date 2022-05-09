@@ -158,7 +158,7 @@ startup().then(async () => {
             return (obj1 === obj2);
         }
         return false;
-    }
+    };
 
     app.listen(port, () => {
         console.log(`Client app listening on port ${port}`);
