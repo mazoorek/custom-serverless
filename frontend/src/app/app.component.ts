@@ -3,6 +3,9 @@ import {Observable} from 'rxjs';
 import {AuthService} from './auth/auth.service';
 import {AuthenticateOption} from './login/login.component';
 import {SidebarService} from './dashboard/sidebar/sidebar.service';
+import {select, Store} from '@ngrx/store';
+import {isLoggedIn} from './store/user/user.selectors';
+import {AppState} from './store/app.reducers';
 
 @Component({
   selector: 'app-root',
@@ -38,12 +41,16 @@ export class AppComponent implements OnInit {
   isLoggedIn$: Observable<boolean> | undefined;
   isLoggedOut$: Observable<boolean> | undefined;
 
-  constructor(private authService: AuthService, private  sidebarService: SidebarService) {
+  constructor(private authService: AuthService, private  sidebarService: SidebarService, private store: Store<AppState>) {
   }
 
   ngOnInit(): void {
-    this.isLoggedIn$ = this.authService.isLoggedIn$;
-    this.isLoggedOut$ = this.authService.isLoggedOut$;
+    this.isLoggedIn$ = this.store.pipe(
+      select(isLoggedIn)
+    );
+    this.isLoggedOut$ =  this.isLoggedIn$.pipe(
+      select(isLoggedIn => !isLoggedIn)
+    );
   }
 
   onLogInClicked(): void {

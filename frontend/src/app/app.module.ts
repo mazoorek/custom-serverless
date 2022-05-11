@@ -27,6 +27,10 @@ import {MatCardModule} from '@angular/material/card';
 import {FunctionsComponent} from './applications/functions/functions.component';
 import {MatCheckboxModule} from '@angular/material/checkbox';
 import {EndpointEditComponent} from './applications/endpoints/edit/endpoint-edit.component';
+import { StoreModule } from '@ngrx/store';
+import { StoreDevtoolsModule } from '@ngrx/store-devtools';
+import { environment } from '../environments/environment';
+import {reducers} from './store/app.reducers';
 
 @NgModule({
   declarations: [
@@ -59,7 +63,9 @@ import {EndpointEditComponent} from './applications/endpoints/edit/endpoint-edit
         MatPaginatorModule,
         MatDialogModule,
         MatCardModule,
-        MatCheckboxModule
+        MatCheckboxModule,
+        StoreModule.forRoot(reducers),
+        StoreDevtoolsModule.instrument({ maxAge: 25, logOnly: environment.production })
     ],
   providers: [],
   bootstrap: [AppComponent]

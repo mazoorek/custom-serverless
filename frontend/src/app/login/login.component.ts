@@ -1,6 +1,7 @@
 import {ChangeDetectionStrategy, Component, Input, OnInit} from '@angular/core';
 import {AuthService} from '../auth/auth.service';
 import {FormBuilder, FormGroup, Validators} from '@angular/forms';
+import {noop} from 'rxjs';
 
 export enum AuthenticateOption {
   SIGN_UP = 'SIGN_UP',
@@ -48,8 +49,9 @@ export enum AuthenticateOption {
 export class LoginComponent implements OnInit {
 
   readonly AuthenticateOption: typeof AuthenticateOption = AuthenticateOption;
-
   _authenticateOption!: AuthenticateOption;
+
+  loginForm: FormGroup;
 
   @Input()
   set authenticateOption(authenticateOption: AuthenticateOption) {
@@ -60,8 +62,6 @@ export class LoginComponent implements OnInit {
   get authenticateOption() {
     return this._authenticateOption;
   }
-
-  loginForm: FormGroup;
 
   constructor(private authService: AuthService,  private fb: FormBuilder) {
     // TODO validations
@@ -77,17 +77,15 @@ export class LoginComponent implements OnInit {
   }
 
   logIn(): void {
-    this.authService.logIn(this.loginForm.value).subscribe((user) => {
-
-      },
+    this.authService.logIn(this.loginForm.value).subscribe(
+      noop,
       (error) => console.log(error)
     );
   }
 
   signUp(): void {
-    this.authService.signUp(this.loginForm.value).subscribe( (user) => {
-
-    },
+    this.authService.signUp(this.loginForm.value).subscribe(
+      noop,
       (error) => console.log(error)
     );
   }
