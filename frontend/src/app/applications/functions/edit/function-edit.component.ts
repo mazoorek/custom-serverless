@@ -216,7 +216,6 @@ export class FunctionEditComponent {
         } else {
           this.applicationsService.testFunction(request).subscribe(response => {
             this.result = JSON.stringify(response, null, 2);
-            console.log(this.result);
             this.resultError = '';
             this.changeDetection.detectChanges();
           }, error => {

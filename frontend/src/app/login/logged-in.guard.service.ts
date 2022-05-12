@@ -11,11 +11,10 @@ import {isLoggedIn, userDataFetched} from '../store/user/user.selectors';
 @Injectable()
 export class LoggedInGuard implements CanActivate {
 
-  constructor(private store: Store<AppState>, private router: Router, private action$: Actions, private http: HttpClient) {
+  constructor(private store: Store<AppState>, private router: Router, private action$: Actions) {
   }
 
-  canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Observable<boolean | UrlTree> {
-
+  canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Observable<boolean> {
     return this.store
       .pipe(
         select(userDataFetched),

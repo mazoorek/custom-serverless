@@ -31,8 +31,8 @@ import { StoreModule } from '@ngrx/store';
 import { StoreDevtoolsModule } from '@ngrx/store-devtools';
 import { environment } from '../environments/environment';
 import {reducers} from './store/app.reducers';
-import {LoggedInGuard} from './auth/logged-in.guard.service';
-import {LoggedOutGuard} from './auth/logged-out.guard.service';
+import {LoggedInGuard} from './login/logged-in.guard.service';
+import {LoggedOutGuard} from './login/logged-out.guard.service';
 import { EffectsModule } from '@ngrx/effects';
 import {UserEffects} from './store/user/user.effects';
 

@@ -1,11 +1,9 @@
 import {ChangeDetectionStrategy, Component, Input, OnInit} from '@angular/core';
-import {AuthService} from '../auth/auth.service';
 import {FormBuilder, FormGroup, Validators} from '@angular/forms';
-import {noop} from 'rxjs';
 import {ActivatedRoute, Router} from '@angular/router';
 import {Store} from '@ngrx/store';
 import {AppState} from '../store/app.reducers';
-import {loginStart} from '../store/user/user.actions';
+import {loginStart, signupStart} from '../store/user/user.actions';
 
 export enum AuthenticateOption {
   SIGN_UP = 'SIGN_UP',
@@ -57,7 +55,7 @@ export class LoginComponent implements OnInit {
 
   loginForm: FormGroup;
 
-  constructor(private authService: AuthService,  private fb: FormBuilder, private route: ActivatedRoute,
+  constructor(private fb: FormBuilder, private route: ActivatedRoute,
               private router: Router,
               private store: Store<AppState>) {
     // TODO validations
@@ -78,9 +76,6 @@ export class LoginComponent implements OnInit {
   }
 
   signUp(): void {
-    this.authService.signUp(this.loginForm.value).subscribe(
-      _ => this.router.navigate([`/applications`]),
-      (error) => console.log(error)
-    );
+    this.store.dispatch(signupStart({request: this.loginForm.value}));
   }
 }

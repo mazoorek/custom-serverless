@@ -8,9 +8,9 @@ import {EndpointsComponent} from './applications/endpoints/endpoints.component';
 import {FunctionEditComponent} from './applications/functions/edit/function-edit.component';
 import {FunctionsComponent} from './applications/functions/functions.component';
 import {EndpointEditComponent} from './applications/endpoints/edit/endpoint-edit.component';
-import {LoggedInGuard} from './auth/logged-in.guard.service';
+import {LoggedInGuard} from './login/logged-in.guard.service';
 import {AuthenticateOption, LoginComponent} from './login/login.component';
-import {LoggedOutGuard} from './auth/logged-out.guard.service';
+import {LoggedOutGuard} from './login/logged-out.guard.service';
 
 const routes: Routes = [
   {path: '', redirectTo: 'applications', pathMatch: 'full'},

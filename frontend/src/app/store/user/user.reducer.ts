@@ -19,6 +19,13 @@ export const userReducer = createReducer<UserState, Action>(
       loading: false
     }
   }),
+  on(UserActions.signupSuccess, (state: UserState, action) => {
+    return {
+      ...state,
+      ...action.user,
+      loading: false
+    }
+  }),
   on(UserActions.userFetchFinished, (state: UserState, action) => {
     return {
       ...state,
@@ -27,11 +34,11 @@ export const userReducer = createReducer<UserState, Action>(
       userDataFetched: true
     }
   }),
-  on(UserActions.logout, (state: UserState, action) => {
-
+  on(UserActions.logoutSuccess, (state: UserState, action) => {
     return {
       ...state,
-      ...initialState
+      id: undefined,
+      email: undefined
     }
   }),
   on(UserActions.loginStart, (state: UserState, action) => {
@@ -42,6 +49,15 @@ export const userReducer = createReducer<UserState, Action>(
     }
   }),
   on(UserActions.loginFailed, (state: UserState, action) => {
+    return {
+      ...state,
+      authError: action.message,
+      id: undefined,
+      email: undefined,
+      loading: false
+    }
+  }),
+  on(UserActions.signupFailed, (state: UserState, action) => {
     return {
       ...state,
       authError: action.message,

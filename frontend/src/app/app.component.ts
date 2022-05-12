@@ -1,7 +1,5 @@
-import {ChangeDetectionStrategy, Component, OnInit} from '@angular/core';
+import {ChangeDetectionStrategy, Component} from '@angular/core';
 import {Observable} from 'rxjs';
-import {AuthService} from './auth/auth.service';
-import {AuthenticateOption} from './login/login.component';
 import {SidebarService} from './dashboard/sidebar/sidebar.service';
 import {select, Store} from '@ngrx/store';
 import {isLoggedIn, isLoggedOut} from './store/user/user.selectors';
@@ -41,9 +39,7 @@ export class AppComponent {
   isLoggedIn$: Observable<boolean>;
   isLoggedOut$: Observable<boolean>;
 
-  constructor(private authService: AuthService, private  sidebarService: SidebarService, private store: Store<AppState>,
-              private router: Router) {
-    console.log('startuje');
+  constructor(private  sidebarService: SidebarService, private store: Store<AppState>, private router: Router) {
     this.store.dispatch(UserActions.fetchUserStart());
     this.isLoggedIn$ = this.store.pipe(
       select(isLoggedIn)
@@ -62,6 +58,6 @@ export class AppComponent {
   }
 
   onLogOutClicked(): void {
-    this.authService.logout().subscribe(_ =>  this.router.navigate([`/login`]));
+    this.store.dispatch(UserActions.logoutStart());
   }
 }

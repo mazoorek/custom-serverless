@@ -6,6 +6,33 @@ export const loginStart = createAction(
   props<{request: LoginRequest}>()
 );
 
+export const logoutStart = createAction(
+  "[Navigation Bar] User Logout"
+);
+
+export const logoutSuccess = createAction(
+  "[logout effect] User Logout success"
+);
+
+export const logoutFailed = createAction(
+  "[logout effect] User Logout failed"
+);
+
+export const signupStart = createAction(
+  "[Signup Form] User Signup",
+  props<{request: LoginRequest}>()
+);
+
+export const signupSuccess = createAction(
+  "[Signup effect] User Signup success",
+  props<{user: User}>()
+);
+
+export const signupFailed = createAction(
+  "[signup effect] User Signup failed",
+  props<{message: string}>()
+);
+
 export const loginSuccess = createAction(
   "[login effect] User Login success",
   props<{user: User}>()
@@ -14,10 +41,6 @@ export const loginSuccess = createAction(
 export const loginFailed = createAction(
   "[login effect] User Login failed",
   props<{message: string}>()
-);
-
-export const logout = createAction(
-  "[Navigation Bar] User Logout"
 );
 
 export const fetchUserStart = createAction(
