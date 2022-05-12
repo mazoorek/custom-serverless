@@ -31,6 +31,12 @@ import { StoreModule } from '@ngrx/store';
 import { StoreDevtoolsModule } from '@ngrx/store-devtools';
 import { environment } from '../environments/environment';
 import {reducers} from './store/app.reducers';
+import {LoggedInGuard} from './auth/logged-in.guard.service';
+import {LoggedOutGuard} from './auth/logged-out.guard.service';
+import { EffectsModule } from '@ngrx/effects';
+import {UserEffects} from './store/user/user.effects';
+
+
 
 @NgModule({
   declarations: [
@@ -65,9 +71,10 @@ import {reducers} from './store/app.reducers';
         MatCardModule,
         MatCheckboxModule,
         StoreModule.forRoot(reducers),
-        StoreDevtoolsModule.instrument({ maxAge: 25, logOnly: environment.production })
+        StoreDevtoolsModule.instrument({ maxAge: 25, logOnly: environment.production }),
+      EffectsModule.forRoot([UserEffects])
     ],
-  providers: [],
+  providers: [LoggedInGuard, LoggedOutGuard],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

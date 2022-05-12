@@ -5,10 +5,13 @@ export interface User {
 
 export interface UserState {
   id?: string;
-  email?: string
+  email?: string;
+  authError?: string;
+  loading: boolean;
+  userDataFetched: boolean;
 }
 
-export const initialState: UserState = {
-  id: undefined,
-  email: undefined
+export interface LoginRequest {
+  email: string;
+  password: string;
 }

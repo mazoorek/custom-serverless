@@ -29,13 +29,13 @@ export const ANONYMOUS_USER: User = {
 export class AuthService {
 
   constructor(private http: HttpClient, private store: Store<UserState>) {
-    this.fetchUserData();
+    // this.fetchUserData();
   }
 
   fetchUserData(): void {
     this.http.get<User>('/api/user').subscribe(user => {
       if(user) {
-        this.store.dispatch(UserActions.login({user}));
+        this.store.dispatch(UserActions.loginSuccess({user}));
       }
     });
   }
@@ -43,7 +43,7 @@ export class AuthService {
   logIn(request: LoginRequest): Observable<User> {
     return this.http.post<User>("/api/user/login", request).pipe(
       shareReplay(),
-      tap(user => this.store.dispatch(UserActions.login({user}))
+      tap(user => this.store.dispatch(UserActions.loginSuccess({user}))
       )
     );
   }
@@ -51,7 +51,7 @@ export class AuthService {
   signUp(request: SignupRequest): Observable<User> {
     return this.http.post<User>("/api/user/signup", request).pipe(
       shareReplay(),
-      tap(user => this.store.dispatch(UserActions.login({user})))
+      tap(user => this.store.dispatch(UserActions.loginSuccess({user})))
     );
   }
 

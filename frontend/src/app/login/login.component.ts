@@ -2,6 +2,10 @@ import {ChangeDetectionStrategy, Component, Input, OnInit} from '@angular/core';
 import {AuthService} from '../auth/auth.service';
 import {FormBuilder, FormGroup, Validators} from '@angular/forms';
 import {noop} from 'rxjs';
+import {ActivatedRoute, Router} from '@angular/router';
+import {Store} from '@ngrx/store';
+import {AppState} from '../store/app.reducers';
+import {loginStart} from '../store/user/user.actions';
 
 export enum AuthenticateOption {
   SIGN_UP = 'SIGN_UP',
@@ -49,27 +53,20 @@ export enum AuthenticateOption {
 export class LoginComponent implements OnInit {
 
   readonly AuthenticateOption: typeof AuthenticateOption = AuthenticateOption;
-  _authenticateOption!: AuthenticateOption;
+  authenticateOption!: AuthenticateOption;
 
   loginForm: FormGroup;
 
-  @Input()
-  set authenticateOption(authenticateOption: AuthenticateOption) {
-    this.loginForm.reset();
-    this._authenticateOption = authenticateOption;
-  }
-
-  get authenticateOption() {
-    return this._authenticateOption;
-  }
-
-  constructor(private authService: AuthService,  private fb: FormBuilder) {
+  constructor(private authService: AuthService,  private fb: FormBuilder, private route: ActivatedRoute,
+              private router: Router,
+              private store: Store<AppState>) {
     // TODO validations
     this.loginForm = fb.group({
       email: ['', Validators.compose([Validators.required, Validators.maxLength(255)])],
       password: ['', Validators.compose([Validators.required, Validators.maxLength(255)])],
       passwordConfirm: [undefined, Validators.compose([Validators.maxLength(255)])]
     });
+    this.authenticateOption = this.route.snapshot.data['option'];
   }
 
 
@@ -77,15 +74,12 @@ export class LoginComponent implements OnInit {
   }
 
   logIn(): void {
-    this.authService.logIn(this.loginForm.value).subscribe(
-      noop,
-      (error) => console.log(error)
-    );
+    this.store.dispatch(loginStart({request: this.loginForm.value}));
   }
 
   signUp(): void {
     this.authService.signUp(this.loginForm.value).subscribe(
-      noop,
+      _ => this.router.navigate([`/applications`]),
       (error) => console.log(error)
     );
   }
