@@ -35,6 +35,9 @@ import {LoggedInGuard} from './login/logged-in.guard.service';
 import {LoggedOutGuard} from './login/logged-out.guard.service';
 import { EffectsModule } from '@ngrx/effects';
 import {UserEffects} from './store/user/user.effects';
+import {ApplicationsResolver} from './applications/applications.resolver';
+import {ApplicationsEffects} from './store/applications/applications.effects';
+import {ApplicationResolver} from './applications/application.resolver';
 
 
 
@@ -72,9 +75,9 @@ import {UserEffects} from './store/user/user.effects';
         MatCheckboxModule,
         StoreModule.forRoot(reducers),
         StoreDevtoolsModule.instrument({ maxAge: 25, logOnly: environment.production }),
-      EffectsModule.forRoot([UserEffects])
+      EffectsModule.forRoot([UserEffects, ApplicationsEffects])
     ],
-  providers: [LoggedInGuard, LoggedOutGuard],
+  providers: [LoggedInGuard, LoggedOutGuard, ApplicationsResolver, ApplicationResolver],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

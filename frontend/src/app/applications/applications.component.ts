@@ -4,6 +4,9 @@ import {Router} from '@angular/router';
 import {FormBuilder, FormGroup, Validators} from '@angular/forms';
 import {MatDialog} from '@angular/material/dialog';
 import {DeletePopupComponent} from '../popup/delete-popup.component';
+import {AppState} from '../store/app.reducers';
+import { Store } from '@ngrx/store';
+import {selectApplications} from '../store/applications/applications.selectors';
 
 @Component({
   selector: 'applications',
@@ -72,11 +75,12 @@ export class ApplicationsComponent {
               private changeDetection: ChangeDetectorRef,
               private router: Router,
               private fb: FormBuilder,
+              private store: Store<AppState>,
               private dialog: MatDialog) {
-    this.applicationsService.getApps().subscribe(apps => {
+    this.store.select(selectApplications).subscribe(apps => {
       this.dataSource = apps;
       this.changeDetection.markForCheck();
-    });
+    })
     // TODO validation and blocking create button
     this.applicationForm = fb.group({
       name: ['', Validators.compose([Validators.required, Validators.maxLength(255)])]

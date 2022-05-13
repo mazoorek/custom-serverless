@@ -36,6 +36,8 @@ import {UserActions} from './store/user';
 })
 export class AppComponent {
 
+  // TODO spinner on router navigate
+
   isLoggedIn$: Observable<boolean>;
   isLoggedOut$: Observable<boolean>;
 

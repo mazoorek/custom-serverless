@@ -1,18 +1,24 @@
-import {Application} from './applications.model';
-import {Action, createReducer} from '@ngrx/store';
+import {Application, ApplicationsState} from './applications.model';
+import {Action, createReducer, on} from '@ngrx/store';
+import {createEntityAdapter} from '@ngrx/entity';
+import {ApplicationsActions} from './index';
 
-export interface ApplicationsState {
-  entities: { [id: number]: Application},
-  loaded: boolean,
-  loading: boolean
-}
+
+export const adapter = createEntityAdapter<Application>({
+  selectId: (application: Application) => application.name
+});
+
+export const applicationsSelectors = adapter.getSelectors();
 
 export const initialState: ApplicationsState = {
-  entities: {},
+  ...adapter.getInitialState(),
   loaded: false,
   loading: false
 }
 
 export const applicationsReducer = createReducer<ApplicationsState, Action>(
-  initialState
+  initialState,
+  on(ApplicationsActions.loadApplicationsSuccess,
+    (state, action) => adapter.addMany(action.applications, {...state, loaded: true})
+  )
 );
