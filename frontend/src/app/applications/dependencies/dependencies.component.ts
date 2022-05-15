@@ -2,6 +2,9 @@ import {ChangeDetectionStrategy, ChangeDetectorRef, Component} from '@angular/co
 import {editor, MarkerSeverity} from 'monaco-editor';
 import {Application, ApplicationsService, DependenciesResponse} from '../applications.service';
 import IStandaloneCodeEditor = editor.IStandaloneCodeEditor;
+import {selectApplication} from '../../store/applications/applications.selectors';
+import {Store} from '@ngrx/store';
+import {AppState} from '../../store/app.reducers';
 
 @Component({
   selector: 'dependencies',
@@ -11,7 +14,7 @@ import IStandaloneCodeEditor = editor.IStandaloneCodeEditor;
                        [options]="packageJsonEditorOptions"
                        [style.height.px]="packageJsonEditorHeight"
                        (onInit)="onPackageJsonEditorInit($event)"
-                       [ngModel]="application.packageJson"
+                       [ngModel]="application?.packageJson"
                        (ngModelChange)="onPackageJsonCodeChange($event)">
     </ngx-monaco-editor>
     <button class="btn btn--green validate-button" (click)="savePackageJson()">
@@ -40,16 +43,18 @@ import IStandaloneCodeEditor = editor.IStandaloneCodeEditor;
 export class DependenciesComponent {
 
   packageJsonEditorOptions = {theme: 'vs-dark', language: 'json', automaticLayout: true, scrollBeyondLastLine: false};
-  packageJsonCode: string;
+  packageJsonCode: string = '';
   packageJsonEditor!: IStandaloneCodeEditor;
-  application: Application;
+  application?: Application;
   validationResult?: DependenciesResponse = undefined;
   syntaxErrors: string[] = [];
   packageJsonEditorHeight: number = 500;
 
-  constructor(private applicationsService: ApplicationsService, private changeDetection: ChangeDetectorRef) {
-    this.application = this.applicationsService.currentApplication;
-    this.packageJsonCode = this.application.packageJson;
+  constructor(private applicationsService: ApplicationsService, private changeDetection: ChangeDetectorRef, private store: Store<AppState>) {
+    this.store.select(selectApplication).subscribe(application => {
+      this.application = application;
+      this.packageJsonCode = application!.packageJson;
+    });
   }
 
   onPackageJsonEditorInit(packageJsonEditor: IStandaloneCodeEditor): void {
@@ -77,7 +82,7 @@ export class DependenciesComponent {
   savePackageJson() {
     this.validationResult = undefined;
     if (this.syntaxErrors.length == 0) {
-      this.applicationsService.saveDependencies(this.application.name, this.packageJsonCode).subscribe(response => {
+      this.applicationsService.saveDependencies(this.application!.name, this.packageJsonCode).subscribe(response => {
         this.validationResult = response;
         this.changeDetection.detectChanges();
       });

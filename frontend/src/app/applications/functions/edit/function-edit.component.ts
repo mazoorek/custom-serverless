@@ -5,6 +5,9 @@ import {editor, MarkerSeverity} from 'monaco-editor';
 import {FormBuilder, FormGroup, Validators} from '@angular/forms';
 import {Application, ApplicationsService, Function} from '../../applications.service';
 import IStandaloneCodeEditor = editor.IStandaloneCodeEditor;
+import {selectApplication} from '../../../store/applications/applications.selectors';
+import {Store} from '@ngrx/store';
+import {AppState} from '../../../store/app.reducers';
 
 @Component({
   selector: 'function-edit',
@@ -93,7 +96,7 @@ export class FunctionEditComponent {
 
   functionMetadataForm: FormGroup;
   currentFunction: Function;
-  application: Application;
+  application?: Application;
 
   inputEditorOptions = {theme: 'vs-dark', language: 'json', automaticLayout: true, scrollBeyondLastLine: false};
   inputCode: string = `{\n    \"args\":{},\n    \"cache\":{},\n    \"edgeResults\":{}\n}`;
@@ -107,9 +110,13 @@ export class FunctionEditComponent {
   constructor(private applicationsService: ApplicationsService,
               private websocketService: WebsocketService,
               private changeDetection: ChangeDetectorRef,
+              private store: Store<AppState>,
               private fb: FormBuilder) {
     this.currentFunction = this.applicationsService.currentFunction;
-    this.application = this.applicationsService.currentApplication;
+    // this.application = this.applicationsService.currentApplication;
+    this.store.select(selectApplication).subscribe(application => {
+      this.application = application
+    });
     this.contentCode = this.currentFunction.content;
     this.functionMetadataForm = fb.group({
       name: [this.currentFunction.name, Validators.compose([Validators.required, Validators.maxLength(255)])],
@@ -118,9 +125,9 @@ export class FunctionEditComponent {
   }
 
   editFunctionMetadata(): void {
-    this.applicationsService.editFunction(this.application.name, this.currentFunction.name, this.functionMetadataForm.value)
+    this.applicationsService.editFunction(this.application!.name, this.currentFunction.name, this.functionMetadataForm.value)
       .subscribe(() => {
-        this.applicationsService.getFunction(this.application.name, this.functionMetadataForm.value.name)
+        this.applicationsService.getFunction(this.application!.name, this.functionMetadataForm.value.name)
           .subscribe(() => {
             this.currentFunction = this.applicationsService.currentFunction;
           });
@@ -128,9 +135,9 @@ export class FunctionEditComponent {
   }
 
   editFunctionContent(): void {
-    this.applicationsService.editFunction(this.application.name, this.currentFunction.name, {content: this.contentCode} as Function)
+    this.applicationsService.editFunction(this.application!.name, this.currentFunction.name, {content: this.contentCode} as Function)
       .subscribe(() => {
-        this.applicationsService.getFunction(this.application.name, this.currentFunction.name)
+        this.applicationsService.getFunction(this.application!.name, this.currentFunction.name)
           .subscribe(() => {
             this.currentFunction = this.applicationsService.currentFunction;
           });
@@ -187,15 +194,15 @@ export class FunctionEditComponent {
 
       let request: TestFunctionRequest = {
         code: this.contentCode,
-        clientAppName: this.application.name,
+        clientAppName: this.application!.name,
         ...JSON.parse(this.inputCode)
       };
-      this.applicationsService.getRuntime(this.application.name).subscribe(response => {
+      this.applicationsService.getRuntime(this.application!.name).subscribe(response => {
         if (!response.runtimeReady) {
           this.websocketService.connect();
           this.websocketService.onOpen$.subscribe(_ => {
             console.log("ws connection opened");
-            this.websocketService.sendMessage(this.application.name);
+            this.websocketService.sendMessage(this.application!.name);
             this.websocketService.onMessage$.subscribe((message: Event) => {
               console.log("received message: " + (message as MessageEvent).data);
               if ((message as MessageEvent).data === 'ready') {

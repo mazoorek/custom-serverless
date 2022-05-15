@@ -4,6 +4,9 @@ import {FormBuilder, FormGroup, Validators} from '@angular/forms';
 import {Router} from '@angular/router';
 import {MatDialog} from '@angular/material/dialog';
 import {DeletePopupComponent} from '../../popup/delete-popup.component';
+import {selectApplication} from '../../store/applications/applications.selectors';
+import {Store} from '@ngrx/store';
+import {AppState} from '../../store/app.reducers';
 
 @Component({
   selector: 'endpoints',
@@ -67,15 +70,18 @@ export class EndpointsComponent {
   dataSource: Endpoint[] = [];
 
   endpointForm: FormGroup;
-  application: Application;
+  application?: Application;
 
   constructor(private applicationsService: ApplicationsService,
               private changeDetection: ChangeDetectorRef,
               private router: Router,
               private fb: FormBuilder,
+              private store: Store<AppState>,
               private dialog: MatDialog) {
-    this.application = this.applicationsService.currentApplication;
-    this.dataSource = this.application.endpoints;
+    this.store.select(selectApplication).subscribe(application => {
+      this.application = application
+      this.dataSource = this.application!.endpoints;
+    });
     this.endpointForm = fb.group({
       url: ['', Validators.compose([Validators.required, Validators.maxLength(255)])],
       functionName: ['', Validators.compose([Validators.required, Validators.maxLength(255)])]
@@ -84,16 +90,16 @@ export class EndpointsComponent {
 
   createEndpoint(): void {
     let endpointUrl = this.endpointForm.value.url;
-    this.applicationsService.createEndpoint(this.application.name, this.endpointForm.value).subscribe(_ => {
-      this.applicationsService.getEndpoint(this.application.name, endpointUrl).subscribe(() => {
-        this.router.navigate(['applications', this.application.name, 'endpoints', endpointUrl, 'edit']);
+    this.applicationsService.createEndpoint(this.application!.name, this.endpointForm.value).subscribe(_ => {
+      this.applicationsService.getEndpoint(this.application!.name, endpointUrl).subscribe(() => {
+        this.router.navigate(['applications', this.application!.name, 'endpoints', endpointUrl, 'edit']);
       });
     });
   }
 
   showEndpoint(endpointUrl: string): void {
-    this.applicationsService.getEndpoint(this.application.name, endpointUrl).subscribe(() => {
-      this.router.navigate(['applications', this.application.name, 'endpoints', endpointUrl, 'edit']);
+    this.applicationsService.getEndpoint(this.application!.name, endpointUrl).subscribe(() => {
+      this.router.navigate(['applications', this.application!.name, 'endpoints', endpointUrl, 'edit']);
     });
   }
 
@@ -105,10 +111,10 @@ export class EndpointsComponent {
       },
     }).afterClosed().subscribe(deleted => {
         if (deleted) {
-          this.applicationsService.deleteEndpoint(this.application.name, endpointUrl).subscribe(() => {
-            this.applicationsService.getApp(this.application.name).subscribe(() => {
-              this.dataSource = this.applicationsService.currentApplication.endpoints;
-              this.changeDetection.markForCheck();
+          this.applicationsService.deleteEndpoint(this.application!.name, endpointUrl).subscribe(() => {
+            this.applicationsService.loadApplication(this.application!.name).subscribe(() => {
+              // this.dataSource = this.applicationsService.currentApplication.endpoints;
+              // this.changeDetection.markForCheck();
             });
           })
         }

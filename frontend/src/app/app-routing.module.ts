@@ -14,6 +14,7 @@ import {LoggedOutGuard} from './login/logged-out.guard.service';
 import {ApplicationsResolver} from './applications/applications.resolver';
 import {ApplicationResolver} from './applications/application.resolver';
 
+// TODO 404 page
 const routes: Routes = [
   {path: '', redirectTo: 'applications', pathMatch: 'full'},
   {path: 'login', component: LoginComponent, canActivate: [LoggedOutGuard], data: {option: AuthenticateOption.LOG_IN}},

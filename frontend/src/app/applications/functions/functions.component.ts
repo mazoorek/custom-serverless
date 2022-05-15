@@ -4,6 +4,9 @@ import {Router} from '@angular/router';
 import {FormBuilder, FormGroup, Validators} from '@angular/forms';
 import {MatDialog} from '@angular/material/dialog';
 import {DeletePopupComponent} from '../../popup/delete-popup.component';
+import {selectApplication, selectApplicationName} from '../../store/applications/applications.selectors';
+import {Store} from '@ngrx/store';
+import {AppState} from '../../store/app.reducers';
 
 @Component({
   selector: 'settings',
@@ -54,15 +57,19 @@ export class FunctionsComponent {
   dataSource: Function[] = [];
 
   functionForm: FormGroup;
-  application: Application;
+  application?: Application;
 
   constructor(private applicationsService: ApplicationsService,
               private changeDetection: ChangeDetectorRef,
               private router: Router,
               private fb: FormBuilder,
+              private store: Store<AppState>,
               private dialog: MatDialog) {
-    this.application = this.applicationsService.currentApplication;
-    this.dataSource = this.application.functions;
+    this.store.select(selectApplication).subscribe(application => {
+      this.application = application
+      this.dataSource = this.application!.functions;
+      this.changeDetection.markForCheck();
+    });
     this.functionForm = fb.group({
       name: ['', Validators.compose([Validators.required, Validators.maxLength(255)])]
     });
@@ -70,16 +77,16 @@ export class FunctionsComponent {
 
   createFunction(): void {
     let functionName = this.functionForm.value.name;
-    this.applicationsService.createFunction(this.application.name, functionName).subscribe(_ => {
-      this.applicationsService.getFunction(this.application.name, functionName).subscribe(() => {
-        this.router.navigate(['applications', this.application.name, 'functions', functionName, 'edit']);
+    this.applicationsService.createFunction(this.application!.name, functionName).subscribe(_ => {
+      this.applicationsService.getFunction(this.application!.name, functionName).subscribe(() => {
+        this.router.navigate(['applications', this.application!.name, 'functions', functionName, 'edit']);
       });
     });
   }
 
   showFunction(functionName: string): void {
-    this.applicationsService.getFunction(this.application.name, functionName).subscribe(() => {
-      this.router.navigate(['applications', this.application.name, 'functions', functionName, 'edit']);
+    this.applicationsService.getFunction(this.application!.name, functionName).subscribe(() => {
+      this.router.navigate(['applications', this.application!.name, 'functions', functionName, 'edit']);
     });
   }
 
@@ -91,10 +98,10 @@ export class FunctionsComponent {
       },
     }).afterClosed().subscribe(deleted => {
         if (deleted) {
-          this.applicationsService.deleteFunction(this.application.name, functionName).subscribe(() => {
-            this.applicationsService.getApp(this.application.name).subscribe(() => {
-              this.dataSource = this.applicationsService.currentApplication.functions;
-              this.changeDetection.markForCheck();
+          this.applicationsService.deleteFunction(this.application!.name, functionName).subscribe(() => {
+            this.applicationsService.loadApplication(this.application!.name).subscribe(() => {
+              // this.dataSource = this.applicationsService.currentApplication!.functions;
+              // this.changeDetection.markForCheck();
             });
           })
         }

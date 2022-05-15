@@ -3,6 +3,9 @@ import {FormBuilder, FormGroup, Validators} from '@angular/forms';
 import {Application, ApplicationsService, Endpoint, Function} from '../../applications.service';
 import {Router} from '@angular/router';
 import {MatDialog} from '@angular/material/dialog';
+import {Store} from '@ngrx/store';
+import {AppState} from '../../../store/app.reducers';
+import {selectApplicationName} from '../../../store/applications/applications.selectors';
 
 @Component({
   selector: 'endpoint-edit',
@@ -31,15 +34,16 @@ import {MatDialog} from '@angular/material/dialog';
 })
 export class EndpointEditComponent {
   endpointForm: FormGroup;
-  application: Application;
   currentEndpoint: Endpoint;
+  applicationName?: string;
 
   constructor(private applicationsService: ApplicationsService,
               private changeDetection: ChangeDetectorRef,
               private router: Router,
+              private store: Store<AppState>,
               private fb: FormBuilder) {
     this.currentEndpoint = this.applicationsService.currentEndpoint;
-    this.application = this.applicationsService.currentApplication;
+    this.store.select(selectApplicationName).subscribe(appName => this.applicationName = appName);
     this.endpointForm = fb.group({
       url: [this.currentEndpoint.url, Validators.compose([Validators.required, Validators.maxLength(255)])],
       functionName: [this.currentEndpoint.functionName, Validators.compose([Validators.required, Validators.maxLength(255)])]
@@ -47,9 +51,9 @@ export class EndpointEditComponent {
   }
 
   editEndpoint(): void {
-    this.applicationsService.editEndpoint(this.application.name, this.currentEndpoint.url, this.endpointForm.value)
+    this.applicationsService.editEndpoint(this.applicationName!, this.currentEndpoint.url, this.endpointForm.value)
       .subscribe(() => {
-        this.applicationsService.getEndpoint(this.application.name, this.endpointForm.value.url)
+        this.applicationsService.getEndpoint(this.applicationName!, this.endpointForm.value.url)
           .subscribe( () => {
             this.currentEndpoint = this.applicationsService.currentEndpoint;
           });

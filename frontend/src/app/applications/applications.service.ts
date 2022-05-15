@@ -34,7 +34,7 @@ export interface DependenciesResponse {
 
 @Injectable({providedIn: "root"})
 export class ApplicationsService {
-  currentApplication!: Application;
+  // currentApplication!: Application;
   currentFunction!: Function;
   currentEndpoint!: Endpoint;
 
@@ -42,11 +42,11 @@ export class ApplicationsService {
   constructor(private http: HttpClient) {
   }
 
-  getApps(): Observable<Application[]> {
+  loadApplications(): Observable<Application[]> {
     return this.http.get<Application[]>("/api/applications");
   }
 
-  createApp(clientAppName: string): Observable<void> {
+  createApplication(clientAppName: string): Observable<void> {
     return this.http.post<void>("/api/applications", {clientAppName: clientAppName});
   }
 
@@ -74,9 +74,9 @@ export class ApplicationsService {
     return this.http.delete<void>(`/api/applications/${clientAppName}/endpoints/${endpointUrl}`);
   }
 
-  getApp(clientAppName: string): Observable<Application> {
+  loadApplication(clientAppName: string): Observable<Application> {
     return this.http.get<Application>(`/api/applications/${clientAppName}`).pipe(
-      tap(app => this.currentApplication = app)
+      // tap(app => this.currentApplication = app)
     );
   }
 
