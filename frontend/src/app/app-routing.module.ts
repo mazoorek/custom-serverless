@@ -13,6 +13,7 @@ import {AuthenticateOption, LoginComponent} from './login/login.component';
 import {LoggedOutGuard} from './login/logged-out.guard.service';
 import {ApplicationsResolver} from './applications/applications.resolver';
 import {ApplicationResolver} from './applications/application.resolver';
+import {EndpointResolver} from './applications/endpoints/endpoint.resolver';
 
 // TODO 404 page
 const routes: Routes = [
@@ -45,7 +46,13 @@ const routes: Routes = [
       {path: 'functions', component: FunctionsComponent},
       {path: 'functions/:functionId/edit', component: FunctionEditComponent},
       {path: 'endpoints', component: EndpointsComponent},
-      {path: 'endpoints/:endpointId/edit', component: EndpointEditComponent}
+      {
+        path: 'endpoints/:endpointId/edit',
+        component: EndpointEditComponent,
+        resolve: {
+          endpoint: EndpointResolver
+        }
+      }
     ],
   }
 ];

@@ -21,3 +21,8 @@ export const selectApplicationName = createSelector(
   selectApplication,
   selectedApplication => selectedApplication?.name
 );
+
+export const selectEndpoint = createSelector(
+  (state: AppState) => state.applications,
+  applications => applications.selectedEndpoint
+);

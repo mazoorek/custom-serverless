@@ -35,6 +35,7 @@ export class ApplicationsEffects {
         this.applicationsService.createApplication(action.appName)
           .pipe(
             map(() => ApplicationsActions.loadNewApplication({appName: action.appName})),
+            tap(() => this.router.navigate(['applications', action.appName, 'overview'])),
             catchError(error => of(ApplicationsActions.createApplicationFailed({message: 'failed to create application'}))
             ),
           )
@@ -244,6 +245,82 @@ export class ApplicationsEffects {
                   errors: ['failed to save dependencies']
                 }
               }))
+            ),
+          )
+      )
+    )
+  );
+
+  loadEndpoint$ = createEffect(() =>
+    this.action$.pipe(
+      ofType(ApplicationsActions.loadEndpoint),
+      switchMap((action) =>
+        this.applicationsService.loadEndpoint(action.appName, action.endpointUrl)
+          .pipe(
+            map((endpoint) => ApplicationsActions.loadEndpointSuccess({endpoint})),
+            catchError(error => of(ApplicationsActions.loadEndpointFailed({message: 'failed to load endpoint'}))
+            ),
+          )
+      )
+    )
+  );
+
+  deleteEndpoint$ = createEffect(() =>
+    this.action$.pipe(
+      ofType(ApplicationsActions.deleteEndpoint),
+      switchMap((action) =>
+        this.applicationsService.deleteEndpoint(action.appName, action.endpointUrl)
+          .pipe(
+            map(() => ApplicationsActions.deleteEndpointSuccess({endpointUrl: action.endpointUrl})),
+            catchError(error => of(ApplicationsActions.deleteEndpointFailed({message: 'failed to delete endpoint'}))
+            ),
+          )
+      )
+    )
+  );
+
+  moveToEndpoint$ = createEffect(() =>
+    this.action$.pipe(
+      ofType(ApplicationsActions.moveToEndpoint),
+      switchMap((action) =>
+        this.applicationsService.loadEndpoint(action.appName, action.endpointUrl)
+          .pipe(
+            map((endpoint) => ApplicationsActions.moveToEndpointSuccess({endpoint})),
+            tap(() => this.router.navigate(['applications', action.appName, 'endpoints', action.endpointUrl, 'edit'])),
+            catchError(error => of(ApplicationsActions.moveToEndpointFailed({message: 'failed to move to application'}))
+            ),
+          )
+      )
+    )
+  );
+
+  createEndpoint$ = createEffect(() =>
+    this.action$.pipe(
+      ofType(ApplicationsActions.createEndpoint),
+      switchMap((action) =>
+        this.applicationsService.createEndpoint(action.appName, action.endpoint)
+          .pipe(
+            map(() => ApplicationsActions.loadNewEndpoint({endpoint: action.endpoint})),
+            tap(() => this.router.navigate(['applications', action.appName, 'endpoints', action.endpoint.url, 'edit'])),
+            catchError(error => of(ApplicationsActions.createEndpointFailed({message: 'failed to create endpoint'}))
+            ),
+          )
+      )
+    )
+  );
+
+  updateEndpoint$ = createEffect(() =>
+    this.action$.pipe(
+      ofType(ApplicationsActions.updateEndpoint),
+      switchMap((action) =>
+        this.applicationsService.editEndpoint(action.appName, action.endpointUrl, action.endpoint)
+          .pipe(
+            map(() => ApplicationsActions.updateEndpointSuccess({
+              oldEndpointUrl: action.endpointUrl,
+              endpoint: action.endpoint
+            })),
+            tap(() => this.router.navigate(['applications', action.appName, 'endpoints', action.endpoint.url, 'edit'])),
+            catchError(error => of(ApplicationsActions.createEndpointFailed({message: 'failed to update endpoint'}))
             ),
           )
       )

@@ -55,7 +55,7 @@ export const applicationsReducer = createReducer<ApplicationsState, Action>(
   ),
   on(ApplicationsActions.startApplicationSuccess,
     (state, action) =>
-    adapter.updateOne(action.application, state)
+      adapter.updateOne(action.application, state)
   ),
   on(ApplicationsActions.stopApplicationSuccess,
     (state, action) =>
@@ -110,5 +110,53 @@ export const applicationsReducer = createReducer<ApplicationsState, Action>(
         } as Application
       }
     }
-  )
+  ),
+  on(ApplicationsActions.loadEndpointSuccess, (state, action) => {
+      return {
+        ...state,
+        selectedEndpoint: action.endpoint
+      }
+    }
+  ),
+  on(ApplicationsActions.moveToEndpointSuccess, (state, action) => {
+      return {
+        ...state,
+        selectedEndpoint: action.endpoint
+      }
+    }
+  ),
+  on(ApplicationsActions.deleteEndpointSuccess, (state, action) => {
+      return {
+        ...state,
+        selectedApplication: {
+          ...state.selectedApplication,
+          endpoints: state.selectedApplication?.endpoints.filter(endpoint => endpoint.url !== action.endpointUrl)
+        } as Application
+      }
+    }
+  ),
+  on(ApplicationsActions.loadNewEndpoint, (state, action) => {
+      return {
+        ...state,
+        selectedApplication: {
+          ...state.selectedApplication,
+          endpoints: state.selectedApplication?.endpoints.concat([action.endpoint])
+        } as Application
+      }
+    }
+  ),
+  on(ApplicationsActions.updateEndpointSuccess, (state, action) => {
+      let endpoints = [...state.selectedApplication!.endpoints];
+      let updatedEndpointIndex = endpoints.findIndex((obj => obj.url === action.oldEndpointUrl));
+      endpoints[updatedEndpointIndex] = action.endpoint;
+      return {
+        ...state,
+        selectedEndpoint: action.endpoint,
+        selectedApplication: {
+          ...state.selectedApplication,
+          endpoints
+        } as Application
+      }
+    }
+  ),
 );

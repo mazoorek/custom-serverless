@@ -46,7 +46,6 @@ export class ApplicationsService {
 
   loadApplication(clientAppName: string): Observable<Application> {
     return this.http.get<Application>(`/api/applications/${clientAppName}`).pipe(
-      // tap(app => this.currentApplication = app)
     );
   }
 
@@ -56,10 +55,8 @@ export class ApplicationsService {
     );
   }
 
-  getEndpoint(clientAppName: string, endpointUrl: string): Observable<Endpoint> {
-    return this.http.get<Endpoint>(`/api/applications/${clientAppName}/endpoints/${endpointUrl}`).pipe(
-      tap(endpoint => this.currentEndpoint = endpoint)
-    );
+  loadEndpoint(clientAppName: string, endpointUrl: string): Observable<Endpoint> {
+    return this.http.get<Endpoint>(`/api/applications/${clientAppName}/endpoints/${endpointUrl}`);
   }
 
   testFunction(request: TestFunctionRequest): Observable<void> {
