@@ -1,5 +1,5 @@
 import {createAction, props} from '@ngrx/store';
-import {Application} from './applications.model';
+import {Application, DependenciesResponse} from './applications.model';
 import {Update} from '@ngrx/entity';
 
 export const loadApplications = createAction(
@@ -177,4 +177,19 @@ export const deleteSelectedApplicationSuccess = createAction(
 export const deleteSelectedApplicationFailed = createAction(
   "[deleteSelectedApplication effect] Delete Application Failed",
   props<{ message: string }>()
+);
+
+export const saveDependencies = createAction(
+  "[Dependencies View] Save Dependencies",
+  props<{ appName: string, packageJson: string}>()
+);
+
+export const saveDependenciesSuccessResponse = createAction(
+  "[saveDependencies effect] Save Dependencies Success Response",
+  props<{ validationResult: DependenciesResponse }>()
+);
+
+export const saveDependenciesFailedResponse = createAction(
+  "[saveDependencies effect] Save Dependencies Failed Response",
+  props<{ validationResult: DependenciesResponse }>()
 );

@@ -91,4 +91,24 @@ export const applicationsReducer = createReducer<ApplicationsState, Action>(
         }
       )
   ),
+  on(ApplicationsActions.saveDependenciesSuccessResponse, (state, action) => {
+      return {
+        ...state,
+        selectedApplication: {
+          ...state.selectedApplication,
+          validationResult: action.validationResult
+        } as Application
+      }
+    }
+  ),
+  on(ApplicationsActions.saveDependenciesFailedResponse, (state, action) => {
+      return {
+        ...state,
+        selectedApplication: {
+          ...state.selectedApplication,
+          validationResult: action.validationResult
+        } as Application
+      }
+    }
+  )
 );

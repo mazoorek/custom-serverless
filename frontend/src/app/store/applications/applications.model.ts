@@ -17,6 +17,7 @@ export interface Application {
   endpoints: Endpoint[];
   functions: Function[];
   packageJson: string;
+  validationResult?: DependenciesResponse;
 }
 
 export interface ApplicationsState extends EntityState<Application> {
@@ -25,4 +26,9 @@ export interface ApplicationsState extends EntityState<Application> {
   selectedApplication?: Application,
   selectedFunction?: Function,
   selectedEndpoint?: Endpoint
+}
+
+export interface DependenciesResponse {
+  valid: boolean;
+  errors: string[];
 }

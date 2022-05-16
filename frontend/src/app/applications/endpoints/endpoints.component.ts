@@ -1,5 +1,5 @@
 import {ChangeDetectorRef, Component} from '@angular/core';
-import {Application, ApplicationsService, Endpoint} from '../applications.service';
+import {ApplicationsService} from '../applications.service';
 import {FormBuilder, FormGroup, Validators} from '@angular/forms';
 import {Router} from '@angular/router';
 import {MatDialog} from '@angular/material/dialog';
@@ -7,6 +7,7 @@ import {DeletePopupComponent} from '../../popup/delete-popup.component';
 import {selectApplication} from '../../store/applications/applications.selectors';
 import {Store} from '@ngrx/store';
 import {AppState} from '../../store/app.reducers';
+import {Application, Endpoint} from '../../store/applications/applications.model';
 
 @Component({
   selector: 'endpoints',

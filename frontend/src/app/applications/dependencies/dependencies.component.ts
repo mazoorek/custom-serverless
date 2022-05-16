@@ -1,10 +1,13 @@
-import {ChangeDetectionStrategy, ChangeDetectorRef, Component} from '@angular/core';
+import {ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit} from '@angular/core';
 import {editor, MarkerSeverity} from 'monaco-editor';
-import {Application, ApplicationsService, DependenciesResponse} from '../applications.service';
 import IStandaloneCodeEditor = editor.IStandaloneCodeEditor;
 import {selectApplication} from '../../store/applications/applications.selectors';
-import {Store} from '@ngrx/store';
+import {select, Store} from '@ngrx/store';
 import {AppState} from '../../store/app.reducers';
+import {filter} from 'rxjs';
+import {Application, DependenciesResponse} from '../../store/applications/applications.model';
+import {ApplicationsService} from '../applications.service';
+import {saveDependencies} from '../../store/applications/applications.actions';
 
 @Component({
   selector: 'dependencies',
@@ -17,7 +20,7 @@ import {AppState} from '../../store/app.reducers';
                        [ngModel]="application?.packageJson"
                        (ngModelChange)="onPackageJsonCodeChange($event)">
     </ngx-monaco-editor>
-    <button class="btn btn--green validate-button" (click)="savePackageJson()">
+    <button class="btn btn--green validate-button" (click)="saveDependencies()">
       VALIDATE AND SAVE
     </button>
     <ng-container *ngIf="this.syntaxErrors.length > 0">
@@ -40,7 +43,7 @@ import {AppState} from '../../store/app.reducers';
   styleUrls: ['./dependencies.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class DependenciesComponent {
+export class DependenciesComponent implements OnInit {
 
   packageJsonEditorOptions = {theme: 'vs-dark', language: 'json', automaticLayout: true, scrollBeyondLastLine: false};
   packageJsonCode: string = '';
@@ -51,10 +54,20 @@ export class DependenciesComponent {
   packageJsonEditorHeight: number = 500;
 
   constructor(private applicationsService: ApplicationsService, private changeDetection: ChangeDetectorRef, private store: Store<AppState>) {
-    this.store.select(selectApplication).subscribe(application => {
-      this.application = application;
-      this.packageJsonCode = application!.packageJson;
-    });
+  }
+
+  ngOnInit(): void {
+    this.store.pipe(
+      select(selectApplication),
+      filter(application => !!application)
+    )
+      .subscribe(application => {
+        this.application = application;
+        this.packageJsonCode = application!.packageJson;
+        this.validationResult = application!.validationResult;
+        console.log('tutaj');
+        this.changeDetection.detectChanges();
+      });
   }
 
   onPackageJsonEditorInit(packageJsonEditor: IStandaloneCodeEditor): void {
@@ -79,13 +92,14 @@ export class DependenciesComponent {
     this.packageJsonCode = updatedCode;
   }
 
-  savePackageJson() {
+  saveDependencies() {
     this.validationResult = undefined;
     if (this.syntaxErrors.length == 0) {
-      this.applicationsService.saveDependencies(this.application!.name, this.packageJsonCode).subscribe(response => {
-        this.validationResult = response;
-        this.changeDetection.detectChanges();
-      });
+      this.store.dispatch(saveDependencies({appName: this.application!.name, packageJson: this.packageJsonCode}));
+      // this.applicationsService.saveDependencies(this.application!.name, this.packageJsonCode).subscribe(response => {
+      //   this.validationResult = response;
+      //   this.changeDetection.detectChanges();
+      // });
     }
   }
 }

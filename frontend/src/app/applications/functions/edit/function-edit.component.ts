@@ -3,11 +3,12 @@ import {TestFunctionRequest} from '../../../main/main.service';
 import {WebsocketService} from '../../../main/websocket.service';
 import {editor, MarkerSeverity} from 'monaco-editor';
 import {FormBuilder, FormGroup, Validators} from '@angular/forms';
-import {Application, ApplicationsService, Function} from '../../applications.service';
+import {ApplicationsService} from '../../applications.service';
 import IStandaloneCodeEditor = editor.IStandaloneCodeEditor;
 import {selectApplication} from '../../../store/applications/applications.selectors';
 import {Store} from '@ngrx/store';
 import {AppState} from '../../../store/app.reducers';
+import {Application, Function} from '../../../store/applications/applications.model';
 
 @Component({
   selector: 'function-edit',

@@ -1,43 +1,13 @@
 import {Injectable} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
 import {Observable, tap} from 'rxjs';
-
-export interface TestFunctionRequest {
-  code: string;
-  args: any;
-  clientAppName: string;
-}
-
-export interface Endpoint {
-  url: string;
-  functionName: string;
-}
-
-export interface Function {
-  name: string;
-  content: string;
-  idempotent: boolean;
-}
-
-export interface Application {
-  name: string;
-  up: boolean;
-  endpoints: Endpoint[];
-  functions: Function[];
-  packageJson: string;
-}
-
-export interface DependenciesResponse {
-  valid: boolean;
-  errors: string[];
-}
+import {Function, Application, DependenciesResponse, Endpoint} from '../store/applications/applications.model';
+import {TestFunctionRequest} from '../main/main.service';
 
 @Injectable({providedIn: "root"})
 export class ApplicationsService {
-  // currentApplication!: Application;
   currentFunction!: Function;
   currentEndpoint!: Endpoint;
-
 
   constructor(private http: HttpClient) {
   }

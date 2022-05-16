@@ -1,21 +1,20 @@
 import {ChangeDetectorRef, Component, OnInit} from '@angular/core';
 import {FormBuilder, FormGroup, Validators} from '@angular/forms';
-import {Application, ApplicationsService} from '../applications.service';
+import {ApplicationsService} from '../applications.service';
 import {DeletePopupComponent} from '../../popup/delete-popup.component';
 import {Router} from '@angular/router';
 import {MatDialog} from '@angular/material/dialog';
 import {select, Store} from '@ngrx/store';
 import {AppState} from '../../store/app.reducers';
 import {selectApplication} from '../../store/applications/applications.selectors';
-import {isLoggedIn} from '../../store/user/user.selectors';
-import {distinctUntilChanged, filter} from 'rxjs';
+import {filter} from 'rxjs';
 import {
   deleteSelectedApplication,
   editSelectedApplicationName,
-  startApplication,
   startSelectedApplication,
   stopSelectedApplication
 } from '../../store/applications/applications.actions';
+import {Application} from '../../store/applications/applications.model';
 
 @Component({
   selector: 'overview',

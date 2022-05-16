@@ -1,5 +1,5 @@
 import {ChangeDetectorRef, Component, OnInit} from '@angular/core';
-import {Application, ApplicationsService} from './applications.service';
+import {ApplicationsService} from './applications.service';
 import {Router} from '@angular/router';
 import {FormBuilder, FormGroup, Validators} from '@angular/forms';
 import {MatDialog} from '@angular/material/dialog';
@@ -13,6 +13,7 @@ import {
   startApplication,
   stopApplication
 } from '../store/applications/applications.actions';
+import {Application} from '../store/applications/applications.model';
 
 @Component({
   selector: 'applications',

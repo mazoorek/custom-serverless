@@ -10,7 +10,7 @@ import {ApplicationsService} from '../../applications/applications.service';
 @Injectable()
 export class ApplicationsEffects {
 
-  constructor(private action$: Actions, private store: Store<AppState>,  private router: Router,
+  constructor(private action$: Actions, private store: Store<AppState>, private router: Router,
               private applicationsService: ApplicationsService) {
   }
 
@@ -225,6 +225,25 @@ export class ApplicationsEffects {
             map(() => ApplicationsActions.deleteSelectedApplicationSuccess({appName: action.appName})),
             tap(() => this.router.navigate(['applications'])),
             catchError(error => of(ApplicationsActions.deleteSelectedApplicationFailed({message: 'failed to delete application'}))
+            ),
+          )
+      )
+    )
+  );
+
+  saveDependencies$ = createEffect(() =>
+    this.action$.pipe(
+      ofType(ApplicationsActions.saveDependencies),
+      switchMap((action) =>
+        this.applicationsService.saveDependencies(action.appName, action.packageJson)
+          .pipe(
+            map((response) => ApplicationsActions.saveDependenciesSuccessResponse({validationResult: response})),
+            catchError(error => of(ApplicationsActions.saveDependenciesFailedResponse({
+                validationResult: {
+                  valid: false,
+                  errors: ['failed to save dependencies']
+                }
+              }))
             ),
           )
       )

@@ -1,11 +1,11 @@
 import {ChangeDetectorRef, Component} from '@angular/core';
 import {FormBuilder, FormGroup, Validators} from '@angular/forms';
-import {Application, ApplicationsService, Endpoint, Function} from '../../applications.service';
+import {ApplicationsService} from '../../applications.service';
 import {Router} from '@angular/router';
-import {MatDialog} from '@angular/material/dialog';
 import {Store} from '@ngrx/store';
 import {AppState} from '../../../store/app.reducers';
 import {selectApplicationName} from '../../../store/applications/applications.selectors';
+import {Endpoint} from '../../../store/applications/applications.model';
 
 @Component({
   selector: 'endpoint-edit',

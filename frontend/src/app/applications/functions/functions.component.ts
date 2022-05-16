@@ -1,12 +1,13 @@
 import {ChangeDetectorRef, Component} from '@angular/core';
-import {Application, ApplicationsService, Function} from '../applications.service';
+import {ApplicationsService} from '../applications.service';
 import {Router} from '@angular/router';
 import {FormBuilder, FormGroup, Validators} from '@angular/forms';
 import {MatDialog} from '@angular/material/dialog';
 import {DeletePopupComponent} from '../../popup/delete-popup.component';
-import {selectApplication, selectApplicationName} from '../../store/applications/applications.selectors';
+import {selectApplication,} from '../../store/applications/applications.selectors';
 import {Store} from '@ngrx/store';
 import {AppState} from '../../store/app.reducers';
+import {Application, Function} from '../../store/applications/applications.model';
 
 @Component({
   selector: 'settings',
