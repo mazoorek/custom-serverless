@@ -1,5 +1,5 @@
 import {createAction, props} from '@ngrx/store';
-import {Application, DependenciesResponse, Endpoint} from './applications.model';
+import {Application, DependenciesResponse, Endpoint, Function} from './applications.model';
 import {Update} from '@ngrx/entity';
 
 export const loadApplications = createAction(
@@ -181,7 +181,7 @@ export const deleteSelectedApplicationFailed = createAction(
 
 export const saveDependencies = createAction(
   "[Dependencies View] Save Dependencies",
-  props<{ appName: string, packageJson: string}>()
+  props<{ appName: string, packageJson: string }>()
 );
 
 export const saveDependenciesSuccessResponse = createAction(
@@ -196,32 +196,32 @@ export const saveDependenciesFailedResponse = createAction(
 
 export const loadEndpoint = createAction(
   "[Endpoint Resolver] Load Endpoint",
-  props<{ appName: string, endpointUrl: string}>()
+  props<{ appName: string, endpointUrl: string }>()
 );
 
 export const loadEndpointSuccess = createAction(
   "[loadEndpoint effect] Load Endpoint Success",
-  props<{ endpoint: Endpoint}>()
+  props<{ endpoint: Endpoint }>()
 );
 
 export const loadEndpointFailed = createAction(
   "[loadEndpoint effect] Load Endpoint Failed",
-  props<{ message: string}>()
+  props<{ message: string }>()
 );
 
 export const deleteEndpoint = createAction(
   "[Endpoints View] Delete Endpoint",
-  props<{ appName: string , endpointUrl: string}>()
+  props<{ appName: string, endpointUrl: string }>()
 );
 
 export const deleteEndpointSuccess = createAction(
   "[deleteEndpoint effect] Delete Endpoint Success",
-  props<{endpointUrl: string}>()
+  props<{ endpointUrl: string }>()
 );
 
 export const deleteEndpointFailed = createAction(
   "[deleteEndpoint effect] Delete Endpoint Failed",
-  props<{message: string}>()
+  props<{ message: string }>()
 );
 
 export const moveToEndpoint = createAction(
@@ -231,40 +231,126 @@ export const moveToEndpoint = createAction(
 
 export const moveToEndpointSuccess = createAction(
   "[moveToEndpoint effect] Move To Endpoint Success",
-  props<{endpoint: Endpoint }>()
+  props<{ endpoint: Endpoint }>()
 );
 
 export const moveToEndpointFailed = createAction(
   "[moveToEndpoint effect] Move To Endpoint Failed",
-  props<{message: string }>()
+  props<{ message: string }>()
 );
 
 export const createEndpoint = createAction(
   "[Endpoints View] Create Endpoint",
-  props<{ appName: string, endpoint: Endpoint}>()
+  props<{ appName: string, endpoint: Endpoint }>()
 );
 
 export const loadNewEndpoint = createAction(
   "[createEndpoint effect] Load New Endpoint",
-  props<{endpoint: Endpoint}>()
+  props<{ endpoint: Endpoint }>()
 );
 
 export const createEndpointFailed = createAction(
   "[createEndpoint effect] Create Endpoint Failed",
-  props<{ message: string}>()
+  props<{ message: string }>()
 );
 
 export const updateEndpoint = createAction(
   "[Endpoint Edit View] Update Endpoint",
-  props<{ appName: string, endpointUrl: string,endpoint: Endpoint}>()
+  props<{ appName: string, endpointUrl: string, endpoint: Endpoint }>()
 );
 
 export const updateEndpointSuccess = createAction(
   "[updateEndpoint effect] Update Endpoint Success",
-  props<{oldEndpointUrl: string, endpoint: Endpoint}>()
+  props<{ oldEndpointUrl: string, endpoint: Endpoint }>()
 );
 
 export const updateEndpointFailed = createAction(
   "[updateEndpoint effect] Update Endpoint Failed",
-  props<{message: string}>()
+  props<{ message: string }>()
+);
+
+export const loadFunction = createAction(
+  "[Function Resolver] Load Function",
+  props<{ appName: string, functionName: string }>()
+);
+
+export const loadFunctionSuccess = createAction(
+  "[loadFunction effect] Load Function Success",
+  props<{ function: Function }>()
+);
+
+export const loadFunctionFailed = createAction(
+  "[loadFunction effect] Load Function Failed",
+  props<{ message: string }>()
+);
+
+export const moveToFunction = createAction(
+  "[Functions View] Move To Function",
+  props<{ appName: string, functionName: string }>()
+);
+
+export const moveToFunctionSuccess = createAction(
+  "[moveToFunction effect] Move To Function Success",
+  props<{ function: Function }>()
+);
+
+export const moveToFunctionFailed = createAction(
+  "[moveToFunction effect] Move To Function Failed",
+  props<{ message: string }>()
+);
+
+export const createFunction = createAction(
+  "[Functions View] Create Function",
+  props<{ appName: string, functionName: string }>()
+);
+
+export const loadNewFunction = createAction(
+  "[createFunction effect] Load New Function",
+  props<{ appName: string, functionName: string }>()
+);
+
+export const createFunctionFailed = createAction(
+  "[createFunction effect] Create Function Failed",
+  props<{ message: string }>()
+);
+
+export const loadNewFunctionSuccess = createAction(
+  "[loadNewFunction effect] Load New Function Success",
+  props<{ function: Function }>()
+);
+
+export const loadNewFunctionFailed = createAction(
+  "[loadNewFunction effect] Load New Function Failed",
+  props<{ message: string }>()
+);
+
+
+export const deleteFunction = createAction(
+  "[Functions View] Delete Function",
+  props<{ appName: string, functionName: string }>()
+);
+
+export const deleteFunctionSuccess = createAction(
+  "[deleteFunction effect] Delete Function Success",
+  props<{ functionName: string }>()
+);
+
+export const deleteFunctionFailed = createAction(
+  "[deleteFunction effect] Delete Function Failed",
+  props<{ message: string }>()
+);
+
+export const updateFunction = createAction(
+  "[Function Edit View] Update Function",
+  props<{ appName: string, functionName: string, function: Function }>()
+);
+
+export const updateFunctionSuccess = createAction(
+  "[updateFunction effect] Update Function Success",
+  props<{ oldFunctionName: string, function: Function }>()
+);
+
+export const updateFunctionFailed = createAction(
+  "[updateFunction effect] Update Function Failed",
+  props<{ message: string }>()
 );

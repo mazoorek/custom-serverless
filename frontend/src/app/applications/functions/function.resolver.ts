@@ -3,10 +3,10 @@ import {ActivatedRouteSnapshot, Resolve, RouterStateSnapshot} from '@angular/rou
 import {Store} from '@ngrx/store';
 import {AppState} from '../../store/app.reducers';
 import {finalize, first, Observable, tap} from 'rxjs';
-import {loadEndpoint} from '../../store/applications/applications.actions';
+import {loadEndpoint, loadFunction} from '../../store/applications/applications.actions';
 
 @Injectable()
-export class EndpointResolver implements Resolve<any> {
+export class FunctionResolver implements Resolve<any> {
 
   loading: boolean = false;
 
@@ -14,12 +14,12 @@ export class EndpointResolver implements Resolve<any> {
   }
   resolve(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Observable<any> {
     let appName = route.paramMap.get('id');
-    let endpointUrl = route.paramMap.get('endpointId');
+    let functionName = route.paramMap.get('functionId');
     return this.store.pipe(
       tap(() => {
         if(!this.loading) {
           this.loading = true;
-          this.store.dispatch(loadEndpoint({appName: appName!, endpointUrl: endpointUrl!}));
+          this.store.dispatch(loadFunction({appName: appName!, functionName: functionName!}));
         }
       }),
       first(),

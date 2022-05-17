@@ -49,7 +49,7 @@ export class ApplicationsService {
     );
   }
 
-  getFunction(clientAppName: string, functionName: string): Observable<Function> {
+  loadFunction(clientAppName: string, functionName: string): Observable<Function> {
     return this.http.get<Function>(`/api/applications/${clientAppName}/functions/${functionName}`).pipe(
       tap(func => this.currentFunction = func)
     );

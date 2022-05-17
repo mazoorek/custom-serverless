@@ -26,3 +26,8 @@ export const selectEndpoint = createSelector(
   (state: AppState) => state.applications,
   applications => applications.selectedEndpoint
 );
+
+export const selectFunction = createSelector(
+  (state: AppState) => state.applications,
+  applications => applications.selectedFunction
+);

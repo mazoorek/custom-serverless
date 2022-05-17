@@ -319,8 +319,106 @@ export class ApplicationsEffects {
               oldEndpointUrl: action.endpointUrl,
               endpoint: action.endpoint
             })),
-            tap(() => this.router.navigate(['applications', action.appName, 'endpoints', action.endpoint.url, 'edit'])),
-            catchError(error => of(ApplicationsActions.createEndpointFailed({message: 'failed to update endpoint'}))
+            tap(() => {
+              if(action.endpointUrl !== action.endpoint.url) {
+                this.router.navigate(['applications', action.appName, 'endpoints', action.endpoint.url, 'edit'])
+              }
+            }),
+            catchError(error => of(ApplicationsActions.updateEndpointFailed({message: 'failed to update endpoint'}))
+            ),
+          )
+      )
+    )
+  );
+
+  loadFunction$ = createEffect(() =>
+    this.action$.pipe(
+      ofType(ApplicationsActions.loadFunction),
+      switchMap((action) =>
+        this.applicationsService.loadFunction(action.appName, action.functionName)
+          .pipe(
+            map((func) => ApplicationsActions.loadFunctionSuccess({function: func})),
+            catchError(error => of(ApplicationsActions.loadFunctionFailed({message: 'failed to load function'}))
+            ),
+          )
+      )
+    )
+  );
+
+  moveToFunction$ = createEffect(() =>
+    this.action$.pipe(
+      ofType(ApplicationsActions.moveToFunction),
+      switchMap((action) =>
+        this.applicationsService.loadFunction(action.appName, action.functionName)
+          .pipe(
+            map((func) => ApplicationsActions.moveToFunctionSuccess({function: func})),
+            tap(() => this.router.navigate(['applications', action.appName, 'functions', action.functionName, 'edit'])),
+            catchError(error => of(ApplicationsActions.moveToFunctionFailed({message: 'failed to move to function'}))
+            ),
+          )
+      )
+    )
+  );
+
+  createFunction$ = createEffect(() =>
+    this.action$.pipe(
+      ofType(ApplicationsActions.createFunction),
+      switchMap((action) =>
+        this.applicationsService.createFunction(action.appName, action.functionName)
+          .pipe(
+            map(() => ApplicationsActions.loadNewFunction({appName: action.appName, functionName: action.functionName})),
+            catchError(error => of(ApplicationsActions.createFunctionFailed({message: 'failed to create function'}))
+            ),
+          )
+      )
+    )
+  );
+
+  loadNewFunction$ = createEffect(() =>
+    this.action$.pipe(
+      ofType(ApplicationsActions.loadNewFunction),
+      switchMap((action) =>
+        this.applicationsService.loadFunction(action.appName, action.functionName)
+          .pipe(
+            map((func) => ApplicationsActions.loadNewFunctionSuccess({function: func})),
+            tap(() => this.router.navigate(['applications', action.appName, 'functions', action.functionName, 'edit'])),
+            catchError(error => of(ApplicationsActions.loadNewFunctionFailed({message: 'failed to load new function'}))
+            ),
+          )
+      )
+    )
+  );
+
+  deleteFunction$ = createEffect(() =>
+    this.action$.pipe(
+      ofType(ApplicationsActions.deleteFunction),
+      switchMap((action) =>
+        this.applicationsService.deleteFunction(action.appName, action.functionName)
+          .pipe(
+            map(() => ApplicationsActions.deleteFunctionSuccess({functionName: action.functionName})),
+            catchError(error => of(ApplicationsActions.deleteFunctionFailed({message: 'failed to delete function'}))
+            ),
+          )
+      )
+    )
+  );
+
+  updateFunction$ = createEffect(() =>
+    this.action$.pipe(
+      ofType(ApplicationsActions.updateFunction),
+      switchMap((action) =>
+        this.applicationsService.editFunction(action.appName, action.functionName, action.function)
+          .pipe(
+            map(() => ApplicationsActions.updateFunctionSuccess({
+              oldFunctionName: action.functionName,
+              function: action.function
+            })),
+            tap(() => {
+              if(action.functionName !== action.function.name) {
+                this.router.navigate(['applications', action.appName, 'functions', action.function.name, 'edit'])
+              }
+            }),
+            catchError(error => of(ApplicationsActions.updateFunctionFailed({message: 'failed to update function'}))
             ),
           )
       )

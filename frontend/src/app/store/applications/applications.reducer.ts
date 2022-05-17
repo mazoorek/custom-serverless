@@ -147,7 +147,7 @@ export const applicationsReducer = createReducer<ApplicationsState, Action>(
   ),
   on(ApplicationsActions.updateEndpointSuccess, (state, action) => {
       let endpoints = [...state.selectedApplication!.endpoints];
-      let updatedEndpointIndex = endpoints.findIndex((obj => obj.url === action.oldEndpointUrl));
+      let updatedEndpointIndex = endpoints.findIndex((endpoint => endpoint.url === action.oldEndpointUrl));
       endpoints[updatedEndpointIndex] = action.endpoint;
       return {
         ...state,
@@ -155,6 +155,54 @@ export const applicationsReducer = createReducer<ApplicationsState, Action>(
         selectedApplication: {
           ...state.selectedApplication,
           endpoints
+        } as Application
+      }
+    }
+  ),
+  on(ApplicationsActions.loadFunctionSuccess, (state, action) => {
+      return {
+        ...state,
+        selectedFunction: action.function
+      }
+    }
+  ),
+  on(ApplicationsActions.moveToFunctionSuccess, (state, action) => {
+      return {
+        ...state,
+        selectedFunction: action.function
+      }
+    }
+  ),
+  on(ApplicationsActions.loadNewFunctionSuccess, (state, action) => {
+      return {
+        ...state,
+        selectedApplication: {
+          ...state.selectedApplication,
+          functions: state.selectedApplication?.functions.concat([action.function])
+        } as Application
+      }
+    }
+  ),
+  on(ApplicationsActions.deleteFunctionSuccess, (state, action) => {
+      return {
+        ...state,
+        selectedApplication: {
+          ...state.selectedApplication,
+          functions: state.selectedApplication?.functions.filter(func => func.name !== action.functionName)
+        } as Application
+      }
+    }
+  ),
+  on(ApplicationsActions.updateFunctionSuccess, (state, action) => {
+      let functions = [...state.selectedApplication!.functions];
+      let updatedFunctionIndex = functions.findIndex((func => func.name === action.oldFunctionName));
+      functions[updatedFunctionIndex] = action.function;
+      return {
+        ...state,
+        selectedFunction: action.function,
+        selectedApplication: {
+          ...state.selectedApplication,
+          functions
         } as Application
       }
     }

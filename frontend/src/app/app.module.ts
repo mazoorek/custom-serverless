@@ -39,6 +39,7 @@ import {ApplicationsResolver} from './applications/applications.resolver';
 import {ApplicationsEffects} from './store/applications/applications.effects';
 import {ApplicationResolver} from './applications/application.resolver';
 import {EndpointResolver} from './applications/endpoints/endpoint.resolver';
+import {FunctionResolver} from './applications/functions/function.resolver';
 
 
 
@@ -78,7 +79,7 @@ import {EndpointResolver} from './applications/endpoints/endpoint.resolver';
         StoreDevtoolsModule.instrument({ maxAge: 25, logOnly: environment.production }),
       EffectsModule.forRoot([UserEffects, ApplicationsEffects])
     ],
-  providers: [LoggedInGuard, LoggedOutGuard, ApplicationsResolver, ApplicationResolver, EndpointResolver],
+  providers: [LoggedInGuard, LoggedOutGuard, ApplicationsResolver, ApplicationResolver, EndpointResolver, FunctionResolver],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

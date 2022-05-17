@@ -1,13 +1,15 @@
-import {ChangeDetectorRef, Component} from '@angular/core';
+import {ChangeDetectorRef, Component, OnInit} from '@angular/core';
 import {ApplicationsService} from '../applications.service';
 import {Router} from '@angular/router';
 import {FormBuilder, FormGroup, Validators} from '@angular/forms';
 import {MatDialog} from '@angular/material/dialog';
 import {DeletePopupComponent} from '../../popup/delete-popup.component';
-import {selectApplication,} from '../../store/applications/applications.selectors';
-import {Store} from '@ngrx/store';
+import {selectApplication} from '../../store/applications/applications.selectors';
+import {select, Store} from '@ngrx/store';
 import {AppState} from '../../store/app.reducers';
 import {Application, Function} from '../../store/applications/applications.model';
+import {filter} from 'rxjs';
+import {createFunction, moveToFunction, deleteFunction} from '../../store/applications/applications.actions';
 
 @Component({
   selector: 'settings',
@@ -51,12 +53,10 @@ import {Application, Function} from '../../store/applications/applications.model
   `,
   styleUrls: ['./functions.component.scss']
 })
-export class FunctionsComponent {
+export class FunctionsComponent implements OnInit {
 
   displayedColumns: string[] = ['name', 'delete'];
-
   dataSource: Function[] = [];
-
   functionForm: FormGroup;
   application?: Application;
 
@@ -66,29 +66,29 @@ export class FunctionsComponent {
               private fb: FormBuilder,
               private store: Store<AppState>,
               private dialog: MatDialog) {
-    this.store.select(selectApplication).subscribe(application => {
-      this.application = application
-      this.dataSource = this.application!.functions;
-      this.changeDetection.markForCheck();
-    });
     this.functionForm = fb.group({
       name: ['', Validators.compose([Validators.required, Validators.maxLength(255)])]
     });
   }
 
-  createFunction(): void {
-    let functionName = this.functionForm.value.name;
-    this.applicationsService.createFunction(this.application!.name, functionName).subscribe(_ => {
-      this.applicationsService.getFunction(this.application!.name, functionName).subscribe(() => {
-        this.router.navigate(['applications', this.application!.name, 'functions', functionName, 'edit']);
-      });
+  ngOnInit(): void {
+    this.store.pipe(
+      select(selectApplication),
+      filter(application => !!application)
+    ).subscribe(application => {
+      this.application = application
+      this.dataSource = this.application!.functions;
+      this.changeDetection.detectChanges();
     });
   }
 
+  createFunction(): void {
+    let functionName = this.functionForm.value.name;
+    this.store.dispatch(createFunction({appName: this.application!.name, functionName}));
+  }
+
   showFunction(functionName: string): void {
-    this.applicationsService.getFunction(this.application!.name, functionName).subscribe(() => {
-      this.router.navigate(['applications', this.application!.name, 'functions', functionName, 'edit']);
-    });
+    this.store.dispatch(moveToFunction({appName: this.application!.name, functionName}));
   }
 
   deleteFunction(functionName: string, event: Event): void {
@@ -99,12 +99,7 @@ export class FunctionsComponent {
       },
     }).afterClosed().subscribe(deleted => {
         if (deleted) {
-          this.applicationsService.deleteFunction(this.application!.name, functionName).subscribe(() => {
-            this.applicationsService.loadApplication(this.application!.name).subscribe(() => {
-              // this.dataSource = this.applicationsService.currentApplication!.functions;
-              // this.changeDetection.markForCheck();
-            });
-          })
+          this.store.dispatch(deleteFunction({appName: this.application!.name, functionName}));
         }
       }
     );
