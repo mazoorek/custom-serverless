@@ -1,52 +1,22 @@
 import {Injectable} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
 import {Observable, tap} from 'rxjs';
-
-export interface TestFunctionRequest {
-  code: string;
-  args: any;
-  clientAppName: string;
-}
-
-export interface Endpoint {
-  url: string;
-  functionName: string;
-}
-
-export interface Function {
-  name: string;
-  content: string;
-  idempotent: boolean;
-}
-
-export interface Application {
-  name: string;
-  up: boolean;
-  endpoints: Endpoint[];
-  functions: Function[];
-  packageJson: string;
-}
-
-export interface DependenciesResponse {
-  valid: boolean;
-  errors: string[];
-}
+import {Function, Application, DependenciesResponse, Endpoint} from '../store/applications/applications.model';
+import {TestFunctionRequest} from '../main/main.service';
 
 @Injectable({providedIn: "root"})
 export class ApplicationsService {
-  currentApplication!: Application;
   currentFunction!: Function;
   currentEndpoint!: Endpoint;
-
 
   constructor(private http: HttpClient) {
   }
 
-  getApps(): Observable<Application[]> {
+  loadApplications(): Observable<Application[]> {
     return this.http.get<Application[]>("/api/applications");
   }
 
-  createApp(clientAppName: string): Observable<void> {
+  createApplication(clientAppName: string): Observable<void> {
     return this.http.post<void>("/api/applications", {clientAppName: clientAppName});
   }
 
@@ -74,22 +44,19 @@ export class ApplicationsService {
     return this.http.delete<void>(`/api/applications/${clientAppName}/endpoints/${endpointUrl}`);
   }
 
-  getApp(clientAppName: string): Observable<Application> {
+  loadApplication(clientAppName: string): Observable<Application> {
     return this.http.get<Application>(`/api/applications/${clientAppName}`).pipe(
-      tap(app => this.currentApplication = app)
     );
   }
 
-  getFunction(clientAppName: string, functionName: string): Observable<Function> {
+  loadFunction(clientAppName: string, functionName: string): Observable<Function> {
     return this.http.get<Function>(`/api/applications/${clientAppName}/functions/${functionName}`).pipe(
       tap(func => this.currentFunction = func)
     );
   }
 
-  getEndpoint(clientAppName: string, endpointUrl: string): Observable<Endpoint> {
-    return this.http.get<Endpoint>(`/api/applications/${clientAppName}/endpoints/${endpointUrl}`).pipe(
-      tap(endpoint => this.currentEndpoint = endpoint)
-    );
+  loadEndpoint(clientAppName: string, endpointUrl: string): Observable<Endpoint> {
+    return this.http.get<Endpoint>(`/api/applications/${clientAppName}/endpoints/${endpointUrl}`);
   }
 
   testFunction(request: TestFunctionRequest): Observable<void> {

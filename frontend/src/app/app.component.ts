@@ -1,8 +1,11 @@
-import {ChangeDetectionStrategy, Component, OnInit} from '@angular/core';
+import {ChangeDetectionStrategy, Component} from '@angular/core';
 import {Observable} from 'rxjs';
-import {AuthService} from './auth/auth.service';
-import {AuthenticateOption} from './login/login.component';
 import {SidebarService} from './dashboard/sidebar/sidebar.service';
+import {select, Store} from '@ngrx/store';
+import {isLoggedIn, isLoggedOut} from './store/user/user.selectors';
+import {AppState} from './store/app.reducers';
+import {Router} from '@angular/router';
+import {UserActions} from './store/user';
 
 @Component({
   selector: 'app-root',
@@ -20,7 +23,7 @@ import {SidebarService} from './dashboard/sidebar/sidebar.service';
       </nav>
     </header>
     <ng-container *ngIf="isLoggedOut$ | async">
-      <login [authenticateOption]="authenticateOption"></login>
+      <router-outlet></router-outlet>
     </ng-container>
     <ng-container *ngIf="isLoggedIn$ | async">
       <dashboard>
@@ -31,31 +34,32 @@ import {SidebarService} from './dashboard/sidebar/sidebar.service';
   styleUrls: ['./app.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class AppComponent implements OnInit {
+export class AppComponent {
 
-  authenticateOption: AuthenticateOption = AuthenticateOption.LOG_IN;
+  // TODO spinner on router navigate
 
-  isLoggedIn$: Observable<boolean> | undefined;
-  isLoggedOut$: Observable<boolean> | undefined;
+  isLoggedIn$: Observable<boolean>;
+  isLoggedOut$: Observable<boolean>;
 
-  constructor(private authService: AuthService, private  sidebarService: SidebarService) {
-  }
-
-  ngOnInit(): void {
-    this.isLoggedIn$ = this.authService.isLoggedIn$;
-    this.isLoggedOut$ = this.authService.isLoggedOut$;
+  constructor(private  sidebarService: SidebarService, private store: Store<AppState>, private router: Router) {
+    this.store.dispatch(UserActions.fetchUserStart());
+    this.isLoggedIn$ = this.store.pipe(
+      select(isLoggedIn)
+    );
+    this.isLoggedOut$ =  this.store.pipe(
+      select(isLoggedOut)
+    );
   }
 
   onLogInClicked(): void {
-    this.authenticateOption = AuthenticateOption.LOG_IN;
+    this.router.navigate([`/login`]);
   }
 
   onSignUpClicked(): void {
-    this.authenticateOption = AuthenticateOption.SIGN_UP;
+    this.router.navigate([`/signup`]);
   }
 
   onLogOutClicked(): void {
-    this.authenticateOption = AuthenticateOption.LOG_IN;
-    this.authService.logout().subscribe();
+    this.store.dispatch(UserActions.logoutStart());
   }
 }

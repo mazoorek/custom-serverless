@@ -1,9 +1,19 @@
-import {ChangeDetectorRef, Component} from '@angular/core';
-import {Application, ApplicationsService} from './applications.service';
+import {ChangeDetectorRef, Component, OnInit} from '@angular/core';
+import {ApplicationsService} from './applications.service';
 import {Router} from '@angular/router';
 import {FormBuilder, FormGroup, Validators} from '@angular/forms';
 import {MatDialog} from '@angular/material/dialog';
 import {DeletePopupComponent} from '../popup/delete-popup.component';
+import {AppState} from '../store/app.reducers';
+import { Store } from '@ngrx/store';
+import {selectApplications} from '../store/applications/applications.selectors';
+import {ApplicationsActions} from '../store/applications';
+import {
+  deleteApplication, moveToApplication,
+  startApplication,
+  stopApplication
+} from '../store/applications/applications.actions';
+import {Application} from '../store/applications/applications.model';
 
 @Component({
   selector: 'applications',
@@ -61,7 +71,7 @@ import {DeletePopupComponent} from '../popup/delete-popup.component';
   `,
   styleUrls: ['./applications.component.scss']
 })
-export class ApplicationsComponent {
+export class ApplicationsComponent  implements  OnInit {
 
   displayedColumns: string[] = ['name', 'up', 'changeState', 'delete'];
   dataSource: Application[] = [];
@@ -72,42 +82,33 @@ export class ApplicationsComponent {
               private changeDetection: ChangeDetectorRef,
               private router: Router,
               private fb: FormBuilder,
+              private store: Store<AppState>,
               private dialog: MatDialog) {
-    this.applicationsService.getApps().subscribe(apps => {
-      this.dataSource = apps;
-      this.changeDetection.markForCheck();
-    });
     // TODO validation and blocking create button
     this.applicationForm = fb.group({
       name: ['', Validators.compose([Validators.required, Validators.maxLength(255)])]
     });
   }
 
-  createApp(): void {
-    let appName = this.applicationForm.value.name;
-    this.applicationsService.createApp(appName).subscribe(_ => {
-      this.router.navigate(['applications', appName, 'overview']);
+  ngOnInit(): void {
+    this.store.select(selectApplications).subscribe(apps => {
+      this.dataSource = apps;
+      this.changeDetection.detectChanges();
     });
+  }
+
+  createApp(): void {
+    this.store.dispatch(ApplicationsActions.createApplication({appName: this.applicationForm.value.name}));
   }
 
   startApp(appName: string, event: Event): void {
     event.stopPropagation();
-    this.applicationsService.startApp(appName).subscribe(() => {
-      this.applicationsService.getApps().subscribe(apps => {
-        this.dataSource = apps;
-        this.changeDetection.markForCheck();
-      });
-    });
+    this.store.dispatch(startApplication({appName}));
   }
 
   stopApp(appName: string, event: Event): void {
     event.stopPropagation();
-    this.applicationsService.stopApp(appName).subscribe(() => {
-      this.applicationsService.getApps().subscribe(apps => {
-        this.dataSource = apps;
-        this.changeDetection.markForCheck();
-      });
-    });
+    this.store.dispatch(stopApplication({appName}));
   }
 
   deleteApp(appName: string, event: Event): void {
@@ -118,20 +119,13 @@ export class ApplicationsComponent {
       },
     }).afterClosed().subscribe(deleted => {
         if (deleted) {
-          this.applicationsService.deleteApp(appName).subscribe(() => {
-            this.applicationsService.getApps().subscribe(apps => {
-              this.dataSource = apps;
-              this.changeDetection.markForCheck();
-            });
-          })
+          this.store.dispatch(deleteApplication({appName}));
         }
       }
     );
   }
 
   showApp(appName: string): void {
-    this.applicationsService.getApp(appName).subscribe(() => {
-      this.router.navigate(['applications', appName, 'overview']);
-    });
+    this.store.dispatch(moveToApplication({appName}));
   }
 }

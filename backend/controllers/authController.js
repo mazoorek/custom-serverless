@@ -40,7 +40,6 @@ exports.login = asyncHandler(async (req, res) => {
         return res.status(401).json({message: "Incorrect email or password"});
     }
     await authService.sendJwt(user, 200, res);
-
 });
 
 exports.logout = (req, res) => {

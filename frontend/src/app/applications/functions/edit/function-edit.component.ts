@@ -1,9 +1,15 @@
-import {ChangeDetectionStrategy, ChangeDetectorRef, Component} from '@angular/core';
+import {ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit} from '@angular/core';
 import {TestFunctionRequest} from '../../../main/main.service';
 import {WebsocketService} from '../../../main/websocket.service';
 import {editor, MarkerSeverity} from 'monaco-editor';
 import {FormBuilder, FormGroup, Validators} from '@angular/forms';
-import {Application, ApplicationsService, Function} from '../../applications.service';
+import {ApplicationsService} from '../../applications.service';
+import {selectApplicationName, selectFunction} from '../../../store/applications/applications.selectors';
+import {select, Store} from '@ngrx/store';
+import {AppState} from '../../../store/app.reducers';
+import {Function} from '../../../store/applications/applications.model';
+import {filter} from 'rxjs';
+import {updateFunction} from '../../../store/applications/applications.actions';
 import IStandaloneCodeEditor = editor.IStandaloneCodeEditor;
 
 @Component({
@@ -84,17 +90,15 @@ import IStandaloneCodeEditor = editor.IStandaloneCodeEditor;
   styleUrls: ['./function-edit.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class FunctionEditComponent {
+export class FunctionEditComponent implements OnInit {
 
   contentEditorOptions = {theme: 'vs-dark', language: 'javascript', automaticLayout: true, scrollBeyondLastLine: false};
   contentFunctionEditor!: IStandaloneCodeEditor;
-  contentCode: string;
+  contentCode: string = '';
   functionContentSyntaxErrors: string[] = [];
-
   functionMetadataForm: FormGroup;
-  currentFunction: Function;
-  application: Application;
-
+  function?: Function;
+  applicationName: string = '';
   inputEditorOptions = {theme: 'vs-dark', language: 'json', automaticLayout: true, scrollBeyondLastLine: false};
   inputCode: string = `{\n    \"args\":{},\n    \"cache\":{},\n    \"edgeResults\":{}\n}`;
   inputEditor!: IStandaloneCodeEditor;
@@ -107,34 +111,46 @@ export class FunctionEditComponent {
   constructor(private applicationsService: ApplicationsService,
               private websocketService: WebsocketService,
               private changeDetection: ChangeDetectorRef,
+              private store: Store<AppState>,
               private fb: FormBuilder) {
-    this.currentFunction = this.applicationsService.currentFunction;
-    this.application = this.applicationsService.currentApplication;
-    this.contentCode = this.currentFunction.content;
     this.functionMetadataForm = fb.group({
-      name: [this.currentFunction.name, Validators.compose([Validators.required, Validators.maxLength(255)])],
-      idempotent: [this.currentFunction.idempotent, Validators.compose([Validators.required, Validators.maxLength(255)])]
+      name: ['', Validators.compose([Validators.required, Validators.maxLength(255)])],
+      idempotent: [false, Validators.compose([Validators.required, Validators.maxLength(255)])]
     });
   }
 
+  ngOnInit(): void {
+    this.store.pipe(
+      select(selectFunction),
+      filter(func => !!func)
+    ).subscribe(func => {
+      this.function = func;
+      this.contentCode = func!.content;
+      this.functionMetadataForm.controls['name'].patchValue(func?.name);
+      this.functionMetadataForm.controls['idempotent'].patchValue(func?.idempotent);
+      this.changeDetection.detectChanges();
+    });
+    this.store.select(selectApplicationName).subscribe(appName => this.applicationName = appName!);
+  }
+
   editFunctionMetadata(): void {
-    this.applicationsService.editFunction(this.application.name, this.currentFunction.name, this.functionMetadataForm.value)
-      .subscribe(() => {
-        this.applicationsService.getFunction(this.application.name, this.functionMetadataForm.value.name)
-          .subscribe(() => {
-            this.currentFunction = this.applicationsService.currentFunction;
-          });
-      });
+    this.store.dispatch(updateFunction({
+      appName: this.applicationName,
+      functionName: this.function!.name,
+      function: this.functionMetadataForm.value
+    }));
   }
 
   editFunctionContent(): void {
-    this.applicationsService.editFunction(this.application.name, this.currentFunction.name, {content: this.contentCode} as Function)
-      .subscribe(() => {
-        this.applicationsService.getFunction(this.application.name, this.currentFunction.name)
-          .subscribe(() => {
-            this.currentFunction = this.applicationsService.currentFunction;
-          });
-      });
+    if(this.functionContentSyntaxErrors.length === 0) {
+      this.store.dispatch(updateFunction(
+        {
+          appName: this.applicationName,
+          functionName: this.function!.name,
+          function: {content: this.contentCode, name: this.function!.name} as Function
+        }
+      ));
+    }
   }
 
   onContentFunctionEditorInit(testFunctionEditor: IStandaloneCodeEditor): void {
@@ -187,15 +203,15 @@ export class FunctionEditComponent {
 
       let request: TestFunctionRequest = {
         code: this.contentCode,
-        clientAppName: this.application.name,
+        clientAppName: this.applicationName,
         ...JSON.parse(this.inputCode)
       };
-      this.applicationsService.getRuntime(this.application.name).subscribe(response => {
+      this.applicationsService.getRuntime(this.applicationName).subscribe(response => {
         if (!response.runtimeReady) {
           this.websocketService.connect();
           this.websocketService.onOpen$.subscribe(_ => {
             console.log("ws connection opened");
-            this.websocketService.sendMessage(this.application.name);
+            this.websocketService.sendMessage(this.applicationName);
             this.websocketService.onMessage$.subscribe((message: Event) => {
               console.log("received message: " + (message as MessageEvent).data);
               if ((message as MessageEvent).data === 'ready') {
@@ -216,7 +232,6 @@ export class FunctionEditComponent {
         } else {
           this.applicationsService.testFunction(request).subscribe(response => {
             this.result = JSON.stringify(response, null, 2);
-            console.log(this.result);
             this.resultError = '';
             this.changeDetection.detectChanges();
           }, error => {

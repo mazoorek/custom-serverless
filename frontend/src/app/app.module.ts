@@ -27,6 +27,21 @@ import {MatCardModule} from '@angular/material/card';
 import {FunctionsComponent} from './applications/functions/functions.component';
 import {MatCheckboxModule} from '@angular/material/checkbox';
 import {EndpointEditComponent} from './applications/endpoints/edit/endpoint-edit.component';
+import { StoreModule } from '@ngrx/store';
+import { StoreDevtoolsModule } from '@ngrx/store-devtools';
+import { environment } from '../environments/environment';
+import {reducers} from './store/app.reducers';
+import {LoggedInGuard} from './login/logged-in.guard.service';
+import {LoggedOutGuard} from './login/logged-out.guard.service';
+import { EffectsModule } from '@ngrx/effects';
+import {UserEffects} from './store/user/user.effects';
+import {ApplicationsResolver} from './applications/applications.resolver';
+import {ApplicationsEffects} from './store/applications/applications.effects';
+import {ApplicationResolver} from './applications/application.resolver';
+import {EndpointResolver} from './applications/endpoints/endpoint.resolver';
+import {FunctionResolver} from './applications/functions/function.resolver';
+
+
 
 @NgModule({
   declarations: [
@@ -59,9 +74,12 @@ import {EndpointEditComponent} from './applications/endpoints/edit/endpoint-edit
         MatPaginatorModule,
         MatDialogModule,
         MatCardModule,
-        MatCheckboxModule
+        MatCheckboxModule,
+        StoreModule.forRoot(reducers),
+        StoreDevtoolsModule.instrument({ maxAge: 25, logOnly: environment.production }),
+      EffectsModule.forRoot([UserEffects, ApplicationsEffects])
     ],
-  providers: [],
+  providers: [LoggedInGuard, LoggedOutGuard, ApplicationsResolver, ApplicationResolver, EndpointResolver, FunctionResolver],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
