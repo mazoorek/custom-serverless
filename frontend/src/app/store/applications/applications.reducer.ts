@@ -196,10 +196,16 @@ export const applicationsReducer = createReducer<ApplicationsState, Action>(
   on(ApplicationsActions.updateFunctionSuccess, (state, action) => {
       let functions = [...state.selectedApplication!.functions];
       let updatedFunctionIndex = functions.findIndex((func => func.name === action.oldFunctionName));
-      functions[updatedFunctionIndex] = action.function;
+      functions[updatedFunctionIndex] = {
+        ...functions[updatedFunctionIndex]
+        ,...action.function
+      };
       return {
         ...state,
-        selectedFunction: action.function,
+        selectedFunction: {
+          ...state.selectedFunction,
+          ...action.function
+        },
         selectedApplication: {
           ...state.selectedApplication,
           functions

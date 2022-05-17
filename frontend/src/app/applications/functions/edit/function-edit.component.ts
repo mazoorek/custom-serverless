@@ -142,13 +142,15 @@ export class FunctionEditComponent implements OnInit {
   }
 
   editFunctionContent(): void {
-    this.store.dispatch(updateFunction(
-      {
-        appName: this.applicationName,
-        functionName: this.function!.name,
-        function: {content: this.contentCode, name: this.function!.name} as Function
-      }
-    ));
+    if(this.functionContentSyntaxErrors.length === 0) {
+      this.store.dispatch(updateFunction(
+        {
+          appName: this.applicationName,
+          functionName: this.function!.name,
+          function: {content: this.contentCode, name: this.function!.name} as Function
+        }
+      ));
+    }
   }
 
   onContentFunctionEditorInit(testFunctionEditor: IStandaloneCodeEditor): void {
