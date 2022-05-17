@@ -1,9 +1,11 @@
-import {ChangeDetectionStrategy, Component, Input, OnInit} from '@angular/core';
+import {ChangeDetectionStrategy, Component, OnInit} from '@angular/core';
 import {FormBuilder, FormGroup, Validators} from '@angular/forms';
 import {ActivatedRoute, Router} from '@angular/router';
 import {Store} from '@ngrx/store';
 import {AppState} from '../store/app.reducers';
 import {loginStart, signupStart} from '../store/user/user.actions';
+import {MatDialog} from '@angular/material/dialog';
+import {ForgotPasswordPopupComponent} from '../popup/forgot-password-popup.component';
 
 export enum AuthenticateOption {
   SIGN_UP = 'SIGN_UP',
@@ -37,7 +39,10 @@ export enum AuthenticateOption {
                  minlength="8"/>
         </div>
         <div class="form__group" *ngIf="authenticateOption === AuthenticateOption.LOG_IN">
-          <button class="btn btn--green" (click)="logIn()">Log in</button>
+          <div class="buttons-container">
+            <button class="btn btn--green" (click)="logIn()">Log in</button>
+            <button class="btn btn--white" (click)="sendResetPasswordEmail()">Forgot password</button>
+          </div>
         </div>
         <div class="form__group" *ngIf="authenticateOption === AuthenticateOption.SIGN_UP">
           <button class="btn btn--green" (click)="signUp()">Sign up</button>
@@ -48,14 +53,16 @@ export enum AuthenticateOption {
   styleUrls: ['login.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class LoginComponent implements OnInit {
+export class LoginComponent {
 
   readonly AuthenticateOption: typeof AuthenticateOption = AuthenticateOption;
   authenticateOption!: AuthenticateOption;
   loginForm: FormGroup;
 
-  constructor(private fb: FormBuilder, private route: ActivatedRoute,
+  constructor(private fb: FormBuilder,
+              private route: ActivatedRoute,
               private router: Router,
+              private dialog: MatDialog,
               private store: Store<AppState>) {
     // TODO validations
     this.loginForm = fb.group({
@@ -67,14 +74,15 @@ export class LoginComponent implements OnInit {
   }
 
 
-  ngOnInit(): void {
-  }
-
   logIn(): void {
     this.store.dispatch(loginStart({request: this.loginForm.value}));
   }
 
   signUp(): void {
     this.store.dispatch(signupStart({request: this.loginForm.value}));
+  }
+
+  sendResetPasswordEmail(): void {
+    this.dialog.open(ForgotPasswordPopupComponent, {});
   }
 }

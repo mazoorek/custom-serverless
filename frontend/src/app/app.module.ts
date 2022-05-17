@@ -40,6 +40,8 @@ import {ApplicationsEffects} from './store/applications/applications.effects';
 import {ApplicationResolver} from './applications/application.resolver';
 import {EndpointResolver} from './applications/endpoints/endpoint.resolver';
 import {FunctionResolver} from './applications/functions/function.resolver';
+import {ForgotPasswordPopupComponent} from './popup/forgot-password-popup.component';
+import {PasswordResetComponent} from './user/password-reset/password-reset.component';
 
 
 
@@ -48,6 +50,7 @@ import {FunctionResolver} from './applications/functions/function.resolver';
     AppComponent,
     DashboardComponent,
     LoginComponent,
+    PasswordResetComponent,
     ApplicationsComponent,
     SettingsComponent,
     OverviewComponent,
@@ -55,6 +58,7 @@ import {FunctionResolver} from './applications/functions/function.resolver';
     EndpointsComponent,
     FunctionEditComponent,
     DeletePopupComponent,
+    ForgotPasswordPopupComponent,
     FunctionsComponent,
     EndpointEditComponent
   ],

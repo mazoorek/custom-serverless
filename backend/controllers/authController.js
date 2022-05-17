@@ -3,6 +3,7 @@ const User = require('./../models/userModel');
 const Email = require('../models/email/email');
 const asyncHandler = require('../utils/asyncHandler');
 const authService = require('../services/authService');
+const {CUSTOM_SERVERLESS_RUNTIME} = require("../models/cluster/namespaces");
 
 exports.signup = asyncHandler(async (req, res) => {
     const newUser = await User.create({
@@ -75,8 +76,9 @@ exports.forgotPassword = asyncHandler(async (req, res) => {
     await user.save({validateBeforeSave: false});
 
     try {
-        // TODO modify this url and do email on frontend
-        const resetURL = `http://${req.get('host')}/api/user/password/reset/${resetToken}`;
+        const resetURL = process.env.ENVIRONMENT === 'production'
+            ? `http://${req.get('host')}/user/password/reset/${resetToken}`
+            : `http://localhost:4200/user/password/reset/${resetToken}`;
         await new Email(user, resetURL).sendPasswordReset();
 
         return res.status(200).json({

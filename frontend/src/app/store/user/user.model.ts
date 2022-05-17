@@ -22,12 +22,17 @@ export interface ChangePasswordRequest {
   newPasswordConfirm: string;
 }
 
+export interface ResetPasswordRequest {
+  password: string;
+  passwordConfirm: string;
+}
+
 export interface ChangeEmailRequest {
   email: string;
   password: string;
 }
 
-export interface UserDataChangeResult {
+export interface ResponseResult {
   success: boolean;
   message: string;
 }
