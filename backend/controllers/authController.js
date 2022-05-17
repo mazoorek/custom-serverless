@@ -113,16 +113,30 @@ exports.resetPassword = asyncHandler(async (req, res) => {
     await authService.sendJwt(user, 200, res);
 });
 
-exports.updatePassword = async (req, res) => {
+exports.updatePassword = asyncHandler(async (req, res) => {
     const user = await User.findById(req.user.id).select('+password');
 
-    if (!(await user.correctPassword(req.body.passwordCurrent, user.password))) {
+    if (!(await user.correctPassword(req.body.oldPassword, user.password))) {
         return res.status(401).json({message: "Your current password is wrong."});
     }
 
-    user.password = req.body.password;
-    user.passwordConfirm = req.body.passwordConfirm;
+    user.password = req.body.newPassword;
+    user.passwordConfirm = req.body.newPasswordConfirm;
     await user.save();
 
     await authService.sendJwt(user, 200, res);
-};
+});
+
+exports.updateEmail = asyncHandler(async (req, res) => {
+    const user = await User.findById(req.user.id).select('+password');
+
+    if (!(await user.correctPassword(req.body.password, user.password))) {
+        return res.status(401).json({message: "Your current password is wrong."});
+    }
+
+    user.email = req.body.email;
+    user.passwordConfirm = user.password;
+    await user.save();
+
+    await authService.sendJwt(user, 200, res);
+});

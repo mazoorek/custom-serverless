@@ -51,3 +51,8 @@ export const userFetchFinished = createAction(
   "[userFetch effect] User Fetch finished",
   props<{user?: User}>()
 );
+
+export const emailChange = createAction(
+  "[Settings Screen] Email change",
+  props<{newEmail: string}>()
+);

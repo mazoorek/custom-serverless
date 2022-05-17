@@ -65,5 +65,11 @@ export const userReducer = createReducer<UserState, Action>(
       email: undefined,
       loading: false
     }
+  }),
+  on(UserActions.emailChange, (state: UserState, action) => {
+    return {
+      ...state,
+      email: action.newEmail
+    }
   })
 );

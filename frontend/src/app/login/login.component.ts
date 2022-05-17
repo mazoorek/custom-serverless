@@ -52,7 +52,6 @@ export class LoginComponent implements OnInit {
 
   readonly AuthenticateOption: typeof AuthenticateOption = AuthenticateOption;
   authenticateOption!: AuthenticateOption;
-
   loginForm: FormGroup;
 
   constructor(private fb: FormBuilder, private route: ActivatedRoute,
