@@ -4,33 +4,33 @@ import {UserActions} from './index';
 import {catchError, map, of, switchMap, tap} from 'rxjs';
 import {Store} from '@ngrx/store';
 import {AppState} from '../app.reducers';
-import {HttpClient} from '@angular/common/http';
 import {Router} from '@angular/router';
-import {User} from './user.model';
+import {UserService} from '../../user/user.service';
 
 @Injectable()
 export class UserEffects {
 
-  constructor(private action$: Actions, private store: Store<AppState>, private http: HttpClient, private router: Router) {
+  constructor(private action$: Actions, private store: Store<AppState>, private userService: UserService,
+              private router: Router) {
   }
 
   fetchUser$ = createEffect(() =>
     this.action$.pipe(
       ofType(UserActions.fetchUserStart),
-      switchMap((action) => {
-        return this.http.get<User>('/api/user')
+      switchMap((action) =>
+        this.userService.fetchUserData()
           .pipe(
             map(user => UserActions.userFetchFinished({user})),
             catchError(error => of(UserActions.userFetchFinished({user: undefined})))
           )
-      })
+      )
     ));
 
   login$ = createEffect(() =>
     this.action$.pipe(
       ofType(UserActions.loginStart),
       switchMap((action) =>
-        this.http.post<User>("/api/user/login", action.request)
+        this.userService.login(action.request)
           .pipe(
             map(user => UserActions.loginSuccess({user})),
             tap(() => this.router.navigate([`/applications`])),
@@ -45,7 +45,7 @@ export class UserEffects {
     this.action$.pipe(
       ofType(UserActions.signupStart),
       switchMap((action) =>
-        this.http.post<User>("/api/user/signup", action.request)
+        this.userService.signup(action.request)
           .pipe(
             map(user => UserActions.signupSuccess({user})),
             tap(() => this.router.navigate([`/applications`])),
@@ -60,7 +60,7 @@ export class UserEffects {
     this.action$.pipe(
       ofType(UserActions.logoutStart),
       switchMap((action) =>
-        this.http.post<void>("/api/user/logout", {})
+        this.userService.logout()
           .pipe(
             map(() => UserActions.logoutSuccess()),
             tap(() => this.router.navigate([`/login`])),

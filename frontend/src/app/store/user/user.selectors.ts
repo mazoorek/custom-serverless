@@ -6,6 +6,11 @@ export const isLoggedIn = createSelector(
   user => !!user.id
 );
 
+export const selectUserEmail = createSelector(
+  (state: AppState) => state.user,
+  user => user.email
+);
+
 export const userDataFetched = createSelector(
   (state: AppState) => state.user,
   user => user.userDataFetched
