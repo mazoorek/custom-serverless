@@ -1,7 +1,13 @@
 import {Injectable} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
 import {Observable} from 'rxjs';
-import {ChangeEmailRequest, ChangePasswordRequest, LoginRequest, User} from '../store/user/user.model';
+import {
+  ChangeEmailRequest,
+  ChangePasswordRequest,
+  LoginRequest,
+  ResetPasswordRequest,
+  User
+} from '../store/user/user.model';
 
 @Injectable({providedIn: "root"})
 export class UserService {
@@ -31,5 +37,13 @@ export class UserService {
 
   changeEmail(request: ChangeEmailRequest): Observable<void> {
     return this.http.put<void>("/api/user/email", request);
+  }
+
+  sendResetPasswordEmail(email: string): Observable<void> {
+    return this.http.post<void>("/api/user/password/forgot", {email});
+  }
+
+  resetPassword(request: ResetPasswordRequest, token: string): Observable<User> {
+    return this.http.patch<User>(`/api/user/password/reset/${token}`, request);
   }
 }

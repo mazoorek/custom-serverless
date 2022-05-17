@@ -4,7 +4,7 @@ import {select, Store} from '@ngrx/store';
 import {AppState} from '../store/app.reducers';
 import {selectUserEmail} from '../store/user/user.selectors';
 import {UserService} from '../user/user.service';
-import {UserDataChangeResult} from '../store/user/user.model';
+import {ResponseResult} from '../store/user/user.model';
 import {emailChange} from '../store/user/user.actions';
 
 @Component({
@@ -71,8 +71,8 @@ import {emailChange} from '../store/user/user.actions';
 export class SettingsComponent implements OnInit {
   emailForm: FormGroup;
   passwordForm: FormGroup;
-  changeEmailResult?: UserDataChangeResult;
-  changePasswordResult?: UserDataChangeResult;
+  changeEmailResult?: ResponseResult;
+  changePasswordResult?: ResponseResult;
 
   constructor(private fb: FormBuilder,
               private changeDetection: ChangeDetectorRef,

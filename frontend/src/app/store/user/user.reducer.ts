@@ -26,6 +26,13 @@ export const userReducer = createReducer<UserState, Action>(
       loading: false
     }
   }),
+  on(UserActions.userPasswordReset, (state: UserState, action) => {
+    return {
+      ...state,
+      ...action.user,
+      loading: false
+    }
+  }),
   on(UserActions.userFetchFinished, (state: UserState, action) => {
     return {
       ...state,

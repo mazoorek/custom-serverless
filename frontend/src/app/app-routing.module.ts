@@ -15,10 +15,12 @@ import {ApplicationsResolver} from './applications/applications.resolver';
 import {ApplicationResolver} from './applications/application.resolver';
 import {EndpointResolver} from './applications/endpoints/endpoint.resolver';
 import {FunctionResolver} from './applications/functions/function.resolver';
+import {PasswordResetComponent} from './user/password-reset/password-reset.component';
 
 // TODO 404 page
 const routes: Routes = [
   {path: '', redirectTo: 'applications', pathMatch: 'full'},
+  {path: 'user/password/reset/:resetToken', component: PasswordResetComponent, canActivate: [LoggedOutGuard]},
   {path: 'login', component: LoginComponent, canActivate: [LoggedOutGuard], data: {option: AuthenticateOption.LOG_IN}},
   {
     path: 'signup',

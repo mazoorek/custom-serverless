@@ -53,6 +53,11 @@ export const userFetchFinished = createAction(
 );
 
 export const emailChange = createAction(
-  "[Settings Screen] Email change",
+  "[Settings View] Email change",
   props<{newEmail: string}>()
+);
+
+export const userPasswordReset = createAction(
+  "[Password View] Email change",
+  props<{user: User}>()
 );
