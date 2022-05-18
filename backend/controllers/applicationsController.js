@@ -99,8 +99,10 @@ exports.createApp = asyncHandler(async (req, res) => {
 
 exports.deleteApp = asyncHandler(async (req, res) => {
     const appName = req.params.clientAppName;
-    // TODO stop if running
-    // await stopApp(appName);
+    const runningApps = await clusterService.listNamespacedService(CUSTOM_SERVERLESS_APPS);
+    if (runningApps.body.items.find(item => item.metadata.name === appName )) {
+        await stopApp(appName);
+    }
     await Application.deleteOne({
         name: appName,
         user: req.user.id
@@ -161,8 +163,6 @@ exports.editFunction = asyncHandler(async (req, res) => {
         resultFunction.idempotent = req.body.idempotent;
     }
     if (req.body.content) {
-        // TODO checking content structure regex
-        // TODO checking require
         resultFunction.content = req.body.content;
     }
     const resultFunctionIndex = functions.findIndex(func => func.name === functionName);
@@ -296,7 +296,10 @@ exports.createEndpoint = asyncHandler(async (req, res) => {
     if (!application) {
         return res.status(404).json({message: "There is no application with this name"});
     }
-    // TODO validation if function with this funciton name exists
+    const appFunction = application.functions.toObject().find(func => func.name === req.body.functionName);
+    if (!appFunction) {
+        return res.status(404).json({message: "There is no function with this name"});
+    }
     application.endpoints.push({
         url: req.body.url,
         functionName: req.body.functionName
