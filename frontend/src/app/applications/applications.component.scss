@@ -1,3 +1,10 @@
 .form--application {
   padding-top: 80px;
 }
+
+.outdated {
+  display: flex;
+  flex-flow: column;
+  align-items: center;
+  color: red;
+}

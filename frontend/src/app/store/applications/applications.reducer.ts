@@ -2,7 +2,6 @@ import {Application, ApplicationsState} from './applications.model';
 import {Action, createReducer, on} from '@ngrx/store';
 import {createEntityAdapter} from '@ngrx/entity';
 import {ApplicationsActions} from './index';
-import {selectApplication} from './applications.selectors';
 
 
 export const adapter = createEntityAdapter<Application>({

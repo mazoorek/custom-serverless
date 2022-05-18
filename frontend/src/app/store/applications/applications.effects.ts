@@ -117,6 +117,7 @@ export class ApplicationsEffects {
                 }
               )
             ),
+            tap(() => this.store.dispatch(ApplicationsActions.reloadApplications())),
             catchError(error => of(ApplicationsActions.stopApplicationFailed({message: 'failed to stop application'}))
             ),
           )
@@ -210,6 +211,7 @@ export class ApplicationsEffects {
               )
             ),
             tap(() => this.router.navigate(['applications', action.appName, 'overview'])),
+            tap(() => this.store.dispatch(ApplicationsActions.reloadApplications())),
             catchError(error => of(ApplicationsActions.editSelectedApplicationNameFailed({message: 'failed to edit application name'}))
             ),
           )
@@ -239,6 +241,7 @@ export class ApplicationsEffects {
         this.applicationsService.saveDependencies(action.appName, action.packageJson)
           .pipe(
             map((response) => ApplicationsActions.saveDependenciesSuccessResponse({validationResult: response})),
+            tap(() => this.store.dispatch(ApplicationsActions.reloadApplications())),
             catchError(error => of(ApplicationsActions.saveDependenciesFailedResponse({
                 validationResult: {
                   valid: false,
@@ -272,6 +275,7 @@ export class ApplicationsEffects {
         this.applicationsService.deleteEndpoint(action.appName, action.endpointUrl)
           .pipe(
             map(() => ApplicationsActions.deleteEndpointSuccess({endpointUrl: action.endpointUrl})),
+            tap(() => this.store.dispatch(ApplicationsActions.reloadApplications())),
             catchError(error => of(ApplicationsActions.deleteEndpointFailed({message: 'failed to delete endpoint'}))
             ),
           )
@@ -302,6 +306,7 @@ export class ApplicationsEffects {
           .pipe(
             map(() => ApplicationsActions.loadNewEndpoint({endpoint: action.endpoint})),
             tap(() => this.router.navigate(['applications', action.appName, 'endpoints', action.endpoint.url, 'edit'])),
+            tap(() => this.store.dispatch(ApplicationsActions.reloadApplications())),
             catchError(error => of(ApplicationsActions.createEndpointFailed({message: 'failed to create endpoint'}))
             ),
           )
@@ -324,6 +329,7 @@ export class ApplicationsEffects {
                 this.router.navigate(['applications', action.appName, 'endpoints', action.endpoint.url, 'edit'])
               }
             }),
+            tap(() => this.store.dispatch(ApplicationsActions.reloadApplications())),
             catchError(error => of(ApplicationsActions.updateEndpointFailed({message: 'failed to update endpoint'}))
             ),
           )
@@ -367,6 +373,7 @@ export class ApplicationsEffects {
         this.applicationsService.createFunction(action.appName, action.functionName)
           .pipe(
             map(() => ApplicationsActions.loadNewFunction({appName: action.appName, functionName: action.functionName})),
+            tap(() => this.store.dispatch(ApplicationsActions.reloadApplications())),
             catchError(error => of(ApplicationsActions.createFunctionFailed({message: 'failed to create function'}))
             ),
           )
@@ -396,6 +403,7 @@ export class ApplicationsEffects {
         this.applicationsService.deleteFunction(action.appName, action.functionName)
           .pipe(
             map(() => ApplicationsActions.deleteFunctionSuccess({functionName: action.functionName})),
+            tap(() => this.store.dispatch(ApplicationsActions.reloadApplications())),
             catchError(error => of(ApplicationsActions.deleteFunctionFailed({message: 'failed to delete function'}))
             ),
           )
@@ -418,6 +426,7 @@ export class ApplicationsEffects {
                 this.router.navigate(['applications', action.appName, 'functions', action.function.name, 'edit'])
               }
             }),
+            tap(() => this.store.dispatch(ApplicationsActions.reloadApplications())),
             catchError(error => of(ApplicationsActions.updateFunctionFailed({message: 'failed to update function'}))
             ),
           )

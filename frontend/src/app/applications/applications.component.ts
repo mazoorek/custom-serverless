@@ -32,6 +32,15 @@ import {Application} from '../store/applications/applications.model';
           <span>{{!!application.up ? 'RUNNING' : 'STOPPED'}}</span>
         </mat-cell>
       </ng-container>
+      <ng-container matColumnDef="outdated">
+        <mat-header-cell *matHeaderCellDef></mat-header-cell>
+        <mat-cell *matCellDef="let application" class="outdated">
+          <div *ngIf="application.outdated">
+            <div class="outdated">OUTDATED</div>
+            <div>RESTART NEEDED</div>
+          </div>
+        </mat-cell>
+      </ng-container>
       <ng-container matColumnDef="changeState">
         <mat-header-cell *matHeaderCellDef class="action-cell action-cell--change-state"></mat-header-cell>
         <mat-cell *matCellDef="let application" class="action-cell action-cell--change-state">
@@ -73,7 +82,7 @@ import {Application} from '../store/applications/applications.model';
 })
 export class ApplicationsComponent  implements  OnInit {
 
-  displayedColumns: string[] = ['name', 'up', 'changeState', 'delete'];
+  displayedColumns: string[] = ['name', 'up', 'outdated', 'changeState', 'delete'];
   dataSource: Application[] = [];
 
   applicationForm: FormGroup;

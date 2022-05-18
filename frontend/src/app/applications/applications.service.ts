@@ -1,8 +1,13 @@
 import {Injectable} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
 import {Observable, tap} from 'rxjs';
-import {Function, Application, DependenciesResponse, Endpoint} from '../store/applications/applications.model';
-import {TestFunctionRequest} from '../main/main.service';
+import {
+  Function,
+  Application,
+  DependenciesResponse,
+  Endpoint,
+  TestFunctionRequest
+} from '../store/applications/applications.model';
 
 @Injectable({providedIn: "root"})
 export class ApplicationsService {

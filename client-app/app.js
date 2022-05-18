@@ -8,7 +8,6 @@ startup().then(async () => {
     const port = 4000;
     app.use(express.json({limit: '10kb'}));
 
-    // TODO check for version of running app
     app.get('/up', (req, res) => {
         res.status(200).json({status: 'up'});
     });
