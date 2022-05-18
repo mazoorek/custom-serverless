@@ -4,6 +4,7 @@ const middleware = require("./middleware/index");
 const websockets = require("./websockets/index");
 const clusterService = require('./services/clusterService');
 const cronService = require('./services/cronService');
+const applicationsService = require('./services/applicationsService');
 
 startup().then(() => {
     const PORT = 8080;
@@ -13,7 +14,7 @@ startup().then(() => {
         console.log(`Running on port ${PORT}`);
         await clusterService.setupClusterConnection();
         cronService.scheduleRuntimeCleaner();
-        // TODO run client apps that should be in run state
+        await applicationsService.runAppsThatShouldBeUp();
     });
     websockets(server);
 }).catch( error => {
