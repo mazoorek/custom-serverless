@@ -3,9 +3,7 @@ import {fromEvent, Observable} from 'rxjs';
 import {DOCUMENT} from '@angular/common';
 import {environment} from '../../environments/environment';
 
-@Injectable({
-  providedIn: 'root'
-})
+@Injectable({providedIn: 'root'})
 export class WebsocketService {
 
   public onOpen$!: Observable<Event>;

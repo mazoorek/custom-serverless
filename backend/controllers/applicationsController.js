@@ -1,4 +1,5 @@
 const clusterService = require("../services/clusterService");
+const applicationsService = require("../services/applicationsService");
 const clientAppIngressAppRequest = require("../models/cluster/client-app/clientAppIngressRequest");
 const clientAppDeploymentRequest = require("../models/cluster/client-app/clientAppDeploymentRequest");
 const clientAppServiceRequest = require("../models/cluster/client-app/clientAppServiceRequest");
@@ -11,8 +12,21 @@ const pickManifest = require("npm-pick-manifest");
 const runtimeDeploymentRequest = require("../models/cluster/runtime/runtimeDeploymentRequest");
 
 exports.getApps = asyncHandler(async (req, res) => {
-    const applications = await Application.find({user: req.user.id}).select({"name": 1, "_id": 0, "up": 1});
-    res.status(200).json(applications);
+    const applications = await Application.find({user: req.user.id}).select({"name": 1, "_id": 0, "up": 1, "__v": 1});
+    const runningApps = await clusterService.listNamespacedService(CUSTOM_SERVERLESS_APPS);
+    result = applications.map(application => {
+        application = application.toObject();
+        if(application.up) {
+            const runningApp = runningApps.body.items.find(item => item.metadata.name === application.name );
+            if(+runningApp.metadata.labels.version < +application.__v) {
+                application.outdated = true;
+            }
+        } else {
+            application.outdated = false;
+        }
+        return application;
+    });
+    res.status(200).json(result);
 });
 
 exports.getDependencies = asyncHandler(async (req, res) => {
@@ -70,6 +84,7 @@ exports.validateAndSaveDependencies = async (req, res) => {
     }
     if (response.errors.length === 0) {
         application.packageJson = packageJson;
+        application.__v += 1;
         await application.save();
         let numberOfRunningPods = (await clusterService.listRunningPods(appName)).body.items.length;
         if (numberOfRunningPods > 0) {
@@ -101,7 +116,7 @@ exports.deleteApp = asyncHandler(async (req, res) => {
     const appName = req.params.clientAppName;
     const runningApps = await clusterService.listNamespacedService(CUSTOM_SERVERLESS_APPS);
     if (runningApps.body.items.find(item => item.metadata.name === appName )) {
-        await stopApp(appName);
+        await applicationsService.stopApp(appName);
     }
     await Application.deleteOne({
         name: appName,
@@ -180,6 +195,11 @@ exports.editAppName = asyncHandler(async (req, res) => {
     }
     application.name = req.body.newAppName;
     await application.save();
+    const runningApps = await clusterService.listNamespacedService(CUSTOM_SERVERLESS_APPS);
+    if (runningApps.body.items.find(item => item.metadata.name === appName )) {
+        await applicationsService.stopApp(appName);
+        await applicationsService.startApp(application);
+    }
     res.status(200).json();
 });
 
@@ -191,10 +211,7 @@ exports.start = asyncHandler(async (req, res) => {
     }
     application.up = true;
     await application.save();
-    await clusterService.createNamespacedService(CUSTOM_SERVERLESS_APPS, clientAppServiceRequest(appName));
-    await clusterService.createNamespacedDeployment(CUSTOM_SERVERLESS_APPS, clientAppDeploymentRequest(appName, application.packageJson));
-    // TODO add label with app version to ingress
-    await clusterService.createNamespacedIngress(CUSTOM_SERVERLESS_APPS, clientAppIngressAppRequest(appName));
+    await applicationsService.startApp(application);
     res.status(200).json({});
 });
 
@@ -206,15 +223,9 @@ exports.stop = asyncHandler(async (req, res) => {
     }
     application.up = false;
     await application.save();
-    await stopApp(appName);
+    await applicationsService.stopApp(appName);
     res.status(200).json({});
 });
-
-const stopApp = async (appName) => {
-    await clusterService.deleteNamespacedIngress(appName, CUSTOM_SERVERLESS_APPS);
-    await clusterService.deleteNamespacedService(appName, CUSTOM_SERVERLESS_APPS);
-    await clusterService.deleteNamespacedDeployment(appName, CUSTOM_SERVERLESS_APPS);
-}
 
 exports.createFunction = asyncHandler(async (req, res) => {
     const application = await Application.findOne({name: req.params.clientAppName});

@@ -1,13 +1,12 @@
 import {ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit} from '@angular/core';
-import {TestFunctionRequest} from '../../../main/main.service';
-import {WebsocketService} from '../../../main/websocket.service';
+import {WebsocketService} from '../../../websocket/websocket.service';
 import {editor, MarkerSeverity} from 'monaco-editor';
 import {FormBuilder, FormGroup, Validators} from '@angular/forms';
 import {ApplicationsService} from '../../applications.service';
 import {selectApplicationName, selectFunction} from '../../../store/applications/applications.selectors';
 import {select, Store} from '@ngrx/store';
 import {AppState} from '../../../store/app.reducers';
-import {Function} from '../../../store/applications/applications.model';
+import {Function, TestFunctionRequest} from '../../../store/applications/applications.model';
 import {filter} from 'rxjs';
 import {updateFunction} from '../../../store/applications/applications.actions';
 import IStandaloneCodeEditor = editor.IStandaloneCodeEditor;

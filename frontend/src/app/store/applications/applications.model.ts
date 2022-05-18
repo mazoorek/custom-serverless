@@ -14,6 +14,7 @@ export interface Function {
 export interface Application {
   name: string;
   up: boolean;
+  outdated: boolean;
   endpoints: Endpoint[];
   functions: Function[];
   packageJson: string;
@@ -31,4 +32,12 @@ export interface ApplicationsState extends EntityState<Application> {
 export interface DependenciesResponse {
   valid: boolean;
   errors: string[];
+}
+
+export interface TestFunctionRequest {
+  code: string;
+  args: any;
+  cache: any;
+  edgeResults: any;
+  clientAppName: string;
 }

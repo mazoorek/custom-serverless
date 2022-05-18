@@ -1,14 +1,15 @@
 const {CUSTOM_SERVERLESS_APPS} = require("../namespaces");
 
-module.exports = (appName) => {
+module.exports = (application) => {
     return {
         "apiVersion": "v1",
         "kind": "Service",
         "metadata": {
             "labels": {
-                "app": "apps"
+                "app": "apps",
+                "version": `${application.__v}`
             },
-            "name": `${appName}`,
+            "name": `${application.name}`,
             "namespace": CUSTOM_SERVERLESS_APPS
         },
         "spec": {
@@ -20,7 +21,7 @@ module.exports = (appName) => {
                 }
             ],
             "selector": {
-                "app": `${appName}`
+                "app": `${application.name}`
             }
         }
     };
