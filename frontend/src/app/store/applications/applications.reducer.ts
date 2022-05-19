@@ -97,6 +97,7 @@ export const applicationsReducer = createReducer<ApplicationsState, Action>(
         ...state,
         selectedApplication: {
           ...state.selectedApplication,
+          packageJson: action.packageJson,
           validationResult: action.validationResult
         } as Application
       }

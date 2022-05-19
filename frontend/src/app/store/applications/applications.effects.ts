@@ -240,7 +240,7 @@ export class ApplicationsEffects {
       switchMap((action) =>
         this.applicationsService.saveDependencies(action.appName, action.packageJson)
           .pipe(
-            map((response) => ApplicationsActions.saveDependenciesSuccessResponse({validationResult: response})),
+            map((response) => ApplicationsActions.saveDependenciesSuccessResponse({validationResult: response, packageJson: action.packageJson})),
             tap(() => this.store.dispatch(ApplicationsActions.reloadApplications())),
             catchError(error => of(ApplicationsActions.saveDependenciesFailedResponse({
                 validationResult: {
