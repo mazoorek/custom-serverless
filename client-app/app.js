@@ -12,7 +12,7 @@ startup().then(async () => {
         res.status(200).json({status: 'up'});
     });
 
-    app.get('/edge', (req, res) => {
+    app.post('/edge', (req, res) => {
         let appFunctions = application.functions.toObject();
         let response = {runEdgeFunction: runEdgeFunction.toString(), functions: []};
         req.body.functions.forEach(functionName => {
