@@ -171,13 +171,13 @@ exports.editFunction = asyncHandler(async (req, res) => {
     if (!resultFunction) {
         return res.status(404).json({message: "There is no function with this name that belongs to this application"});
     }
-    if (req.body.name) {
+    if ('name' in req.body) {
         resultFunction.name = req.body.name;
     }
-    if (req.body.idempotent) {
+    if ('idempotent' in req.body) {
         resultFunction.idempotent = req.body.idempotent;
     }
-    if (req.body.content) {
+    if ('content' in req.body) {
         resultFunction.content = req.body.content;
     }
     const resultFunctionIndex = functions.findIndex(func => func.name === functionName);
