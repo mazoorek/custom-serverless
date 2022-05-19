@@ -16,8 +16,8 @@ import {ApplicationResolver} from './applications/application.resolver';
 import {EndpointResolver} from './applications/endpoints/endpoint.resolver';
 import {FunctionResolver} from './applications/functions/function.resolver';
 import {PasswordResetComponent} from './user/password-reset/password-reset.component';
+import {NotFoundComponent} from './not-found/not-found.component';
 
-// TODO 404 page
 const routes: Routes = [
   {path: '', redirectTo: 'applications', pathMatch: 'full'},
   {path: 'user/password/reset/:resetToken', component: PasswordResetComponent, canActivate: [LoggedOutGuard]},
@@ -63,7 +63,8 @@ const routes: Routes = [
         }
       }
     ],
-  }
+  },
+  {path: '**', component: NotFoundComponent},
 ];
 
 @NgModule({
