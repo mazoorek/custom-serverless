@@ -186,7 +186,7 @@ export const saveDependencies = createAction(
 
 export const saveDependenciesSuccessResponse = createAction(
   "[saveDependencies effect] Save Dependencies Success Response",
-  props<{ validationResult: DependenciesResponse }>()
+  props<{ validationResult: DependenciesResponse, packageJson: string }>()
 );
 
 export const saveDependenciesFailedResponse = createAction(
