@@ -198,3 +198,20 @@ mat-cell {
 mat-row {
   cursor: pointer;
 }
+
+.validation-container {
+  margin-top: 30px;
+}
+
+.validation-error {
+  color: red;
+
+  &--title {
+    font-weight: bold;
+    margin-bottom: 20px;
+  }
+}
+
+.validation-valid {
+  color: green;
+}

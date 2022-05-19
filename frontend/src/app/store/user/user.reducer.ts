@@ -16,21 +16,24 @@ export const userReducer = createReducer<UserState, Action>(
     return {
       ...state,
       ...action.user,
-      loading: false
+      loading: false,
+      authError: undefined
     }
   }),
   on(UserActions.signupSuccess, (state: UserState, action) => {
     return {
       ...state,
       ...action.user,
-      loading: false
+      loading: false,
+      authError: undefined
     }
   }),
   on(UserActions.userPasswordReset, (state: UserState, action) => {
     return {
       ...state,
       ...action.user,
-      loading: false
+      loading: false,
+      authError: undefined
     }
   }),
   on(UserActions.userFetchFinished, (state: UserState, action) => {
@@ -45,7 +48,8 @@ export const userReducer = createReducer<UserState, Action>(
     return {
       ...state,
       id: undefined,
-      email: undefined
+      email: undefined,
+      authError: undefined
     }
   }),
   on(UserActions.loginStart, (state: UserState, action) => {
@@ -61,7 +65,7 @@ export const userReducer = createReducer<UserState, Action>(
       authError: action.message,
       id: undefined,
       email: undefined,
-      loading: false
+      loading: false,
     }
   }),
   on(UserActions.signupFailed, (state: UserState, action) => {
