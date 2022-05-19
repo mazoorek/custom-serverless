@@ -42,6 +42,7 @@ import {EndpointResolver} from './applications/endpoints/endpoint.resolver';
 import {FunctionResolver} from './applications/functions/function.resolver';
 import {ForgotPasswordPopupComponent} from './popup/forgot-password-popup.component';
 import {PasswordResetComponent} from './user/password-reset/password-reset.component';
+import {NotFoundComponent} from './not-found/not-found.component';
 
 
 
@@ -60,7 +61,8 @@ import {PasswordResetComponent} from './user/password-reset/password-reset.compo
     DeletePopupComponent,
     ForgotPasswordPopupComponent,
     FunctionsComponent,
-    EndpointEditComponent
+    EndpointEditComponent,
+    NotFoundComponent
   ],
     imports: [
         BrowserModule,
