@@ -21,8 +21,6 @@ export const isLoggedOut = createSelector(
   (loggedIn: boolean) => !loggedIn
 );
 
-// TODO loading and error handling
-
 export const isLoading = createSelector(
   (state: AppState) => state.user,
   user => user.loading

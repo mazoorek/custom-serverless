@@ -2,6 +2,8 @@ import {Application, ApplicationsState} from './applications.model';
 import {Action, createReducer, on} from '@ngrx/store';
 import {createEntityAdapter} from '@ngrx/entity';
 import {ApplicationsActions} from './index';
+import {UserActions} from '../user';
+import {UserState} from '../user/user.model';
 
 
 export const adapter = createEntityAdapter<Application>({
@@ -197,7 +199,7 @@ export const applicationsReducer = createReducer<ApplicationsState, Action>(
       let updatedFunctionIndex = functions.findIndex((func => func.name === action.oldFunctionName));
       functions[updatedFunctionIndex] = {
         ...functions[updatedFunctionIndex]
-        ,...action.function
+        , ...action.function
       };
       return {
         ...state,
@@ -212,4 +214,7 @@ export const applicationsReducer = createReducer<ApplicationsState, Action>(
       }
     }
   ),
+  on(UserActions.logoutSuccess, (state: ApplicationsState, action) => {
+    return initialState
+  }),
 );

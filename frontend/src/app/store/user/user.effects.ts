@@ -34,7 +34,7 @@ export class UserEffects {
           .pipe(
             map(user => UserActions.loginSuccess({user})),
             tap(() => this.router.navigate([`/applications`])),
-            catchError(error => of(UserActions.loginFailed({message: 'login failed'}))
+            catchError(error => of(UserActions.loginFailed({message: error.error.message}))
             ),
           )
       )
@@ -49,7 +49,7 @@ export class UserEffects {
           .pipe(
             map(user => UserActions.signupSuccess({user})),
             tap(() => this.router.navigate([`/applications`])),
-            catchError(error => of(UserActions.signupFailed({message: 'signup failed'}))
+            catchError(error => of(UserActions.signupFailed({message: error.error.message}))
             ),
           )
       )
