@@ -202,6 +202,17 @@ export const applicationsReducer = createReducer<ApplicationsState, Action>(
         ...functions[updatedFunctionIndex]
         , ...action.function
       };
+
+    let endpoints =  [...state.selectedApplication!.endpoints];
+    if(action.function.name) {
+      endpoints = endpoints.map(endpoint => {
+        endpoint = {...endpoint};
+        if(action.oldFunctionName === endpoint.functionName) {
+          endpoint.functionName = action.function.name;
+        }
+        return endpoint;
+      });
+    }
       return {
         ...state,
         selectedFunction: {
@@ -210,7 +221,8 @@ export const applicationsReducer = createReducer<ApplicationsState, Action>(
         },
         selectedApplication: {
           ...state.selectedApplication,
-          functions
+          functions,
+          endpoints
         } as Application
       }
     }
