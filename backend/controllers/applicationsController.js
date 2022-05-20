@@ -172,7 +172,14 @@ exports.editFunction = asyncHandler(async (req, res) => {
         return res.status(404).json({message: "There is no function with this name that belongs to this application"});
     }
     if ('name' in req.body) {
+        let endpoints = application.endpoints.toObject();
+        endpoints.forEach(endpoint => {
+            if(resultFunction.name === endpoint.functionName) {
+                endpoint.functionName = req.body.name;
+            }
+        });
         resultFunction.name = req.body.name;
+        application.endpoints = endpoints;
     }
     if ('idempotent' in req.body) {
         resultFunction.idempotent = req.body.idempotent;
