@@ -13,6 +13,10 @@ import {saveDependencies} from '../../store/applications/applications.actions';
   selector: 'dependencies',
   template: `
     <h2>dependencies</h2>
+    <div class="spinner-container" *ngIf="dependenciesLoading">
+      <mat-spinner></mat-spinner>
+      <div>Loading dependencies...</div>
+    </div>
     <ngx-monaco-editor class="code-editor"
                        [options]="packageJsonEditorOptions"
                        [style.height.px]="packageJsonEditorHeight"
@@ -20,9 +24,11 @@ import {saveDependencies} from '../../store/applications/applications.actions';
                        [ngModel]="application?.packageJson"
                        (ngModelChange)="onPackageJsonCodeChange($event)">
     </ngx-monaco-editor>
-    <button class="btn btn--green validate-button" (click)="saveDependencies()">
-      VALIDATE AND SAVE
-    </button>
+    <ng-container *ngIf="!dependenciesLoading">
+      <button class="btn btn--green validate-button" (click)="saveDependencies()">
+        VALIDATE AND SAVE
+      </button>
+    </ng-container>
     <ng-container *ngIf="this.syntaxErrors.length > 0">
       <div class="validation-error validation-error--title">Dependencies cannot be saved due to syntax errors:</div>
       <div *ngFor="let error of syntaxErrors" class="validation-error">
@@ -36,6 +42,10 @@ import {saveDependencies} from '../../store/applications/applications.actions';
         {{error}}
       </div>
     </ng-container>
+    <div class="spinner-container" *ngIf="dependenciesSavingLoading">
+      <mat-spinner></mat-spinner>
+      <div>Dependencies are being validated and saved...</div>
+    </div>
     <div class="validation-valid" *ngIf="validationResult?.valid">
       Dependencies have been saved
     </div>
@@ -52,8 +62,11 @@ export class DependenciesComponent implements OnInit {
   validationResult?: DependenciesResponse = undefined;
   syntaxErrors: string[] = [];
   packageJsonEditorHeight: number = 500;
+  dependenciesLoading: boolean;
+  dependenciesSavingLoading: boolean = false;
 
   constructor(private applicationsService: ApplicationsService, private changeDetection: ChangeDetectorRef, private store: Store<AppState>) {
+    this.dependenciesLoading = true;
   }
 
   ngOnInit(): void {
@@ -65,7 +78,7 @@ export class DependenciesComponent implements OnInit {
         this.application = application;
         this.packageJsonCode = application!.packageJson;
         this.validationResult = application!.validationResult;
-        console.log('tutaj');
+        this.dependenciesSavingLoading = false;
         this.changeDetection.detectChanges();
       });
   }
@@ -80,6 +93,7 @@ export class DependenciesComponent implements OnInit {
       this.changeDetection.detectChanges();
     });
     this.packageJsonEditorHeight = this.packageJsonEditor.getContentHeight() + 20;
+    this.dependenciesLoading = false;
     this.changeDetection.detectChanges();
     this.packageJsonEditor.getModel()?.onDidChangeContent(event => {
       if (event.changes[0].text.startsWith('\n')) {
@@ -96,10 +110,7 @@ export class DependenciesComponent implements OnInit {
     this.validationResult = undefined;
     if (this.syntaxErrors.length == 0) {
       this.store.dispatch(saveDependencies({appName: this.application!.name, packageJson: this.packageJsonCode}));
-      // this.applicationsService.saveDependencies(this.application!.name, this.packageJsonCode).subscribe(response => {
-      //   this.validationResult = response;
-      //   this.changeDetection.detectChanges();
-      // });
+      this.dependenciesSavingLoading = true;
     }
   }
 }

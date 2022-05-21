@@ -43,6 +43,7 @@ import {FunctionResolver} from './applications/functions/function.resolver';
 import {ForgotPasswordPopupComponent} from './popup/forgot-password-popup.component';
 import {PasswordResetComponent} from './user/password-reset/password-reset.component';
 import {NotFoundComponent} from './not-found/not-found.component';
+import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
 
 
 
@@ -82,8 +83,9 @@ import {NotFoundComponent} from './not-found/not-found.component';
         MatCardModule,
         MatCheckboxModule,
         StoreModule.forRoot(reducers),
-        StoreDevtoolsModule.instrument({ maxAge: 25, logOnly: environment.production }),
-      EffectsModule.forRoot([UserEffects, ApplicationsEffects])
+        StoreDevtoolsModule.instrument({maxAge: 25, logOnly: environment.production}),
+        EffectsModule.forRoot([UserEffects, ApplicationsEffects]),
+        MatProgressSpinnerModule
     ],
   providers: [LoggedInGuard, LoggedOutGuard, ApplicationsResolver, ApplicationResolver, EndpointResolver, FunctionResolver],
   bootstrap: [AppComponent]
