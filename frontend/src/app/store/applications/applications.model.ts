@@ -27,6 +27,10 @@ export interface ApplicationsState extends EntityState<Application> {
   selectedApplication?: Application,
   selectedFunction?: Function,
   selectedEndpoint?: Endpoint
+  createAppError?: string;
+  deleteAppError?: string;
+  changeAppStateError?: string;
+  editAppError?: string;
 }
 
 export interface DependenciesResponse {

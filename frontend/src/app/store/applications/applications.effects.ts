@@ -36,7 +36,9 @@ export class ApplicationsEffects {
           .pipe(
             map(() => ApplicationsActions.loadNewApplication({appName: action.appName})),
             tap(() => this.router.navigate(['applications', action.appName, 'overview'])),
-            catchError(error => of(ApplicationsActions.createApplicationFailed({message: 'failed to create application'}))
+            catchError(error => of(ApplicationsActions.createApplicationFailed({
+                message: error?.error?.message ? error.error.message : 'failed to create application'
+            }))
             ),
           )
       )
@@ -141,7 +143,7 @@ export class ApplicationsEffects {
                 }
               )
             ),
-            catchError(error => of(ApplicationsActions.startApplicationFailed({message: 'failed to stop application'}))
+            catchError(error => of(ApplicationsActions.startApplicationFailed({message: 'failed to start application'}))
             ),
           )
       )
@@ -164,7 +166,7 @@ export class ApplicationsEffects {
                 }
               )
             ),
-            catchError(error => of(ApplicationsActions.startSelectedApplicationFailed({message: 'failed to stop application'}))
+            catchError(error => of(ApplicationsActions.startSelectedApplicationFailed({message: 'failed to start application'}))
             ),
           )
       )
@@ -212,7 +214,9 @@ export class ApplicationsEffects {
             ),
             tap(() => this.router.navigate(['applications', action.appName, 'overview'])),
             tap(() => this.store.dispatch(ApplicationsActions.reloadApplications())),
-            catchError(error => of(ApplicationsActions.editSelectedApplicationNameFailed({message: 'failed to edit application name'}))
+            catchError(error => of(ApplicationsActions.editSelectedApplicationNameFailed({
+              message: error?.error?.message ? error.error.message : 'failed to edit application name'
+            }))
             ),
           )
       )

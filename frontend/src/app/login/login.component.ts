@@ -135,7 +135,6 @@ export class LoginComponent implements OnInit {
           this.validationErrors.push('password must be minimum 8 characters long');
         }
         if (name === 'passwordConfirm') {
-          console.log(controls[name]);
           this.validationErrors.push('password and passwordConfirm must be the same');
         }
       }

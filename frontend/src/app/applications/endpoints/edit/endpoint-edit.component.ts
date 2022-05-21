@@ -1,4 +1,4 @@
-import {ChangeDetectorRef, Component, OnInit} from '@angular/core';
+import {ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit} from '@angular/core';
 import {FormBuilder, FormGroup, Validators} from '@angular/forms';
 import {ApplicationsService} from '../../applications.service';
 import {Router} from '@angular/router';
@@ -36,7 +36,8 @@ import {updateEndpoint} from '../../../store/applications/applications.actions';
       <button class="btn btn--green" (click)="editEndpoint()">Edit endpoint</button>
     </form>
   `,
-  styleUrls: ['./endpoint-edit.component.scss']
+  styleUrls: ['./endpoint-edit.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class EndpointEditComponent implements OnInit {
   endpointForm: FormGroup;

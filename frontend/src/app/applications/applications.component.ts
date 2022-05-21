@@ -1,4 +1,4 @@
-import {ChangeDetectorRef, Component, OnInit} from '@angular/core';
+import {ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit} from '@angular/core';
 import {ApplicationsService} from './applications.service';
 import {Router} from '@angular/router';
 import {FormBuilder, FormGroup, Validators} from '@angular/forms';
@@ -6,7 +6,7 @@ import {MatDialog} from '@angular/material/dialog';
 import {DeletePopupComponent} from '../popup/delete-popup.component';
 import {AppState} from '../store/app.reducers';
 import { Store } from '@ngrx/store';
-import {selectApplications} from '../store/applications/applications.selectors';
+import {selectApplications, selectApplicationsState} from '../store/applications/applications.selectors';
 import {ApplicationsActions} from '../store/applications';
 import {
   deleteApplication, moveToApplication,
@@ -64,6 +64,12 @@ import {Application} from '../store/applications/applications.model';
       <mat-row *matRowDef="let row; columns: displayedColumns;" (click)="showApp(row.name)"></mat-row>
     </table>
 
+    <ng-container *ngIf="deleteAppError || changeAppStateError">
+      <div class="validation-container">
+        <div class="validation-error" *ngIf="changeAppStateError">{{changeAppStateError}}</div>
+        <div class="validation-error" *ngIf="deleteAppError">{{deleteAppError}}</div>
+      </div>
+    </ng-container>
 
     <form [formGroup]="applicationForm" class="form--application">
       <div class="form__group">
@@ -75,17 +81,27 @@ import {Application} from '../store/applications/applications.model';
                placeholder="type your application name"/>
       </div>
       <button class="btn btn--green" (click)="createApp()">Create new application</button>
+
+      <ng-container *ngIf="createAppError">
+        <div class="validation-container">
+          <div class="validation-error">{{createAppError}}</div>
+        </div>
+      </ng-container>
+
     </form>
 
   `,
-  styleUrls: ['./applications.component.scss']
+  styleUrls: ['./applications.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ApplicationsComponent  implements  OnInit {
 
   displayedColumns: string[] = ['name', 'up', 'outdated', 'changeState', 'delete'];
   dataSource: Application[] = [];
-
   applicationForm: FormGroup;
+  createAppError?: string;
+  deleteAppError?: string;
+  changeAppStateError?: string;
 
   constructor(private applicationsService: ApplicationsService,
               private changeDetection: ChangeDetectorRef,
@@ -93,7 +109,6 @@ export class ApplicationsComponent  implements  OnInit {
               private fb: FormBuilder,
               private store: Store<AppState>,
               private dialog: MatDialog) {
-    // TODO validation and blocking create button
     this.applicationForm = fb.group({
       name: ['', Validators.compose([Validators.required, Validators.maxLength(255)])]
     });
@@ -102,6 +117,12 @@ export class ApplicationsComponent  implements  OnInit {
   ngOnInit(): void {
     this.store.select(selectApplications).subscribe(apps => {
       this.dataSource = apps;
+      this.changeDetection.detectChanges();
+    });
+    this.store.select(selectApplicationsState).subscribe(state => {
+      this.changeAppStateError = state.changeAppStateError;
+      this.createAppError = state.createAppError;
+      this.deleteAppError = state.deleteAppError;
       this.changeDetection.detectChanges();
     });
   }

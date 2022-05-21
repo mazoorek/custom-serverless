@@ -1,4 +1,4 @@
-import {Component, OnInit} from '@angular/core';
+import {ChangeDetectionStrategy, Component, OnInit} from '@angular/core';
 import {SidebarOption} from './sidebar/sidebar.model';
 import {SidebarService} from './sidebar/sidebar.service';
 import {NavigationEnd, Router} from '@angular/router';
@@ -26,7 +26,8 @@ import {NavigationEnd, Router} from '@angular/router';
       </div>
     </main>
   `,
-  styleUrls: ['./dashboard.component.scss']
+  styleUrls: ['./dashboard.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class DashboardComponent implements OnInit {
   sidebarOptions: SidebarOption[] = [];

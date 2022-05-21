@@ -1,4 +1,4 @@
-import {ChangeDetectorRef, Component, OnInit} from '@angular/core';
+import {ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit} from '@angular/core';
 import {ApplicationsService} from '../applications.service';
 import {FormBuilder, FormGroup, Validators} from '@angular/forms';
 import {Router} from '@angular/router';
@@ -65,7 +65,8 @@ import {createEndpoint, deleteEndpoint, moveToEndpoint} from 'src/app/store/appl
       <button class="btn btn--green" (click)="createEndpoint()">Create new endpoint</button>
     </form>
   `,
-  styleUrls: ['./endpoints.component.scss']
+  styleUrls: ['./endpoints.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class EndpointsComponent implements OnInit {
   displayedColumns: string[] = ['url', 'functionName', 'delete'];

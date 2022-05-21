@@ -1,4 +1,4 @@
-import {ChangeDetectorRef, Component, OnInit} from '@angular/core';
+import {ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit} from '@angular/core';
 import {ApplicationsService} from '../applications.service';
 import {Router} from '@angular/router';
 import {FormBuilder, FormGroup, Validators} from '@angular/forms';
@@ -51,7 +51,8 @@ import {createFunction, moveToFunction, deleteFunction} from '../../store/applic
       <button class="btn btn--green" (click)="createFunction()">Create new function</button>
     </form>
   `,
-  styleUrls: ['./functions.component.scss']
+  styleUrls: ['./functions.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class FunctionsComponent implements OnInit {
 
