@@ -18,7 +18,7 @@ exports.test = asyncHandler(async (req, res) => {
         ? `http://${appName}.${CUSTOM_SERVERLESS_RUNTIME}:3000`
         : process.env.RUNTIME_URL;
 
-    axios.post(`${runtimeUrl}/test`, {
+    await axios.post(`${runtimeUrl}/test`, {
         code: req.body.code,
         args: req.body.args,
         cache: req.body.cache,
@@ -28,6 +28,8 @@ exports.test = asyncHandler(async (req, res) => {
         res.status(200).json(response.data);
     }).catch(e => {
         console.log(e);
-        res.status(500).json({error: e.response.data.message});
+        res.status(500).json({
+            error: e.response?.data?.message ? e.response.data.message : 'failed to test function'
+        });
     });
 });

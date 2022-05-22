@@ -388,7 +388,9 @@ export class ApplicationsEffects {
               functionName: action.functionName
             })),
             tap(() => this.store.dispatch(ApplicationsActions.reloadApplications())),
-            catchError(error => of(ApplicationsActions.createFunctionFailed({message: 'failed to create function'}))
+            catchError(error => of(ApplicationsActions.createFunctionFailed({
+              message: error?.error?.message ? error.error.message : 'failed to create function'
+            }))
             ),
           )
       )
@@ -441,7 +443,9 @@ export class ApplicationsEffects {
               }
             }),
             tap(() => this.store.dispatch(ApplicationsActions.reloadApplications())),
-            catchError(error => of(ApplicationsActions.updateFunctionFailed({message: 'failed to update function'}))
+            catchError(error => of(ApplicationsActions.updateFunctionFailed({
+              message: error?.error?.message ? error.error.message : 'failed to update function'
+            }))
             ),
           )
       )

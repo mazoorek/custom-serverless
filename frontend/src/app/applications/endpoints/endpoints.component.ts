@@ -106,7 +106,7 @@ export class EndpointsComponent implements OnInit {
     ).subscribe(application => {
       this.application = application
       this.dataSource = this.application!.endpoints;
-      this.createEndpointError = this.application?.addEndpointError;
+      this.createEndpointError = this.application?.createEndpointError;
       this.deleteEndpointError = this.application?.deleteEndpointError;
       this.changeDetection.detectChanges();
     });

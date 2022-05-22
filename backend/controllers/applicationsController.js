@@ -172,6 +172,13 @@ exports.editFunction = asyncHandler(async (req, res) => {
         return res.status(404).json({message: "There is no function with this name that belongs to this application"});
     }
     if ('name' in req.body) {
+        if(req.body.name !== functionName) {
+            const functionWithThisName = application.functions.toObject().find(func => func.name === req.body.name);
+            if(functionWithThisName) {
+                return res.status(400).json({message: "Function with this name already exists"});
+            }
+        }
+
         let endpoints = application.endpoints.toObject();
         endpoints.forEach(endpoint => {
             if(resultFunction.name === endpoint.functionName) {
@@ -239,6 +246,12 @@ exports.createFunction = asyncHandler(async (req, res) => {
     if (!application) {
         return res.status(404).json({message: "There is no application with this name"});
     }
+
+    const functionWithThisName = application.functions.toObject().find(func => func.name === req.body.name);
+    if(functionWithThisName) {
+        return res.status(400).json({message: "Function with this name already exists"});
+    }
+
     application.functions.push({
         name: req.body.name,
         content: !!req.body.content ? req.body.content : application.defaultFunctionContent()

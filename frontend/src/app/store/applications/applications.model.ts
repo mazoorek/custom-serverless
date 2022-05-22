@@ -22,9 +22,9 @@ export interface Application {
   packageJson: string;
   validationResult?: DependenciesResponse;
   deleteEndpointError?: string;
-  addEndpointError?: string;
+  createEndpointError?: string;
   deleteFunctionError?: string;
-  addFunctionError?: string;
+  createFunctionError?: string;
 }
 
 export interface ApplicationsState extends EntityState<Application> {

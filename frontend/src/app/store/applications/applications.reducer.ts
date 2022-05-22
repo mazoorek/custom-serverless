@@ -3,6 +3,7 @@ import {Action, createReducer, on} from '@ngrx/store';
 import {createEntityAdapter} from '@ngrx/entity';
 import {ApplicationsActions} from './index';
 import {UserActions} from '../user';
+import {Function} from './applications.model';
 
 
 export const adapter = createEntityAdapter<Application>({
@@ -263,7 +264,7 @@ export const applicationsReducer = createReducer<ApplicationsState, Action>(
         selectedApplication: {
           ...state.selectedApplication,
           endpoints: state.selectedApplication?.endpoints.filter(endpoint => endpoint.url !== action.endpointUrl),
-          addEndpointError: undefined,
+          createEndpointError: undefined,
           deleteEndpointError: undefined
         } as Application
       }
@@ -275,7 +276,7 @@ export const applicationsReducer = createReducer<ApplicationsState, Action>(
         selectedApplication: {
           ...state.selectedApplication,
           endpoints: state.selectedApplication?.endpoints.concat([action.endpoint]),
-          addEndpointError: undefined,
+          createEndpointError: undefined,
           deleteEndpointError: undefined
         } as Application
       }
@@ -286,7 +287,7 @@ export const applicationsReducer = createReducer<ApplicationsState, Action>(
         ...state,
         selectedApplication: {
           ...state.selectedApplication,
-          addEndpointError: action.message,
+          createEndpointError: action.message,
           deleteEndpointError: undefined
         } as Application
       }
@@ -297,7 +298,7 @@ export const applicationsReducer = createReducer<ApplicationsState, Action>(
         ...state,
         selectedApplication: {
           ...state.selectedApplication,
-          addEndpointError: undefined,
+          createEndpointError: undefined,
           deleteEndpointError: action.message
         } as Application
       }
@@ -327,13 +328,46 @@ export const applicationsReducer = createReducer<ApplicationsState, Action>(
   on(ApplicationsActions.loadFunctionSuccess, (state, action) => {
       return {
         ...state,
+        createFunctionError: undefined,
+        deleteFunctionError: undefined,
         selectedFunction: action.function
+      }
+    }
+  ),
+  on(ApplicationsActions.createFunctionFailed, (state, action) => {
+      return {
+        ...state,
+        selectedApplication: {
+          ...state.selectedApplication,
+          createFunctionError: action.message,
+          deleteFunctionError: undefined
+        } as Application
+      }
+    }
+  ),
+  on(ApplicationsActions.updateFunctionFailed, (state, action) => {
+      return {
+        ...state,
+        selectedFunction: {...state.selectedFunction, editFunctionError: action.message} as Function,
+      }
+    }
+  ),
+  on(ApplicationsActions.deleteFunctionFailed, (state, action) => {
+      return {
+        ...state,
+        selectedApplication: {
+          ...state.selectedApplication,
+          createFunctionError: undefined,
+          deleteFunctionError: action.message
+        } as Application
       }
     }
   ),
   on(ApplicationsActions.moveToFunctionSuccess, (state, action) => {
       return {
         ...state,
+        createFunctionError: undefined,
+        deleteFunctionError: undefined,
         selectedFunction: action.function
       }
     }
@@ -343,6 +377,8 @@ export const applicationsReducer = createReducer<ApplicationsState, Action>(
         ...state,
         selectedApplication: {
           ...state.selectedApplication,
+          createFunctionError: undefined,
+          deleteFunctionError: undefined,
           functions: state.selectedApplication?.functions.concat([action.function])
         } as Application
       }
@@ -353,7 +389,9 @@ export const applicationsReducer = createReducer<ApplicationsState, Action>(
         ...state,
         selectedApplication: {
           ...state.selectedApplication,
-          functions: state.selectedApplication?.functions.filter(func => func.name !== action.functionName)
+          createFunctionError: undefined,
+          deleteFunctionError: undefined,
+          functions: state.selectedApplication?.functions.filter(func => func.name !== action.functionName),
         } as Application
       }
     }
@@ -380,7 +418,8 @@ export const applicationsReducer = createReducer<ApplicationsState, Action>(
         ...state,
         selectedFunction: {
           ...state.selectedFunction,
-          ...action.function
+          ...action.function,
+          editFunctionError: undefined
         },
         selectedApplication: {
           ...state.selectedApplication,
