@@ -38,7 +38,7 @@ export class ApplicationsEffects {
             tap(() => this.router.navigate(['applications', action.appName, 'overview'])),
             catchError(error => of(ApplicationsActions.createApplicationFailed({
                 message: error?.error?.message ? error.error.message : 'failed to create application'
-            }))
+              }))
             ),
           )
       )
@@ -215,8 +215,8 @@ export class ApplicationsEffects {
             tap(() => this.router.navigate(['applications', action.appName, 'overview'])),
             tap(() => this.store.dispatch(ApplicationsActions.reloadApplications())),
             catchError(error => of(ApplicationsActions.editSelectedApplicationNameFailed({
-              message: error?.error?.message ? error.error.message : 'failed to edit application name'
-            }))
+                message: error?.error?.message ? error.error.message : 'failed to edit application name'
+              }))
             ),
           )
       )
@@ -244,7 +244,10 @@ export class ApplicationsEffects {
       switchMap((action) =>
         this.applicationsService.saveDependencies(action.appName, action.packageJson)
           .pipe(
-            map((response) => ApplicationsActions.saveDependenciesSuccessResponse({validationResult: response, packageJson: action.packageJson})),
+            map((response) => ApplicationsActions.saveDependenciesSuccessResponse({
+              validationResult: response,
+              packageJson: action.packageJson
+            })),
             tap(() => this.store.dispatch(ApplicationsActions.reloadApplications())),
             catchError(error => of(ApplicationsActions.saveDependenciesFailedResponse({
                 validationResult: {
@@ -311,7 +314,9 @@ export class ApplicationsEffects {
             map(() => ApplicationsActions.loadNewEndpoint({endpoint: action.endpoint})),
             tap(() => this.router.navigate(['applications', action.appName, 'endpoints', action.endpoint.url, 'edit'])),
             tap(() => this.store.dispatch(ApplicationsActions.reloadApplications())),
-            catchError(error => of(ApplicationsActions.createEndpointFailed({message: 'failed to create endpoint'}))
+            catchError(error => of(ApplicationsActions.createEndpointFailed({
+                message: error?.error?.message ? error.error.message : 'failed to create endpoint'
+              }))
             ),
           )
       )
@@ -329,12 +334,14 @@ export class ApplicationsEffects {
               endpoint: action.endpoint
             })),
             tap(() => {
-              if(action.endpointUrl !== action.endpoint.url) {
+              if (action.endpointUrl !== action.endpoint.url) {
                 this.router.navigate(['applications', action.appName, 'endpoints', action.endpoint.url, 'edit'])
               }
             }),
             tap(() => this.store.dispatch(ApplicationsActions.reloadApplications())),
-            catchError(error => of(ApplicationsActions.updateEndpointFailed({message: 'failed to update endpoint'}))
+            catchError(error => of(ApplicationsActions.updateEndpointFailed({
+              message: error?.error?.message ? error.error.message : 'failed to update endpoint'
+            }))
             ),
           )
       )
@@ -376,7 +383,10 @@ export class ApplicationsEffects {
       switchMap((action) =>
         this.applicationsService.createFunction(action.appName, action.functionName)
           .pipe(
-            map(() => ApplicationsActions.loadNewFunction({appName: action.appName, functionName: action.functionName})),
+            map(() => ApplicationsActions.loadNewFunction({
+              appName: action.appName,
+              functionName: action.functionName
+            })),
             tap(() => this.store.dispatch(ApplicationsActions.reloadApplications())),
             catchError(error => of(ApplicationsActions.createFunctionFailed({message: 'failed to create function'}))
             ),
@@ -426,7 +436,7 @@ export class ApplicationsEffects {
               function: action.function
             })),
             tap(() => {
-              if(action.functionName !== action.function.name) {
+              if (action.functionName !== action.function.name) {
                 this.router.navigate(['applications', action.appName, 'functions', action.function.name, 'edit'])
               }
             }),

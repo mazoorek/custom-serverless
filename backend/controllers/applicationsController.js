@@ -252,6 +252,16 @@ exports.createEndpoint = asyncHandler(async (req, res) => {
     if (!application) {
         return res.status(404).json({message: "There is no application with this name"});
     }
+    const appFunction = application.functions.toObject().find(func => func.name === req.body.functionName);
+    if (!appFunction) {
+        return res.status(404).json({message: "There is no function with this name"});
+    }
+
+    const endpointWithThisUrl = application.endpoints.toObject().find(endpoint => endpoint.url === req.body.url);
+    if(endpointWithThisUrl) {
+        return res.status(400).json({message: "Endpoint with this url already exists"});
+    }
+
     application.endpoints.push({
         url: req.body.url,
         functionName: req.body.functionName
@@ -271,6 +281,13 @@ exports.editEndpoint = asyncHandler(async (req, res) => {
     const resultEndpoint = endpoints.find(endpoint => endpoint.url === endpointUrl);
     if (!resultEndpoint) {
         return res.status(404).json({message: "There is no endpoint with this url that belongs to this application"});
+    }
+
+    if(endpointUrl !== req.body.url) {
+        const endpointWithThisUrl = application.endpoints.toObject().find(endpoint => endpoint.url === req.body.url);
+        if(endpointWithThisUrl) {
+            return res.status(400).json({message: "Endpoint with this url already exists"});
+        }
     }
 
     resultEndpoint.url = req.body.url;
@@ -307,21 +324,4 @@ exports.deleteFunction = asyncHandler(async (req, res) => {
     application.functions = application.functions.toObject().filter(func => func.name !== req.params.functionName);
     await application.save();
     res.status(200).json({});
-});
-
-exports.createEndpoint = asyncHandler(async (req, res) => {
-    const application = await Application.findOne({name: req.params.clientAppName});
-    if (!application) {
-        return res.status(404).json({message: "There is no application with this name"});
-    }
-    const appFunction = application.functions.toObject().find(func => func.name === req.body.functionName);
-    if (!appFunction) {
-        return res.status(404).json({message: "There is no function with this name"});
-    }
-    application.endpoints.push({
-        url: req.body.url,
-        functionName: req.body.functionName
-    });
-    await application.save();
-    res.status(201).json({});
 });

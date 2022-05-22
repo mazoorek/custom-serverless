@@ -1,4 +1,4 @@
-import {Application, ApplicationsState} from './applications.model';
+import {Application, ApplicationsState, Endpoint} from './applications.model';
 import {Action, createReducer, on} from '@ngrx/store';
 import {createEntityAdapter} from '@ngrx/entity';
 import {ApplicationsActions} from './index';
@@ -242,14 +242,18 @@ export const applicationsReducer = createReducer<ApplicationsState, Action>(
   on(ApplicationsActions.loadEndpointSuccess, (state, action) => {
       return {
         ...state,
-        selectedEndpoint: action.endpoint
+        selectedEndpoint: action.endpoint,
+        addEndpointError: undefined,
+        deleteEndpointError: undefined
       }
     }
   ),
   on(ApplicationsActions.moveToEndpointSuccess, (state, action) => {
       return {
         ...state,
-        selectedEndpoint: action.endpoint
+        selectedEndpoint: action.endpoint,
+        addEndpointError: undefined,
+        deleteEndpointError: undefined
       }
     }
   ),
@@ -258,7 +262,9 @@ export const applicationsReducer = createReducer<ApplicationsState, Action>(
         ...state,
         selectedApplication: {
           ...state.selectedApplication,
-          endpoints: state.selectedApplication?.endpoints.filter(endpoint => endpoint.url !== action.endpointUrl)
+          endpoints: state.selectedApplication?.endpoints.filter(endpoint => endpoint.url !== action.endpointUrl),
+          addEndpointError: undefined,
+          deleteEndpointError: undefined
         } as Application
       }
     }
@@ -268,7 +274,31 @@ export const applicationsReducer = createReducer<ApplicationsState, Action>(
         ...state,
         selectedApplication: {
           ...state.selectedApplication,
-          endpoints: state.selectedApplication?.endpoints.concat([action.endpoint])
+          endpoints: state.selectedApplication?.endpoints.concat([action.endpoint]),
+          addEndpointError: undefined,
+          deleteEndpointError: undefined
+        } as Application
+      }
+    }
+  ),
+  on(ApplicationsActions.createEndpointFailed, (state, action) => {
+      return {
+        ...state,
+        selectedApplication: {
+          ...state.selectedApplication,
+          addEndpointError: action.message,
+          deleteEndpointError: undefined
+        } as Application
+      }
+    }
+  ),
+  on(ApplicationsActions.deleteEndpointFailed, (state, action) => {
+      return {
+        ...state,
+        selectedApplication: {
+          ...state.selectedApplication,
+          addEndpointError: undefined,
+          deleteEndpointError: action.message
         } as Application
       }
     }
@@ -279,11 +309,18 @@ export const applicationsReducer = createReducer<ApplicationsState, Action>(
       endpoints[updatedEndpointIndex] = action.endpoint;
       return {
         ...state,
-        selectedEndpoint: action.endpoint,
+        selectedEndpoint: {...action.endpoint, editEndpointError: undefined},
         selectedApplication: {
           ...state.selectedApplication,
           endpoints
         } as Application
+      }
+    }
+  ),
+  on(ApplicationsActions.updateEndpointFailed, (state, action) => {
+      return {
+        ...state,
+        selectedEndpoint: {...state.selectedEndpoint, editEndpointError: action.message} as Endpoint,
       }
     }
   ),

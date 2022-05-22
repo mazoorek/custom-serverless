@@ -37,7 +37,4 @@ router.route('/:clientAppName/endpoints/:endpointUrl')
     .put(applicationsController.editEndpoint)
     .delete(applicationsController.deleteEndpoint);
 
-router.route('/:clientAppName/endpoints')
-    .post(applicationsController.createEndpoint);
-
 module.exports = router;
