@@ -1,4 +1,4 @@
-import {ChangeDetectorRef, Component, OnInit} from '@angular/core';
+import {ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit} from '@angular/core';
 import {ApplicationsService} from '../applications.service';
 import {Router} from '@angular/router';
 import {FormBuilder, FormGroup, Validators} from '@angular/forms';
@@ -39,6 +39,12 @@ import {createFunction, moveToFunction, deleteFunction} from '../../store/applic
       <mat-row *matRowDef="let row; columns: displayedColumns;" (click)="showFunction(row.name)"></mat-row>
     </table>
 
+    <ng-container *ngIf="deleteFunctionError">
+      <div class="validation-container">
+        <div class="validation-error" *ngIf="deleteFunctionError">{{deleteFunctionError}}</div>
+      </div>
+    </ng-container>
+
     <form [formGroup]="functionForm" class="form--function">
       <div class="form__group">
         <label class="form__label" for="name">Function name</label>
@@ -49,9 +55,15 @@ import {createFunction, moveToFunction, deleteFunction} from '../../store/applic
                placeholder="type your function name"/>
       </div>
       <button class="btn btn--green" (click)="createFunction()">Create new function</button>
+      <ng-container *ngIf="createFunctionError">
+        <div class="validation-container">
+          <div class="validation-error">{{createFunctionError}}</div>
+        </div>
+      </ng-container>
     </form>
   `,
-  styleUrls: ['./functions.component.scss']
+  styleUrls: ['./functions.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class FunctionsComponent implements OnInit {
 
@@ -59,6 +71,8 @@ export class FunctionsComponent implements OnInit {
   dataSource: Function[] = [];
   functionForm: FormGroup;
   application?: Application;
+  createFunctionError?: string;
+  deleteFunctionError?: string;
 
   constructor(private applicationsService: ApplicationsService,
               private changeDetection: ChangeDetectorRef,
@@ -78,6 +92,8 @@ export class FunctionsComponent implements OnInit {
     ).subscribe(application => {
       this.application = application
       this.dataSource = this.application!.functions;
+      this.createFunctionError = this.application?.createFunctionError;
+      this.deleteFunctionError = this.application?.deleteFunctionError;
       this.changeDetection.detectChanges();
     });
   }

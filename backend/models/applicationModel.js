@@ -4,7 +4,6 @@ const endpointSchema = new mongoose.Schema({
     url: {
         type: String,
         required: [true, 'Please provide application name'],
-        unique: true,
         sparse: true
     },
     functionName: {
@@ -17,7 +16,6 @@ const functionSchema = new mongoose.Schema({
     name: {
         type: String,
         required: [true, 'Please provide function name'],
-        unique: true,
         sparse: true
     },
     content: {

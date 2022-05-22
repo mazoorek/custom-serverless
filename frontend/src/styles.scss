@@ -215,3 +215,10 @@ mat-row {
 .validation-valid {
   color: green;
 }
+
+.spinner-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-flow: column;
+}

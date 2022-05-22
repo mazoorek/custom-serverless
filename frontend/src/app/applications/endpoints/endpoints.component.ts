@@ -1,4 +1,4 @@
-import {ChangeDetectorRef, Component, OnInit} from '@angular/core';
+import {ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit} from '@angular/core';
 import {ApplicationsService} from '../applications.service';
 import {FormBuilder, FormGroup, Validators} from '@angular/forms';
 import {Router} from '@angular/router';
@@ -45,6 +45,12 @@ import {createEndpoint, deleteEndpoint, moveToEndpoint} from 'src/app/store/appl
       <mat-row *matRowDef="let row; columns: displayedColumns;" (click)="moveToEndpoint(row.url)"></mat-row>
     </table>
 
+    <ng-container *ngIf="deleteEndpointError">
+      <div class="validation-container">
+        <div class="validation-error" *ngIf="deleteEndpointError">{{deleteEndpointError}}</div>
+      </div>
+    </ng-container>
+
     <form [formGroup]="endpointForm" class="form--endpoint">
       <div class="form__group">
         <label class="form__label" for="url">Endpoint url</label>
@@ -63,15 +69,23 @@ import {createEndpoint, deleteEndpoint, moveToEndpoint} from 'src/app/store/appl
                placeholder="type your function name"/>
       </div>
       <button class="btn btn--green" (click)="createEndpoint()">Create new endpoint</button>
+      <ng-container *ngIf="createEndpointError">
+        <div class="validation-container">
+          <div class="validation-error">{{createEndpointError}}</div>
+        </div>
+      </ng-container>
     </form>
   `,
-  styleUrls: ['./endpoints.component.scss']
+  styleUrls: ['./endpoints.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class EndpointsComponent implements OnInit {
   displayedColumns: string[] = ['url', 'functionName', 'delete'];
   dataSource: Endpoint[] = [];
   endpointForm: FormGroup;
   application?: Application;
+  createEndpointError?: string;
+  deleteEndpointError?: string;
 
   constructor(private applicationsService: ApplicationsService,
               private changeDetection: ChangeDetectorRef,
@@ -92,6 +106,8 @@ export class EndpointsComponent implements OnInit {
     ).subscribe(application => {
       this.application = application
       this.dataSource = this.application!.endpoints;
+      this.createEndpointError = this.application?.createEndpointError;
+      this.deleteEndpointError = this.application?.deleteEndpointError;
       this.changeDetection.detectChanges();
     });
   }

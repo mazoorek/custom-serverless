@@ -7,6 +7,11 @@ export const selectApplications = createSelector(
   applicationsSelectors.selectAll
 );
 
+export const selectApplicationsState = createSelector(
+  (state: AppState) => state.applications,
+    applications => applications
+);
+
 export const areApplicationsLoaded = createSelector(
   (state: AppState) => state.applications,
    applications => applications.loaded

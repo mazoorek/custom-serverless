@@ -1,4 +1,4 @@
-import {ChangeDetectorRef, Component, OnInit} from '@angular/core';
+import {ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit} from '@angular/core';
 import {FormBuilder, FormGroup, Validators} from '@angular/forms';
 import {ApplicationsService} from '../../applications.service';
 import {Router} from '@angular/router';
@@ -34,14 +34,21 @@ import {updateEndpoint} from '../../../store/applications/applications.actions';
                placeholder="type your function name"/>
       </div>
       <button class="btn btn--green" (click)="editEndpoint()">Edit endpoint</button>
+      <ng-container *ngIf="editEndpointError">
+        <div class="validation-container">
+          <div class="validation-error">{{editEndpointError}}</div>
+        </div>
+      </ng-container>
     </form>
   `,
-  styleUrls: ['./endpoint-edit.component.scss']
+  styleUrls: ['./endpoint-edit.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class EndpointEditComponent implements OnInit {
   endpointForm: FormGroup;
   endpoint?: Endpoint;
   applicationName?: string;
+  editEndpointError?: string;
 
   constructor(private applicationsService: ApplicationsService,
               private changeDetection: ChangeDetectorRef,
@@ -62,6 +69,7 @@ export class EndpointEditComponent implements OnInit {
       this.endpoint = endpoint;
       this.endpointForm.controls['url'].patchValue(endpoint?.url);
       this.endpointForm.controls['functionName'].patchValue(endpoint?.functionName);
+      this.editEndpointError = endpoint?.editEndpointError;
       this.changeDetection.detectChanges();
     });
     this.store.select(selectApplicationName).subscribe(appName => this.applicationName = appName);

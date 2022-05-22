@@ -1,4 +1,4 @@
-import {Component, Inject} from '@angular/core';
+import {ChangeDetectionStrategy, Component, Inject} from '@angular/core';
 import {MAT_DIALOG_DATA, MatDialogRef} from '@angular/material/dialog';
 
 
@@ -15,7 +15,8 @@ import {MAT_DIALOG_DATA, MatDialogRef} from '@angular/material/dialog';
       </div>
     </div>
   `,
-  styleUrls: ['./delete-popup.component.scss']
+  styleUrls: ['./delete-popup.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class DeletePopupComponent {
 

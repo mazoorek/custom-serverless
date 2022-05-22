@@ -1,9 +1,9 @@
-import {Application, ApplicationsState} from './applications.model';
+import {Application, ApplicationsState, Endpoint} from './applications.model';
 import {Action, createReducer, on} from '@ngrx/store';
 import {createEntityAdapter} from '@ngrx/entity';
 import {ApplicationsActions} from './index';
 import {UserActions} from '../user';
-import {UserState} from '../user/user.model';
+import {Function} from './applications.model';
 
 
 export const adapter = createEntityAdapter<Application>({
@@ -25,9 +25,92 @@ export const applicationsReducer = createReducer<ApplicationsState, Action>(
       action.applications,
       {
         ...state,
-        loaded: true
+        loaded: true,
+        createAppError: undefined,
+        deleteAppError: undefined,
+        changeAppStateError: undefined
       }
     )
+  ),
+  on(ApplicationsActions.createApplicationFailed, (state, action) => {
+      return {
+        ...state,
+        createAppError: action.message,
+        deleteAppError: undefined,
+        changeAppStateError: undefined,
+        editAppError: undefined
+      }
+    }
+  ),
+  on(ApplicationsActions.editSelectedApplicationNameFailed, (state, action) => {
+      return {
+        ...state,
+        createAppError: undefined,
+        deleteAppError: undefined,
+        changeAppStateError: undefined,
+        editAppError: action.message
+      }
+    }
+  ),
+  on(ApplicationsActions.deleteApplicationFailed, (state, action) => {
+      return {
+        ...state,
+        deleteAppError: action.message,
+        createAppError: undefined,
+        changeAppStateError: undefined,
+        editAppError: undefined
+      }
+    }
+  ),
+  on(ApplicationsActions.deleteSelectedApplicationFailed, (state, action) => {
+      return {
+        ...state,
+        deleteAppError: action.message,
+        createAppError: undefined,
+        changeAppStateError: undefined,
+        editAppError: undefined
+      }
+    }
+  ),
+  on(ApplicationsActions.startApplicationFailed, (state, action) => {
+      return {
+        ...state,
+        deleteAppError: undefined,
+        createAppError: undefined,
+        editAppError: undefined,
+        changeAppStateError: action.message,
+      }
+    }
+  ),
+  on(ApplicationsActions.startSelectedApplicationFailed, (state, action) => {
+      return {
+        ...state,
+        deleteAppError: undefined,
+        createAppError: undefined,
+        editAppError: undefined,
+        changeAppStateError: action.message,
+      }
+    }
+  ),
+  on(ApplicationsActions.stopApplicationFailed, (state, action) => {
+      return {
+        ...state,
+        deleteAppError: undefined,
+        createAppError: undefined,
+        editAppError: undefined,
+        changeAppStateError: action.message,
+      }
+    }
+  ),
+  on(ApplicationsActions.stopSelectedApplicationFailed, (state, action) => {
+      return {
+        ...state,
+        deleteAppError: undefined,
+        createAppError: undefined,
+        editAppError: undefined,
+        changeAppStateError: action.message,
+      }
+    }
   ),
   on(ApplicationsActions.loadNewApplicationSuccess, (state, action) =>
     adapter.addOne(
@@ -37,30 +120,62 @@ export const applicationsReducer = createReducer<ApplicationsState, Action>(
       } as Application,
       {
         ...state,
+        createAppError: undefined,
+        deleteAppError: undefined,
+        changeAppStateError: undefined,
+        editAppError: undefined,
         selectedApplication: action.application
       }
     )
   ),
   on(ApplicationsActions.deleteApplicationSuccess, (state, action) =>
-    adapter.removeOne(action.appName, state)
+    adapter.removeOne(action.appName, {
+      ...state,
+      createAppError: undefined,
+      deleteAppError: undefined,
+      changeAppStateError: undefined,
+      editAppError: undefined
+    })
   ),
   on(ApplicationsActions.deleteSelectedApplicationSuccess, (state, action) =>
-    adapter.removeOne(action.appName, state)
+    adapter.removeOne(action.appName, {
+      ...state,
+      createAppError: undefined,
+      deleteAppError: undefined,
+      changeAppStateError: undefined,
+      editAppError: undefined
+    })
   ),
   on(ApplicationsActions.loadApplicationSuccess, (state, action) => {
       return {
         ...state,
+        createAppError: undefined,
+        deleteAppError: undefined,
+        changeAppStateError: undefined,
+        editAppError: undefined,
         selectedApplication: action.application
       }
     }
   ),
   on(ApplicationsActions.startApplicationSuccess,
     (state, action) =>
-      adapter.updateOne(action.application, state)
+      adapter.updateOne(action.application, {
+        ...state,
+        createAppError: undefined,
+        deleteAppError: undefined,
+        changeAppStateError: undefined,
+        editAppError: undefined
+      })
   ),
   on(ApplicationsActions.stopApplicationSuccess,
     (state, action) =>
-      adapter.updateOne(action.application, state)
+      adapter.updateOne(action.application, {
+        ...state,
+        createAppError: undefined,
+        deleteAppError: undefined,
+        changeAppStateError: undefined,
+        editAppError: undefined
+      })
   ),
   on(ApplicationsActions.startSelectedApplicationSuccess,
     (state, action) =>
@@ -68,6 +183,10 @@ export const applicationsReducer = createReducer<ApplicationsState, Action>(
         action.application,
         {
           ...state,
+          createAppError: undefined,
+          deleteAppError: undefined,
+          changeAppStateError: undefined,
+          editAppError: undefined,
           selectedApplication: {...state.selectedApplication, up: true} as Application
         }
       )
@@ -78,6 +197,10 @@ export const applicationsReducer = createReducer<ApplicationsState, Action>(
         action.application,
         {
           ...state,
+          createAppError: undefined,
+          deleteAppError: undefined,
+          changeAppStateError: undefined,
+          editAppError: undefined,
           selectedApplication: {...state.selectedApplication, up: false} as Application
         }
       )
@@ -88,6 +211,10 @@ export const applicationsReducer = createReducer<ApplicationsState, Action>(
         action.application,
         {
           ...state,
+          createAppError: undefined,
+          deleteAppError: undefined,
+          changeAppStateError: undefined,
+          editAppError: undefined,
           selectedApplication: {...state.selectedApplication, name: action.application.changes.name} as Application
         }
       )
@@ -116,14 +243,18 @@ export const applicationsReducer = createReducer<ApplicationsState, Action>(
   on(ApplicationsActions.loadEndpointSuccess, (state, action) => {
       return {
         ...state,
-        selectedEndpoint: action.endpoint
+        selectedEndpoint: action.endpoint,
+        addEndpointError: undefined,
+        deleteEndpointError: undefined
       }
     }
   ),
   on(ApplicationsActions.moveToEndpointSuccess, (state, action) => {
       return {
         ...state,
-        selectedEndpoint: action.endpoint
+        selectedEndpoint: action.endpoint,
+        addEndpointError: undefined,
+        deleteEndpointError: undefined
       }
     }
   ),
@@ -132,7 +263,9 @@ export const applicationsReducer = createReducer<ApplicationsState, Action>(
         ...state,
         selectedApplication: {
           ...state.selectedApplication,
-          endpoints: state.selectedApplication?.endpoints.filter(endpoint => endpoint.url !== action.endpointUrl)
+          endpoints: state.selectedApplication?.endpoints.filter(endpoint => endpoint.url !== action.endpointUrl),
+          createEndpointError: undefined,
+          deleteEndpointError: undefined
         } as Application
       }
     }
@@ -142,7 +275,31 @@ export const applicationsReducer = createReducer<ApplicationsState, Action>(
         ...state,
         selectedApplication: {
           ...state.selectedApplication,
-          endpoints: state.selectedApplication?.endpoints.concat([action.endpoint])
+          endpoints: state.selectedApplication?.endpoints.concat([action.endpoint]),
+          createEndpointError: undefined,
+          deleteEndpointError: undefined
+        } as Application
+      }
+    }
+  ),
+  on(ApplicationsActions.createEndpointFailed, (state, action) => {
+      return {
+        ...state,
+        selectedApplication: {
+          ...state.selectedApplication,
+          createEndpointError: action.message,
+          deleteEndpointError: undefined
+        } as Application
+      }
+    }
+  ),
+  on(ApplicationsActions.deleteEndpointFailed, (state, action) => {
+      return {
+        ...state,
+        selectedApplication: {
+          ...state.selectedApplication,
+          createEndpointError: undefined,
+          deleteEndpointError: action.message
         } as Application
       }
     }
@@ -153,7 +310,7 @@ export const applicationsReducer = createReducer<ApplicationsState, Action>(
       endpoints[updatedEndpointIndex] = action.endpoint;
       return {
         ...state,
-        selectedEndpoint: action.endpoint,
+        selectedEndpoint: {...action.endpoint, editEndpointError: undefined},
         selectedApplication: {
           ...state.selectedApplication,
           endpoints
@@ -161,16 +318,56 @@ export const applicationsReducer = createReducer<ApplicationsState, Action>(
       }
     }
   ),
+  on(ApplicationsActions.updateEndpointFailed, (state, action) => {
+      return {
+        ...state,
+        selectedEndpoint: {...state.selectedEndpoint, editEndpointError: action.message} as Endpoint,
+      }
+    }
+  ),
   on(ApplicationsActions.loadFunctionSuccess, (state, action) => {
       return {
         ...state,
+        createFunctionError: undefined,
+        deleteFunctionError: undefined,
         selectedFunction: action.function
+      }
+    }
+  ),
+  on(ApplicationsActions.createFunctionFailed, (state, action) => {
+      return {
+        ...state,
+        selectedApplication: {
+          ...state.selectedApplication,
+          createFunctionError: action.message,
+          deleteFunctionError: undefined
+        } as Application
+      }
+    }
+  ),
+  on(ApplicationsActions.updateFunctionFailed, (state, action) => {
+      return {
+        ...state,
+        selectedFunction: {...state.selectedFunction, editFunctionError: action.message} as Function,
+      }
+    }
+  ),
+  on(ApplicationsActions.deleteFunctionFailed, (state, action) => {
+      return {
+        ...state,
+        selectedApplication: {
+          ...state.selectedApplication,
+          createFunctionError: undefined,
+          deleteFunctionError: action.message
+        } as Application
       }
     }
   ),
   on(ApplicationsActions.moveToFunctionSuccess, (state, action) => {
       return {
         ...state,
+        createFunctionError: undefined,
+        deleteFunctionError: undefined,
         selectedFunction: action.function
       }
     }
@@ -180,6 +377,8 @@ export const applicationsReducer = createReducer<ApplicationsState, Action>(
         ...state,
         selectedApplication: {
           ...state.selectedApplication,
+          createFunctionError: undefined,
+          deleteFunctionError: undefined,
           functions: state.selectedApplication?.functions.concat([action.function])
         } as Application
       }
@@ -190,7 +389,9 @@ export const applicationsReducer = createReducer<ApplicationsState, Action>(
         ...state,
         selectedApplication: {
           ...state.selectedApplication,
-          functions: state.selectedApplication?.functions.filter(func => func.name !== action.functionName)
+          createFunctionError: undefined,
+          deleteFunctionError: undefined,
+          functions: state.selectedApplication?.functions.filter(func => func.name !== action.functionName),
         } as Application
       }
     }
@@ -203,21 +404,22 @@ export const applicationsReducer = createReducer<ApplicationsState, Action>(
         , ...action.function
       };
 
-    let endpoints =  [...state.selectedApplication!.endpoints];
-    if(action.function.name) {
-      endpoints = endpoints.map(endpoint => {
-        endpoint = {...endpoint};
-        if(action.oldFunctionName === endpoint.functionName) {
-          endpoint.functionName = action.function.name;
-        }
-        return endpoint;
-      });
-    }
+      let endpoints = [...state.selectedApplication!.endpoints];
+      if (action.function.name) {
+        endpoints = endpoints.map(endpoint => {
+          endpoint = {...endpoint};
+          if (action.oldFunctionName === endpoint.functionName) {
+            endpoint.functionName = action.function.name;
+          }
+          return endpoint;
+        });
+      }
       return {
         ...state,
         selectedFunction: {
           ...state.selectedFunction,
-          ...action.function
+          ...action.function,
+          editFunctionError: undefined
         },
         selectedApplication: {
           ...state.selectedApplication,

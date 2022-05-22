@@ -3,12 +3,14 @@ import {EntityState} from '@ngrx/entity';
 export interface Endpoint {
   url: string;
   functionName: string;
+  editEndpointError?: string;
 }
 
 export interface Function {
   name: string;
   content: string;
   idempotent: boolean;
+  editFunctionError?: string;
 }
 
 export interface Application {
@@ -19,6 +21,10 @@ export interface Application {
   functions: Function[];
   packageJson: string;
   validationResult?: DependenciesResponse;
+  deleteEndpointError?: string;
+  createEndpointError?: string;
+  deleteFunctionError?: string;
+  createFunctionError?: string;
 }
 
 export interface ApplicationsState extends EntityState<Application> {
@@ -27,6 +33,10 @@ export interface ApplicationsState extends EntityState<Application> {
   selectedApplication?: Application,
   selectedFunction?: Function,
   selectedEndpoint?: Endpoint
+  createAppError?: string;
+  deleteAppError?: string;
+  editAppError?: string;
+  changeAppStateError?: string;
 }
 
 export interface DependenciesResponse {

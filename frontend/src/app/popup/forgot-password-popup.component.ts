@@ -1,5 +1,5 @@
-import {ChangeDetectionStrategy, ChangeDetectorRef, Component, Inject} from '@angular/core';
-import {MAT_DIALOG_DATA, MatDialogRef} from '@angular/material/dialog';
+import {ChangeDetectionStrategy, ChangeDetectorRef, Component} from '@angular/core';
+import {MatDialogRef} from '@angular/material/dialog';
 import {FormBuilder, FormGroup, Validators} from '@angular/forms';
 import {UserService} from '../user/user.service';
 import {ResponseResult} from '../store/user/user.model';
@@ -20,12 +20,18 @@ import {ResponseResult} from '../store/user/user.model';
             <button class="btn btn--green" (click)="sendResetPasswordEmail()">Reset password</button>
             <button [matDialogClose]="" class="btn btn--white">Close</button>
           </div>
-          <ng-container *ngIf="emailSentResult">
-            <div class="change--success" *ngIf="emailSentResult.success">
-              {{emailSentResult.message}}
-            </div>
-            <div class="change--failed" *ngIf="!emailSentResult.success">
-              {{emailSentResult.message}}
+
+          <ng-container *ngIf="validationErrors.length > 0 || emailSentResult">
+            <div class="validation-container">
+              <div *ngFor="let error of validationErrors" class="validation-error">
+                {{error}}
+              </div>
+              <div class="validation-valid" *ngIf="emailSentResult?.success">
+                {{emailSentResult?.message}}
+              </div>
+              <div class="validation-error" *ngIf="!emailSentResult?.success">
+                {{emailSentResult?.message}}
+              </div>
             </div>
           </ng-container>
         </form>
@@ -38,12 +44,12 @@ import {ResponseResult} from '../store/user/user.model';
 export class ForgotPasswordPopupComponent {
   emailForm: FormGroup;
   emailSentResult?: ResponseResult;
+  validationErrors: string[] = [];
 
   constructor(private dialogRef: MatDialogRef<ForgotPasswordPopupComponent>,
               private userService: UserService,
               private changeDetection: ChangeDetectorRef,
               private fb: FormBuilder) {
-    // TODO validation
     this.emailForm = fb.group({
       email: ['', Validators.compose([Validators.required, Validators.maxLength(255)])]
     });
@@ -51,21 +57,40 @@ export class ForgotPasswordPopupComponent {
 
   sendResetPasswordEmail(): void {
     this.emailSentResult = undefined;
-    this.userService.sendResetPasswordEmail(this.emailForm.value.email).subscribe(
-      () => {
-        this.emailSentResult = {
-          success: true,
-          message: 'Reset password email sent successfully'
-        };
-        this.changeDetection.detectChanges();
-      },
-      (error) => {
-        this.emailSentResult = {
-          success: false,
-          message: error.error.message
-        };
-        this.changeDetection.detectChanges();
+    this.validationErrors = [];
+    if (this.emailForm.valid) {
+      this.userService.sendResetPasswordEmail(this.emailForm.value.email).subscribe(
+        () => {
+          this.emailSentResult = {
+            success: true,
+            message: 'Reset password email sent successfully'
+          };
+          this.changeDetection.detectChanges();
+        },
+        (error) => {
+          this.emailSentResult = {
+            success: false,
+            message: error.error.message
+          };
+          this.changeDetection.detectChanges();
+        }
+      );
+    } else {
+      this.prepareValidationErrors();
+      this.changeDetection.detectChanges();
+    }
+  }
+
+  prepareValidationErrors(): void {
+    const controls = this.emailForm.controls;
+    for (const name in this.emailForm.controls) {
+      if (controls[name].invalid) {
+        if (name === 'email') {
+          this.validationErrors.push('email field must be of email pattern');
+        }
+        if (name === 'password') {
+        }
       }
-    )
+    }
   }
 }

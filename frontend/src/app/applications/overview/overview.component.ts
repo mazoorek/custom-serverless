@@ -6,7 +6,7 @@ import {Router} from '@angular/router';
 import {MatDialog} from '@angular/material/dialog';
 import {select, Store} from '@ngrx/store';
 import {AppState} from '../../store/app.reducers';
-import {selectApplication} from '../../store/applications/applications.selectors';
+import {selectApplication, selectApplicationsState} from '../../store/applications/applications.selectors';
 import {filter} from 'rxjs';
 import {
   deleteSelectedApplication,
@@ -25,6 +25,14 @@ import {Application} from '../../store/applications/applications.model';
       <button *ngIf="!!application?.up" class="btn btn--orange" (click)="stopApp()">STOP</button>
       <button class="btn btn--orange" (click)="deleteApp()">DELETE</button>
     </div>
+
+    <ng-container *ngIf="deleteAppError || changeAppStateError">
+      <div class="validation-container">
+        <div class="validation-error" *ngIf="changeAppStateError">{{changeAppStateError}}</div>
+        <div class="validation-error" *ngIf="deleteAppError">{{deleteAppError}}</div>
+      </div>
+    </ng-container>
+
     <form [formGroup]="applicationForm" class="form--application">
       <div class="form__group">
         <label class="form__label" for="name">Application name</label>
@@ -35,6 +43,13 @@ import {Application} from '../../store/applications/applications.model';
                placeholder="type your application name"/>
       </div>
       <button class="btn btn--green" (click)="editApp()">Edit application name</button>
+
+      <ng-container *ngIf="editAppError">
+        <div class="validation-container">
+          <div class="validation-error">{{editAppError}}</div>
+        </div>
+      </ng-container>
+
     </form>
   `,
   styleUrls: ['./overview.component.scss']
@@ -43,12 +58,14 @@ export class OverviewComponent implements OnInit {
 
   applicationForm: FormGroup;
   application?: Application;
+  editAppError?: string;
+  deleteAppError?: string;
+  changeAppStateError?: string;
 
   constructor(private applicationsService: ApplicationsService,
               private store: Store<AppState>,
               private changeDetection: ChangeDetectorRef,
               private fb: FormBuilder, private router: Router, private dialog: MatDialog) {
-    // TODO unique validation
     this.applicationForm = this.fb.group({
       name: [this.application?.name, Validators.compose([Validators.required, Validators.maxLength(255)])]
     });
@@ -61,6 +78,13 @@ export class OverviewComponent implements OnInit {
     ).subscribe(application => {
       this.application = application;
       this.applicationForm.controls['name'].patchValue(application?.name);
+      this.changeDetection.detectChanges();
+    });
+
+    this.store.select(selectApplicationsState).subscribe(state => {
+      this.changeAppStateError = state.changeAppStateError;
+      this.editAppError = state.editAppError;
+      this.deleteAppError = state.deleteAppError;
       this.changeDetection.detectChanges();
     });
   }

@@ -1,4 +1,4 @@
-import {Component, OnInit} from '@angular/core';
+import {ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit} from '@angular/core';
 import {SidebarOption} from './sidebar/sidebar.model';
 import {SidebarService} from './sidebar/sidebar.service';
 import {NavigationEnd, Router} from '@angular/router';
@@ -26,12 +26,13 @@ import {NavigationEnd, Router} from '@angular/router';
       </div>
     </main>
   `,
-  styleUrls: ['./dashboard.component.scss']
+  styleUrls: ['./dashboard.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class DashboardComponent implements OnInit {
   sidebarOptions: SidebarOption[] = [];
 
-  constructor(private sidebarService: SidebarService, private router: Router) {
+  constructor(private sidebarService: SidebarService, private router: Router, private changeDetection: ChangeDetectorRef) {
   }
 
   ngOnInit(): void {
@@ -39,6 +40,7 @@ export class DashboardComponent implements OnInit {
     this.router.events.subscribe((event) => {
       if (event instanceof NavigationEnd) {
         this.sidebarOptions = this.sidebarService.getDashboardOptions();
+        this.changeDetection.detectChanges();
       }
     });
   }
@@ -50,6 +52,7 @@ export class DashboardComponent implements OnInit {
 
   goBack(): void {
     this.router.navigate(this.router.url.substring(1).split('/').slice(0, -2));
+    this.changeDetection.detectChanges();
   }
 
   isNotRootLevelMenu(): boolean {
@@ -63,5 +66,6 @@ export class DashboardComponent implements OnInit {
     } else {
       this.router.navigate([`/${url}`]);
     }
+    this.changeDetection.detectChanges();
   }
 }
