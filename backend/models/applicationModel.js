@@ -70,7 +70,7 @@ applicationSchema.pre('save', async function(next) {
 });
 
 applicationSchema.methods.defaultFunctionContent = function () {
-    return `(args) => { 
+    return `async (args) => { 
     return {};
 };`;
 }
