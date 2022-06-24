@@ -16,13 +16,13 @@ startup().then(async () => {
         let cache = req.body.cache ? req.body.cache : {};
         let edgeResults = req.body.edgeResults;
         let args = req.body.args;
-        let call = (functionName, args) => {
-            return callFunction(functionName, args, application.functions.toObject(), cache, edgeResults);
+        let call = async (functionName, args) => {
+            return await callFunction(functionName, args, application.functions.toObject(), cache, edgeResults);
         }
         let result = {};
         try {
             let testedFunction = eval(req.body.code);
-            result = testedFunction(args);
+            result = await testedFunction(args);
         } catch (e) {
             console.log(e);
             res.status(400).json({message: e.message});
@@ -81,7 +81,7 @@ startup().then(async () => {
         cache[functionName][Buffer.from(JSON.stringify(args)).toString('base64')] = result;
     };
 
-    const callFunction = (functionName, args, functions, cache, edgeResults) => {
+    const callFunction = async (functionName, args, functions, cache, edgeResults) => {
         const calledFunction = functions.find(func => func.name === functionName);
         if(!calledFunction) {
             throw new Error(`There is no function with name=[${functionName}] that belongs to this application`);
@@ -92,7 +92,7 @@ startup().then(async () => {
         } else {
             let cacheResult = tryFromCache(calledFunction, cache, args, functionName);
             if (!cacheResult) {
-                let result = eval(calledFunction.content)(args);
+                let result = await eval(calledFunction.content)(args);
                 if (calledFunction.idempotent) {
                     addToCache(cache, calledFunction.name, result, args);
                 }

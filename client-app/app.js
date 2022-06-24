@@ -28,7 +28,7 @@ startup().then(async () => {
         res.status(200).json(response);
     });
 
-    app.post('/:endpoint', (req, res) => {
+    app.post('/:endpoint', async (req, res) => {
         let endpoint = application.endpoints.toObject().filter(endpoint => endpoint.url === req.params.endpoint).pop();
         if (!endpoint) {
             return res.status(404).json({message: "There is no endpoint with this url"});
@@ -37,8 +37,8 @@ startup().then(async () => {
         let cache = req.body.cache ? req.body.cache : {};
         let edgeResults = req.body.edgeResults;
         let args = req.body.args;
-        let call = (functionName, args) => {
-            return callWithCache(functionName, args, cache, edgeResults, application.functions.toObject());
+        let call = async (functionName, args) => {
+            return await callWithCache(functionName, args, cache, edgeResults, application.functions.toObject());
         }
         let result = {};
         try {
@@ -50,7 +50,7 @@ startup().then(async () => {
                 if (cacheResult) {
                     result = cacheResult;
                 } else {
-                    result = eval(functionToRun.content)(args);
+                    result = await eval(functionToRun.content)(args);
                     if (functionToRun.idempotent) {
                         addToCache(cache, functionToRun.name, result, args);
                     }
@@ -64,14 +64,14 @@ startup().then(async () => {
         res.status(200).json({result, cache});
     });
 
-    let runEdgeFunction = (functionName, functions, args) => {
+    let runEdgeFunction = async (functionName, functions, args) => {
         let edgeResults = {};
-        let call = (functionName, args) => {
+        let call = async (functionName, args) => {
             let functionToCall = functions.find(func => func.functionName === functionName);
             if (!functionToCall) {
                 throw new Error(`can not call unknown function: [${functionName}]`);
             }
-            let result = eval(functionToCall.functionContent)(args);
+            let result = await eval(functionToCall.functionContent)(args);
             addToEdgeResults(edgeResults, functionName, result, args);
             return result;
         }
@@ -82,7 +82,7 @@ startup().then(async () => {
             }
             edgeResults[functionName][Buffer.from(JSON.stringify(args)).toString('base64')] = result;
         }
-        let result = call(functionName, args);
+        let result = await call(functionName, args);
         addToEdgeResults(edgeResults, functionName, result, args);
         return edgeResults;
     };
@@ -122,7 +122,7 @@ startup().then(async () => {
         return undefined;
     }
 
-    const callWithCache = (functionName, args, cache, edgeResults, functions) => {
+    const callWithCache = async (functionName, args, cache, edgeResults, functions) => {
         const calledFunction = functions.find(func => func.name === functionName);
         if (!calledFunction) {
             throw new Error(`There is no function with name=[${functionName}] that belongs to this application`);
@@ -133,7 +133,7 @@ startup().then(async () => {
         } else {
             let cacheResult = tryFromCache(calledFunction, cache, args, functionName);
             if (!cacheResult) {
-                let result = eval(calledFunction.content)(args);
+                let result = await eval(calledFunction.content)(args);
                 if (calledFunction.idempotent) {
                     addToCache(cache, calledFunction.name, result, args);
                 }
