@@ -63,6 +63,12 @@ scp -r -i /home/piotr/.ssh/id_rsa -o StrictHostKeyChecking=no ../manifests ubunt
 echo "---------------------------------control-plane: deploy manifest files--------------------------------------------"
 ssh ubuntu@"$CONTROL_PLANE_IP" -i /home/piotr/.ssh/id_rsa -o StrictHostKeyChecking=no kubectl apply -f /tmp/custom-serverless/manifests/namespaces/
 ssh ubuntu@"$CONTROL_PLANE_IP" -i /home/piotr/.ssh/id_rsa -o StrictHostKeyChecking=no kubectl apply -f /tmp/custom-serverless/manifests/controllers/
+
+ssh ubuntu@"$CONTROL_PLANE_IP" -i "$PRIVATE_KEY_LOCATION" -o StrictHostKeyChecking=no "bash -s" < ./keda.sh
+ssh ubuntu@"$CONTROL_PLANE_IP" -i /home/piotr/.ssh/id_rsa -o StrictHostKeyChecking=no kubectl apply -f /tmp/custom-serverless/manifests/prometheus/prometheus-pv.yaml -n=prometheus
+ssh ubuntu@"$CONTROL_PLANE_IP" -i /home/piotr/.ssh/id_rsa -o StrictHostKeyChecking=no kubectl apply -f /tmp/custom-serverless/manifests/prometheus/prometheus-helm.yaml -n=prometheus
+ssh ubuntu@"$CONTROL_PLANE_IP" -i /home/piotr/.ssh/id_rsa -o StrictHostKeyChecking=no kubectl apply -f /tmp/custom-serverless/manifests/prometheus/prometheus-ingress.yaml -n=prometheus
+
 ssh ubuntu@"$CONTROL_PLANE_IP" -i /home/piotr/.ssh/id_rsa -o StrictHostKeyChecking=no kubectl apply -f /tmp/custom-serverless/manifests/service-accounts/
 ssh ubuntu@"$CONTROL_PLANE_IP" -i /home/piotr/.ssh/id_rsa -o StrictHostKeyChecking=no kubectl apply -f /tmp/custom-serverless/manifests/secrets/
 ssh ubuntu@"$CONTROL_PLANE_IP" -i /home/piotr/.ssh/id_rsa -o StrictHostKeyChecking=no kubectl apply -f /tmp/custom-serverless/manifests/secrets/mongodb/mongodb-secret.yaml -n=custom-serverless

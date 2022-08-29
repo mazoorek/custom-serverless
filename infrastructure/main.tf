@@ -209,6 +209,11 @@ resource "aws_instance" "control-plane" {
   vpc_security_group_ids      = [aws_security_group.k8s-control-plane-sg.id]
   availability_zone           = var.avail_zone
 
+  ebs_block_device {
+    device_name = "/dev/sda1"
+    volume_size = 30
+  }
+
   tags = {
     Name = "control-plane"
   }
